@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal - Staff & Student Login/Register</title>
+    <title>Portal - Staff & Student Login / Course Attendance</title>
     <style>
+        :root {
+            --primary: #007BFF;
+            --success: #28A745;
+            --dark: #2c3e50;
+            --border: #d1d5db;
+            --bg: #f4f7f6;
+        }
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: var(--bg);
             margin: 0;
+            padding: 0;
+            color: #333;
         }
+
         /* Modal Overlay */
         .modal-overlay {
             position: fixed;
@@ -28,45 +34,217 @@
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            width: 350px;
+            width: 360px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             text-align: center;
         }
         .modal-box h2 { margin-top: 0; color: #333; }
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .btn {
-            padding: 10px 20px;
+            padding: 10px 18px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: white;
+            transition: opacity 0.2s;
         }
-        .btn-staff { background-color: #007BFF; }
-        .btn-student { background-color: #28A745; }
+        .btn-staff { background-color: var(--primary); }
+        .btn-student { background-color: var(--success); }
+        .btn-dark { background-color: var(--dark); }
+        .btn-danger { background-color: #dc3545; }
+        .btn-warning { background-color: #f39c12; }
         .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Form Container */
         .form-container { display: none; text-align: left; }
         .form-container input {
             width: 100%;
             padding: 10px;
-            margin: 8px 0 15px 0;
+            margin: 6px 0 14px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
         }
-        .form-container label { font-size: 14px; font-weight: bold; color: #555; }
-        .submit-btn { width: 100%; background-color: #333; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; }
-        .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: #007BFF; cursor: pointer; }
+        .form-container label { font-size: 13px; font-weight: bold; color: #555; }
+        .submit-btn {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 11px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: var(--primary); cursor: pointer; }
         .back-link { font-size: 12px; color: #666; cursor: pointer; margin-top: 10px; display: block; text-align: center; }
-        .loading { display: none; color: #007BFF; font-size: 14px; margin-top: 10px; text-align: center; }
+        .status-msg { display: none; font-size: 13px; margin-top: 12px; padding: 8px; border-radius: 4px; text-align: center; }
+        .status-loading { display: block; background: #e7f3ff; color: #0056b3; }
+        .status-error { display: block; background: #fdecea; color: #b71c1c; }
+        .status-success { display: block; background: #eafaf1; color: #1e8449; }
+
+        /* Staff Course & Attendance Dashboard */
+        #staffDashboard {
+            display: none;
+            padding: 20px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .topbar h1 { margin: 0; font-size: 20px; color: var(--dark); }
+        .topbar-meta { font-size: 13px; color: #666; margin-top: 4px; }
+
+        /* Course Controls Panel */
+        .course-panel {
+            background: #fff;
+            padding: 20px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .field-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .field-group input, .field-group select {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .field-group input:disabled {
+            background-color: #f8f9fa;
+            color: #555;
+        }
+
+        /* Spreadsheet Table Styling */
+        .sheet-wrapper {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .sheet-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .sync-badge {
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: #eef2f7;
+            color: #333;
+            font-weight: bold;
+        }
+        table.spreadsheet {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 900px;
+        }
+        table.spreadsheet th, table.spreadsheet td {
+            border: 1px solid #cbd5e1;
+            padding: 0;
+            text-align: left;
+        }
+        table.spreadsheet th {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-weight: bold;
+            padding: 10px 8px;
+            text-align: center;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+        table.spreadsheet td.row-num {
+            background-color: #f8fafc;
+            text-align: center;
+            font-weight: bold;
+            color: #64748b;
+            width: 40px;
+            padding: 6px;
+        }
+        table.spreadsheet input.cell-input {
+            width: 100%;
+            border: none;
+            padding: 8px;
+            font-size: 13px;
+            box-sizing: border-box;
+            background: transparent;
+        }
+        table.spreadsheet input.cell-input:focus {
+            outline: 2px solid var(--primary);
+            background: #fff;
+        }
+        table.spreadsheet input.cell-input:disabled {
+            color: #333;
+            cursor: default;
+        }
+        table.spreadsheet select.att-select {
+            width: 100%;
+            border: none;
+            padding: 8px 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            background: transparent;
+            cursor: pointer;
+        }
+        .att-P { background-color: #d4edda !important; color: #155724; }
+        .att-A { background-color: #f8d7da !important; color: #721c24; }
+        .att-L { background-color: #fff3cd !important; color: #856404; }
+        .att-E { background-color: #d1ecf1 !important; color: #0c5460; }
+        .summary-cell {
+            text-align: center !important;
+            font-weight: bold;
+            padding: 8px !important;
+            background: #f8fafc;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Popup Modal -->
+    <!-- AUTHENTICATION MODAL -->
     <div class="modal-overlay" id="portalModal">
         <div class="modal-box">
             
@@ -80,27 +258,29 @@
                 </div>
             </div>
 
-            <!-- Step 2: Form (Register / Login) -->
+            <!-- Step 2: Register / Login Form -->
             <div id="formStep" class="form-container">
                 <h2 id="formTitle">Register</h2>
-                <form id="authForm" onsubmit="handleSubmit(event)">
+                <form id="authForm" onsubmit="handleAuthSubmit(event)">
                     
-                    <div id="registerFields">
+                    <!-- Only shown during Registration -->
+                    <div id="registerOnlyFields">
                         <label>Full Name</label>
                         <input type="text" id="fullName" placeholder="Enter full name">
-                        
-                        <label id="idLabel">Student/Staff ID Number</label>
-                        <input type="text" id="idNumber" placeholder="Enter ID number">
+
+                        <label>Email Address</label>
+                        <input type="email" id="email" placeholder="Enter email address">
                     </div>
 
-                    <label>Email Address</label>
-                    <input type="email" id="email" required placeholder="Enter email">
+                    <!-- Shown in BOTH Registration and Login -->
+                    <label id="idLabel">Staff / Student ID Number</label>
+                    <input type="text" id="idNumber" required placeholder="Enter ID number">
 
                     <label>Password</label>
                     <input type="password" id="password" required placeholder="Enter password">
 
                     <button type="submit" class="submit-btn" id="submitBtnText">Register</button>
-                    <div class="loading" id="loadingText">Processing, please wait...</div>
+                    <div class="status-msg" id="statusBox"></div>
                 </form>
 
                 <div class="toggle-link" id="toggleText" onclick="toggleMode()">Already registered? Login here</div>
@@ -110,17 +290,110 @@
         </div>
     </div>
 
+    <!-- STAFF COURSE UNIT & ATTENDANCE DASHBOARD -->
+    <div id="staffDashboard">
+        <div class="topbar">
+            <div>
+                <h1>Course Unit & Semester Attendance Portal</h1>
+                <div class="topbar-meta" id="staffWelcomeMeta">Logged in as Staff</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span class="sync-badge" id="syncIndicator">Ready</span>
+                <button class="btn btn-danger" onclick="logoutStaff()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Course Configuration & Edit Toggle -->
+        <div class="course-panel">
+            <div class="panel-header">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <strong>Select Existing Course:</strong>
+                    <select id="courseSelector" onchange="loadSelectedCourse()" style="padding:8px; border-radius:4px; border:1px solid #ccc; min-width:220px;">
+                        <option value="">-- Create New Course Unit --</option>
+                    </select>
+                    <button class="btn btn-staff" onclick="startNewCourse()">+ New Course Unit</button>
+                </div>
+
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;">
+                        <input type="checkbox" id="autoSaveToggle" checked> Auto-save on edit
+                    </label>
+                    <button class="btn btn-warning" id="editModeBtn" onclick="toggleEditMode()">Enable Edit Mode</button>
+                    <button class="btn btn-success" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Google Sheet</button>
+                </div>
+            </div>
+
+            <div class="course-grid">
+                <div class="field-group">
+                    <label>Course Unit Code</label>
+                    <input type="text" id="courseCode" placeholder="e.g. PH101" oninput="handleCourseMetaEdit()">
+                </div>
+                <div class="field-group">
+                    <label>Course Unit Title</label>
+                    <input type="text" id="courseTitle" placeholder="e.g. Quantum Mechanics" oninput="handleCourseMetaEdit()">
+                </div>
+                <div class="field-group">
+                    <label>Semester Start Date</label>
+                    <input type="date" id="semStart" onchange="handleDateRangeChange()">
+                </div>
+                <div class="field-group">
+                    <label>Semester End Date</label>
+                    <input type="date" id="semEnd" onchange="handleDateRangeChange()">
+                </div>
+            </div>
+            <div id="externalSheetLinkBox" style="margin-top:12px; font-size:13px; display:none;">
+                Dedicated Course Attendance Spreadsheet: <a id="externalSheetLink" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">Open Course Attendance Sheet ↗</a>
+            </div>
+        </div>
+
+        <!-- Spreadsheet Table -->
+        <div class="sheet-wrapper">
+            <div class="sheet-toolbar">
+                <div>
+                    <strong id="sheetHeading">Student Roster & Week-Wise Attendance</strong>
+                    <span style="font-size:12px; color:#666; margin-left:10px;">(P = Present, A = Absent, L = Late, E = Excused)</span>
+                </div>
+                <div>
+                    <button class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Student Row</button>
+                </div>
+            </div>
+
+            <table class="spreadsheet" id="attendanceTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
     <script>
-        // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        // REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZdAYGsLolINFwW_aBwsoP5vJuWyU-XT2xqkvisZrw6jTIWRVjza1kIbf4DadvuyFS/exec";
 
         let selectedUserType = "";
         let isLoginMode = false;
+        let loggedInStaff = null;
+        let isEditMode = true;
+        let autoSaveTimer = null;
+
+        // Stores all courses loaded from Google Sheet
+        let coursesStore = {};
+        let currentCourse = {
+            courseCode: "",
+            courseTitle: "",
+            semStart: "",
+            semEnd: "",
+            sheetUrl: "",
+            weeks: [],
+            students: []
+        };
+
+        /* ================= AUTHENTICATION LOGIC ================= */
 
         function selectUserType(type) {
             selectedUserType = type;
             document.getElementById('selectionStep').style.display = 'none';
             document.getElementById('formStep').style.display = 'block';
+            isLoginMode = false;
             updateFormView();
         }
 
@@ -128,64 +401,415 @@
             document.getElementById('formStep').style.display = 'none';
             document.getElementById('selectionStep').style.display = 'block';
             document.getElementById('authForm').reset();
+            hideStatus();
             isLoginMode = false;
         }
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
+            hideStatus();
             updateFormView();
         }
 
         function updateFormView() {
             const title = `${selectedUserType} ${isLoginMode ? 'Login' : 'Registration'}`;
             document.getElementById('formTitle').innerText = title;
-            document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login' : 'Register';
-            
-            // Hide name and ID fields if logging in
-            document.getElementById('registerFields').style.display = isLoginMode ? 'none' : 'block';
-            document.getElementById('fullName').required = !isLoginMode;
-            document.getElementById('idNumber').required = !isLoginMode;
+            document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login with ID & Password' : 'Register';
+            document.getElementById('idLabel').innerText = `${selectedUserType} ID Number`;
 
-            document.getElementById('toggleText').innerText = isLoginMode ? 
-                "First time user? Register here" : 
-                "Already registered? Login here";
+            // In Login Mode, only ID Number and Password are required
+            document.getElementById('registerOnlyFields').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('fullName').required = !isLoginMode;
+            document.getElementById('email').required = !isLoginMode;
+
+            document.getElementById('toggleText').innerText = isLoginMode
+                ? "First time user? Register here"
+                : "Already registered? Login here";
         }
 
-        function handleSubmit(e) {
+        function showStatus(msg, type) {
+            const box = document.getElementById('statusBox');
+            box.className = 'status-msg ' + type;
+            box.innerText = msg;
+        }
+
+        function hideStatus() {
+            const box = document.getElementById('statusBox');
+            box.className = 'status-msg';
+            box.innerText = '';
+        }
+
+        async function handleAuthSubmit(e) {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
+
+            const idNumber = document.getElementById('idNumber').value.trim();
             const password = document.getElementById('password').value;
-            const fullName = document.getElementById('fullName').value;
-            const idNumber = document.getElementById('idNumber').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
 
             const payload = {
                 action: isLoginMode ? "login" : "register",
                 userType: selectedUserType,
-                email: email,
+                idNumber: idNumber,
                 password: password,
                 fullName: fullName,
-                idNumber: idNumber
+                email: email
             };
 
-            document.getElementById('loadingText').style.display = 'block';
+            showStatus("Communicating with Google Sheets...", "status-loading");
 
-            // Send data to Google Apps Script backend
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Required for Google Apps Script endpoints
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                document.getElementById('loadingText').style.display = 'none';
-                alert(isLoginMode ? "Login request processed!" : "Registration complete! Data saved to Google Sheets.");
-                document.getElementById('portalModal').style.display = 'none'; // Close modal on success
-            })
-            .catch(error => {
-                document.getElementById('loadingText').style.display = 'none';
-                alert("An error occurred: " + error);
+            try {
+                // Using text/plain avoids CORS preflight while allowing JSON response reading
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    showStatus(result.message || "Authentication failed. Please check your credentials.", "status-error");
+                    return;
+                }
+
+                if (!isLoginMode) {
+                    // Registration succeeded -> Redirect user to Login screen with ID pre-filled
+                    isLoginMode = true;
+                    updateFormView();
+                    document.getElementById('idNumber').value = idNumber;
+                    document.getElementById('password').value = "";
+                    showStatus("Registration saved! Please enter your ID and Password to log in.", "status-success");
+                } else {
+                    // Login verified!
+                    showStatus("Login verified! Redirecting...", "status-success");
+                    if (selectedUserType === "Staff") {
+                        loggedInStaff = result.user;
+                        coursesStore = result.courses || {};
+                        openStaffDashboard();
+                    } else {
+                        alert(`Welcome ${result.user.fullName} (${result.user.idNumber})! Student login verified.`);
+                        document.getElementById('portalModal').style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                showStatus("Connection error: Make sure your Google Apps Script is deployed with 'Anyone' access.", "status-error");
+                console.error(error);
+            }
+        }
+
+        /* ================= STAFF DASHBOARD & SPREADSHEET LOGIC ================= */
+
+        function openStaffDashboard() {
+            document.getElementById('portalModal').style.display = 'none';
+            document.getElementById('staffDashboard').style.display = 'block';
+            document.getElementById('staffWelcomeMeta').innerText =
+                `Staff Name: ${loggedInStaff.fullName} | Staff ID: ${loggedInStaff.idNumber}`;
+
+            populateCourseDropdown();
+            const courseCodes = Object.keys(coursesStore);
+            if (courseCodes.length > 0) {
+                document.getElementById('courseSelector').value = courseCodes[0];
+                loadSelectedCourse();
+            } else {
+                startNewCourse();
+            }
+        }
+
+        function logoutStaff() {
+            loggedInStaff = null;
+            document.getElementById('staffDashboard').style.display = 'none';
+            document.getElementById('portalModal').style.display = 'flex';
+            resetModal();
+        }
+
+        function populateCourseDropdown() {
+            const sel = document.getElementById('courseSelector');
+            sel.innerHTML = `<option value="">-- Create New Course Unit --</option>`;
+            Object.keys(coursesStore).forEach(code => {
+                const c = coursesStore[code];
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${code} - ${c.courseTitle || 'Untitled'}`;
+                sel.appendChild(opt);
             });
+        }
+
+        function startNewCourse() {
+            document.getElementById('courseSelector').value = "";
+            const today = new Date().toISOString().split('T')[0];
+            const future = new Date(Date.now() + 14 * 7 * 86400000).toISOString().split('T')[0];
+
+            currentCourse = {
+                courseCode: "",
+                courseTitle: "",
+                semStart: today,
+                semEnd: future,
+                sheetUrl: "",
+                weeks: generateWeeksList(today, future),
+                students: [
+                    { studentId: "", surname: "", firstName: "", idUnit: "", attendance: {} }
+                ]
+            };
+
+            setEditMode(true);
+            renderCourseToUI();
+        }
+
+        function loadSelectedCourse() {
+            const code = document.getElementById('courseSelector').value;
+            if (!code || !coursesStore[code]) {
+                startNewCourse();
+                return;
+            }
+            // Deep clone selected course
+            currentCourse = JSON.parse(JSON.stringify(coursesStore[code]));
+            if (!currentCourse.weeks || currentCourse.weeks.length === 0) {
+                currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
+            }
+            renderCourseToUI();
+        }
+
+        function toggleEditMode() {
+            setEditMode(!isEditMode);
+        }
+
+        function setEditMode(enabled) {
+            isEditMode = enabled;
+            const btn = document.getElementById('editModeBtn');
+            btn.innerText = isEditMode ? "Lock / View Only" : "Enable Edit Mode";
+            btn.className = isEditMode ? "btn btn-dark" : "btn btn-warning";
+
+            document.getElementById('courseCode').disabled = !isEditMode;
+            document.getElementById('courseTitle').disabled = !isEditMode;
+            document.getElementById('semStart').disabled = !isEditMode;
+            document.getElementById('semEnd').disabled = !isEditMode;
+            document.getElementById('addRowBtn').disabled = !isEditMode;
+
+            renderSpreadsheetTable();
+        }
+
+        function generateWeeksList(startStr, endStr) {
+            if (!startStr || !endStr) return ["Week 1", "Week 2", "Week 3", "Week 4"];
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            if (isNaN(start) || isNaN(end) || end < start) return ["Week 1"];
+
+            const weeks = [];
+            let curr = new Date(start);
+            let weekNum = 1;
+            while (curr <= end && weekNum <= 24) {
+                const labelDate = curr.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                weeks.push(`Wk ${weekNum} (${labelDate})`);
+                curr.setDate(curr.getDate() + 7);
+                weekNum++;
+            }
+            return weeks.length ? weeks : ["Week 1"];
+        }
+
+        function handleCourseMetaEdit() {
+            currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
+            currentCourse.courseTitle = document.getElementById('courseTitle').value;
+
+            // Keep student ID Unit column synced with Course Unit Code if empty or matching
+            currentCourse.students.forEach(st => {
+                if (!st.idUnit) st.idUnit = currentCourse.courseCode;
+            });
+            queueAutoSave();
+        }
+
+        function handleDateRangeChange() {
+            currentCourse.semStart = document.getElementById('semStart').value;
+            currentCourse.semEnd = document.getElementById('semEnd').value;
+            currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
+            renderSpreadsheetTable();
+            queueAutoSave();
+        }
+
+        function renderCourseToUI() {
+            document.getElementById('courseCode').value = currentCourse.courseCode || "";
+            document.getElementById('courseTitle').value = currentCourse.courseTitle || "";
+            document.getElementById('semStart').value = currentCourse.semStart || "";
+            document.getElementById('semEnd').value = currentCourse.semEnd || "";
+
+            const linkBox = document.getElementById('externalSheetLinkBox');
+            const linkEl = document.getElementById('externalSheetLink');
+            if (currentCourse.sheetUrl) {
+                linkBox.style.display = 'block';
+                linkEl.href = currentCourse.sheetUrl;
+            } else {
+                linkBox.style.display = 'none';
+            }
+
+            renderSpreadsheetTable();
+        }
+
+        function renderSpreadsheetTable() {
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+            const weeks = currentCourse.weeks || [];
+
+            // Build Header Row
+            let headHTML = `<tr>
+                <th>#</th>
+                <th style="min-width:120px;">Student ID</th>
+                <th style="min-width:140px;">Surname</th>
+                <th style="min-width:140px;">First Name</th>
+                <th style="min-width:100px;">ID Unit</th>`;
+
+            weeks.forEach(w => {
+                headHTML += `<th style="min-width:95px;">${w}</th>`;
+            });
+
+            headHTML += `<th style="min-width:90px;">Attendance %</th>`;
+            if (isEditMode) headHTML += `<th style="width:60px;">Del</th>`;
+            headHTML += `</tr>`;
+            thead.innerHTML = headHTML;
+
+            // Build Student Rows
+            tbody.innerHTML = "";
+            currentCourse.students.forEach((st, idx) => {
+                const tr = document.createElement('tr');
+                const disabledAttr = isEditMode ? "" : "disabled";
+
+                let presentCount = 0;
+                let markedCount = 0;
+
+                let weekCellsHTML = "";
+                weeks.forEach((w, wIdx) => {
+                    const key = `W${wIdx + 1}`;
+                    const val = (st.attendance && st.attendance[key]) ? st.attendance[key] : "";
+                    if (val === "P" || val === "L") { presentCount++; markedCount++; }
+                    else if (val === "A" || val === "E") { markedCount++; }
+
+                    const colorClass = val ? `att-${val}` : "";
+                    weekCellsHTML += `<td class="${colorClass}">
+                        <select class="att-select" ${disabledAttr} onchange="updateAttendanceCell(${idx}, '${key}', this.value)">
+                            <option value="" ${val === "" ? "selected" : ""}>-</option>
+                            <option value="P" ${val === "P" ? "selected" : ""}>P</option>
+                            <option value="A" ${val === "A" ? "selected" : ""}>A</option>
+                            <option value="L" ${val === "L" ? "selected" : ""}>L</option>
+                            <option value="E" ${val === "E" ? "selected" : ""}>E</option>
+                        </select>
+                    </td>`;
+                });
+
+                const pct = markedCount > 0 ? Math.round((presentCount / markedCount) * 100) + "%" : "0%";
+
+                tr.innerHTML = `
+                    <td class="row-num">${idx + 1}</td>
+                    <td><input class="cell-input" type="text" value="${escapeHtml(st.studentId)}" placeholder="S11..." ${disabledAttr} oninput="updateStudentField(${idx}, 'studentId', this.value)"></td>
+                    <td><input class="cell-input" type="text" value="${escapeHtml(st.surname)}" placeholder="Surname" ${disabledAttr} oninput="updateStudentField(${idx}, 'surname', this.value)"></td>
+                    <td><input class="cell-input" type="text" value="${escapeHtml(st.firstName)}" placeholder="First Name" ${disabledAttr} oninput="updateStudentField(${idx}, 'firstName', this.value)"></td>
+                    <td><input class="cell-input" type="text" value="${escapeHtml(st.idUnit || currentCourse.courseCode)}" placeholder="Unit Code" ${disabledAttr} oninput="updateStudentField(${idx}, 'idUnit', this.value)"></td>
+                    ${weekCellsHTML}
+                    <td class="summary-cell" id="pct-${idx}">${pct}</td>
+                    ${isEditMode ? `<td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStudentField(rowIndex, field, value) {
+            currentCourse.students[rowIndex][field] = value;
+            queueAutoSave();
+        }
+
+        function updateAttendanceCell(rowIndex, weekKey, value) {
+            if (!currentCourse.students[rowIndex].attendance) {
+                currentCourse.students[rowIndex].attendance = {};
+            }
+            currentCourse.students[rowIndex].attendance[weekKey] = value;
+            renderSpreadsheetTable();
+            queueAutoSave();
+        }
+
+        function addStudentRow() {
+            currentCourse.students.push({
+                studentId: "",
+                surname: "",
+                firstName: "",
+                idUnit: currentCourse.courseCode || "",
+                attendance: {}
+            });
+            renderSpreadsheetTable();
+            queueAutoSave();
+        }
+
+        function deleteStudentRow(rowIndex) {
+            currentCourse.students.splice(rowIndex, 1);
+            if (currentCourse.students.length === 0) {
+                addStudentRow();
+            } else {
+                renderSpreadsheetTable();
+                queueAutoSave();
+            }
+        }
+
+        function queueAutoSave() {
+            const autoSaveEnabled = document.getElementById('autoSaveToggle').checked;
+            if (!autoSaveEnabled || !currentCourse.courseCode) return;
+
+            document.getElementById('syncIndicator').innerText = "Unsaved edits...";
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveCourseAndAttendance(false);
+            }, 1200);
+        }
+
+        async function saveCourseAndAttendance(manualClick) {
+            currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
+            currentCourse.courseTitle = document.getElementById('courseTitle').value.trim();
+            currentCourse.semStart = document.getElementById('semStart').value;
+            currentCourse.semEnd = document.getElementById('semEnd').value;
+
+            if (!currentCourse.courseCode) {
+                if (manualClick) alert("Please enter a Course Unit Code (e.g. PH101) before saving.");
+                return;
+            }
+
+            const indicator = document.getElementById('syncIndicator');
+            indicator.innerText = "Saving to Google Sheet...";
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: "saveCourseAndAttendance",
+                        staffId: loggedInStaff.idNumber,
+                        course: currentCourse
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    if (result.sheetUrl) {
+                        currentCourse.sheetUrl = result.sheetUrl;
+                    }
+                    coursesStore[currentCourse.courseCode] = JSON.parse(JSON.stringify(currentCourse));
+                    populateCourseDropdown();
+                    document.getElementById('courseSelector').value = currentCourse.courseCode;
+                    renderCourseToUI();
+
+                    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    indicator.innerText = `Saved (${timeStr})`;
+                } else {
+                    indicator.innerText = "Save error";
+                    if (manualClick) alert("Error saving: " + result.message);
+                }
+            } catch (err) {
+                indicator.innerText = "Sync failed";
+                console.error(err);
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str || "")
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
         }
     </script>
 </body>
