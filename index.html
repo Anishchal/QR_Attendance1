@@ -6,7 +6,6 @@
     <title>Portal - Staff & Student Course Attendance</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Leaflet CSS & JS for Interactive Satellite Maps of Laucala Campus, Suva, Fiji -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -61,7 +60,6 @@
         .schedule-card { border:1px solid #cbd5e1; border-radius:8px; padding:12px; background:#f8fafc; }
         .schedule-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:7px; border-bottom:2px solid #e2e8f0; }
         .schedule-card-header h3 { margin:0; font-size:13px; text-transform:uppercase; }
-        /* Updated slot grids with Geofence button column */
         .slot-row-lec { display:grid; grid-template-columns:76px 1fr 1fr 1fr auto auto; gap:5px; align-items:center; margin-bottom:7px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
         .slot-label-lec { display:grid; grid-template-columns:76px 1fr 1fr 1fr 92px 26px; gap:5px; font-size:10.5px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
         .slot-row-cap { display:grid; grid-template-columns:74px 1fr 1fr 0.9fr 58px auto auto; gap:5px; align-items:center; margin-bottom:7px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
@@ -140,7 +138,7 @@
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:left; margin-top:8px;">
                 <div>
-                    <label style="font-size:11.5px; font-weight:bold; color:#555;">Selected Coordinates (Lat, Lng)</label>
+                    <label style="font-size:11.5px; font-weight:bold; color:#555;">Selected Room Pin (Lat, Lng)</label>
                     <input type="text" id="geoCoordsDisplay" readonly style="width:100%; padding:7px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box;">
                 </div>
                 <div>
@@ -182,7 +180,7 @@
                 <span class="back-link" onclick="resetModal()">« Back to User Category</span>
             </div>
 
-            <!-- STUDENT "GIVE ATTENDANCE" WITH POKEMON-GO LIVE SATELLITE RADAR -->
+            <!-- STUDENT "GIVE ATTENDANCE" WITH CLIENT-ONLY GEOFENCE VERIFICATION -->
             <div id="giveAttendanceStep" class="form-container">
                 <h2 style="text-align:center; margin-bottom:8px;">Give Session Attendance</h2>
                 <div class="clock-banner" id="liveClockBanner">Loading current time...</div>
@@ -198,17 +196,17 @@
                         <option value="">-- Select Course Unit First --</option>
                     </select>
 
-                    <!-- POKEMON-GO STYLE GEOFENCE CONSENT & LIVE SATELLITE RADAR -->
+                    <!-- POKEMON-GO STYLE GEOFENCE CONSENT & LIVE SATELLITE RADAR (Zero Geolocation Data Stored) -->
                     <div id="studentGeoBox" class="radar-panel" style="display:none;">
-                        <div style="font-size:12.5px; font-weight:bold; color:#38bdf8; margin-bottom:6px;">
+                        <div style="font-size:12.5px; font-weight:bold; color:#38bdf8; margin-bottom:4px;">
                             🛰️ Room Geofence Active (<span id="stuGeoTargetInfo">Radius: 150m</span>)
                         </div>
-                        <div style="font-size:11.5px; color:#cbd5e1; margin-bottom:8px;">
-                            Share your live GPS location to verify you are inside the session room radius, or deny location sharing (attendance will require Staff approval).
+                        <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">
+                            Your location is checked strictly in your browser to verify whether you are inside the room radius (no GPS coordinates or location data are ever saved). If you deny location sharing, attendance will require Staff approval.
                         </div>
                         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
                             <button type="button" class="btn btn-student" style="flex:1; font-size:11.5px; padding:7px;" onclick="startStudentLiveRadar()">
-                                📍 Agree & Track Live Location
+                                📍 Agree & Verify In-Bounds
                             </button>
                             <button type="button" class="btn btn-warning" style="flex:1; font-size:11.5px; padding:7px;" onclick="denyStudentLocationSharing()">
                                 🚫 Deny Location Sharing (Staff Approval)
@@ -216,7 +214,7 @@
                         </div>
                         <div id="studentRadarMap" class="satellite-map-box" style="height:220px; display:none; border-color:#38bdf8;"></div>
                         <div id="studentRadarStatus" class="radar-status-bar radar-denied">
-                            Awaiting Location Sharing Choice...
+                            Awaiting Location Verification Choice...
                         </div>
                     </div>
 
@@ -352,7 +350,7 @@
             <span class="legend-pill att-P">P = Present</span>
             <span class="legend-pill att-A">A = Absent (Missed Session)</span>
             <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
-            <span class="legend-pill att-REQ">REQ = Pending Approval (Denied GPS / Alt Session)</span>
+            <span class="legend-pill att-REQ">REQ = Pending Approval (Denied Location / Alt Session)</span>
             <span class="legend-pill att-HOL">HOL = Holiday (Exempt / Alt Auto-Approved)</span>
             <span class="legend-pill att-BRK">BRK = Study Break Week</span>
         </div>
@@ -362,7 +360,7 @@
             <div style="overflow-x:auto;">
                 <table class="req-table">
                     <thead>
-                        <tr><th>Student ID & Name</th><th>Session & Period</th><th>Designated Session</th><th>Attended Session</th><th>Reason / GPS Status</th><th style="width:165px;">Staff Decision</th></tr>
+                        <tr><th>Student ID & Name</th><th>Session & Period</th><th>Designated Session</th><th>Attended Session</th><th>Reason / Verification Status</th><th style="width:165px;">Staff Decision</th></tr>
                     </thead>
                     <tbody id="staffRequestsBody"></tbody>
                 </table>
@@ -546,12 +544,12 @@
         let coursesStore = {};
         let currentCourse = createDefaultCourseObject();
 
-        // Geofence Map State (Staff & Student)
+        // Geofence Map State (Client-Only Verification — No Student Geolocation Data Stored)
         let staffMap = null, staffMarker = null, staffCircle = null;
-        let editingGeoTarget = null; // { groupKey, idx, lat, lng, radius, enabled }
+        let editingGeoTarget = null;
         let studentMap = null, studentTargetCircle = null, studentTargetMarker = null, studentUserMarker = null;
         let geoWatchId = null;
-        let currentStudentGeoState = { status: "NOT_REQUIRED", distanceM: null };
+        let currentStudentGeoStatus = "NOT_REQUIRED"; // 'VERIFIED', 'OUTSIDE', 'DENIED', 'UNDECIDED', or 'NOT_REQUIRED'
 
         window.addEventListener('DOMContentLoaded', () => {
             initSupabaseFromStorage();
@@ -714,7 +712,6 @@
             setTimeout(() => {
                 if (!staffMap) {
                     staffMap = L.map('staffGeoMap', { center: [lat, lng], zoom: 17 });
-                    // Esri World Imagery Satellite Layer + Hybrid Reference Labels
                     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                         maxZoom: 19, attribution: 'Satellite &copy; Esri — Laucala, Suva, Fiji'
                     }).addTo(staffMap);
@@ -767,11 +764,8 @@
             editingGeoTarget.enabled = document.getElementById('geoEnableCheckbox').checked;
             const pos = [editingGeoTarget.lat, editingGeoTarget.lng];
 
-            if (!staffMarker) {
-                staffMarker = L.marker(pos).addTo(staffMap);
-            } else {
-                staffMarker.setLatLng(pos);
-            }
+            if (!staffMarker) staffMarker = L.marker(pos).addTo(staffMap);
+            else staffMarker.setLatLng(pos);
 
             if (!staffCircle) {
                 staffCircle = L.circle(pos, {
@@ -809,7 +803,7 @@
             editingGeoTarget = null;
         }
 
-        /* ================= STUDENT POKEMON-GO LIVE SATELLITE RADAR ================= */
+        /* ================= STUDENT CLIENT-SIDE GEOFENCE RADAR (ZERO GPS DATA SAVED) ================= */
 
         function getSelectedStudentSessionSlot() {
             const code = document.getElementById('attCourseSelect').value;
@@ -834,15 +828,15 @@
 
             if (slot && slot.geofence && slot.geofence.enabled) {
                 const rad = Math.min(250, Math.max(100, Number(slot.geofence.radius) || 150));
-                currentStudentGeoState = { status: "UNDECIDED", distanceM: null };
+                currentStudentGeoStatus = "UNDECIDED";
                 geoBox.style.display = 'block';
                 radarMapDiv.style.display = 'none';
                 document.getElementById('stuGeoTargetInfo').innerText =
                     `Room: ${slot.room || 'Laucala Campus'} | Effective Radius: ${rad}m`;
                 statusDiv.className = 'radar-status-bar radar-denied';
-                statusDiv.innerText = 'Please choose "Agree & Track Live Location" or "Deny Location Sharing" above.';
+                statusDiv.innerText = 'Please choose "Agree & Verify In-Bounds" or "Deny Location Sharing" above.';
             } else {
-                currentStudentGeoState = { status: "NOT_REQUIRED", distanceM: null };
+                currentStudentGeoStatus = "NOT_REQUIRED";
                 geoBox.style.display = 'none';
             }
         }
@@ -859,7 +853,7 @@
             const statusDiv = document.getElementById('studentRadarStatus');
             radarMapDiv.style.display = 'block';
             statusDiv.className = 'radar-status-bar radar-denied';
-            statusDiv.innerText = '🛰️ Acquiring live GPS signal...';
+            statusDiv.innerText = '🛰️ Verifying your position relative to the classroom geofence...';
 
             setTimeout(() => {
                 if (!studentMap) {
@@ -889,30 +883,26 @@
             }, 100);
 
             if (!navigator.geolocation) {
-                denyStudentLocationSharing("Browser does not support GPS geolocation.");
+                denyStudentLocationSharing("Browser does not support geolocation.");
                 return;
             }
 
             stopStudentGeoWatch();
             geoWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
+                    // Checked strictly in browser memory — never sent to or stored in database
                     const uLat = pos.coords.latitude;
                     const uLng = pos.coords.longitude;
                     const dist = computeHaversineMeters(uLat, uLng, targetLat, targetLng);
                     const inside = dist <= radius;
 
-                    currentStudentGeoState = {
-                        status: inside ? "INSIDE" : "OUTSIDE",
-                        distanceM: dist
-                    };
+                    currentStudentGeoStatus = inside ? "VERIFIED" : "OUTSIDE";
 
                     if (studentMap) {
                         const pulseIcon = L.divIcon({ className: '', html: '<div class="student-gps-dot"></div>', iconSize: [16, 16] });
-                        if (!studentUserMarker) {
-                            studentUserMarker = L.marker([uLat, uLng], { icon: pulseIcon }).addTo(studentMap);
-                        } else {
-                            studentUserMarker.setLatLng([uLat, uLng]);
-                        }
+                        if (!studentUserMarker) studentUserMarker = L.marker([uLat, uLng], { icon: pulseIcon }).addTo(studentMap);
+                        else studentUserMarker.setLatLng([uLat, uLng]);
+
                         if (studentTargetCircle) {
                             studentTargetCircle.setStyle({
                                 color: inside ? '#10b981' : '#ef4444',
@@ -923,14 +913,14 @@
 
                     if (inside) {
                         statusDiv.className = 'radar-status-bar radar-in';
-                        statusDiv.innerText = `✓ INSIDE EFFECTIVE RADIUS! Distance: ${dist}m (Allowed: ≤ ${radius}m) — Ready to Submit!`;
+                        statusDiv.innerText = `✓ VERIFIED INSIDE GEOFENCE (${dist}m from room, within ${radius}m limit) — Ready to Submit!`;
                     } else {
                         statusDiv.className = 'radar-status-bar radar-out';
-                        statusDiv.innerText = `⚠️ OUTSIDE GEOFENCE: You are ${dist}m away (Need ≤ ${radius}m). Walk ${dist - radius}m closer or Deny Location Sharing for Staff Approval.`;
+                        statusDiv.innerText = `⚠️ OUTSIDE GEOFENCE (${dist}m away; limit is ${radius}m). Move closer or click "Deny Location Sharing" for Staff Approval.`;
                     }
                 },
-                (err) => {
-                    denyStudentLocationSharing("Location permission denied by browser.");
+                () => {
+                    denyStudentLocationSharing("Location permission was denied.");
                 },
                 { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 }
             );
@@ -938,7 +928,7 @@
 
         function denyStudentLocationSharing(customNote) {
             stopStudentGeoWatch();
-            currentStudentGeoState = { status: "DENIED", distanceM: null };
+            currentStudentGeoStatus = "DENIED";
             document.getElementById('studentRadarMap').style.display = 'none';
             const statusDiv = document.getElementById('studentRadarStatus');
             statusDiv.className = 'radar-status-bar radar-denied';
@@ -1162,9 +1152,9 @@
             }
 
             const slot = getSelectedStudentSessionSlot();
-            if (slot && slot.geofence && slot.geofence.enabled && currentStudentGeoState.status === "UNDECIDED") {
+            if (slot && slot.geofence && slot.geofence.enabled && currentStudentGeoStatus === "UNDECIDED") {
                 statusBox.className = 'status-msg status-warn';
-                statusBox.innerText = 'This room uses Geofencing. Please click "Agree & Track Live Location" or "Deny Location Sharing" above before submitting.';
+                statusBox.innerText = 'This room uses Geofencing. Please click "Agree & Verify In-Bounds" or "Deny Location Sharing" above before submitting.';
                 return;
             }
 
@@ -1182,6 +1172,7 @@
             statusBox.innerText = 'Verifying session schedule, geofence status, and designated session...';
 
             try {
+                // Sends ONLY the verification status flag ('VERIFIED', 'DENIED', 'OUTSIDE', or 'NOT_REQUIRED') — NO geolocation coordinates or distance!
                 const { data: res, error } = await sb.rpc('submit_student_attendance', {
                     p_student_id: studentId,
                     p_course_code: courseCode,
@@ -1191,8 +1182,7 @@
                     p_client_day: clientDay,
                     p_client_time: clientTime,
                     p_reason: reasonVal || null,
-                    p_location_status: currentStudentGeoState.status || 'NOT_REQUIRED',
-                    p_distance_m: currentStudentGeoState.distanceM
+                    p_location_status: currentStudentGeoStatus || 'NOT_REQUIRED'
                 });
 
                 if (error) throw error;
