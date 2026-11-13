@@ -3,149 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal - Staff & Student Login / Course Attendance</title>
+    <title>Portal - Staff & Student Course Attendance</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        :root {
-            --primary: #007BFF; --success: #28A745; --dark: #2c3e50;
-            --border: #d1d5db; --bg: #f4f7f6;
-            --lec-color: #1d4ed8; --lab-color: #047857; --tut-color: #6d28d9;
-        }
-        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-box {
-            background: #fff; padding: 28px; border-radius: 8px; width: 420px; max-width: 92vw;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center;
-        }
-        .modal-box h2 { margin-top: 0; color: #333; }
-        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-        .btn {
-            padding: 9px 14px; border: none; border-radius: 4px; cursor: pointer;
-            font-size: 13px; font-weight: bold; color: #fff; transition: opacity 0.2s;
-        }
-        .btn-staff { background: var(--primary); }
-        .btn-student { background: var(--success); }
-        .btn-dark { background: var(--dark); }
-        .btn-danger { background: #dc3545; }
-        .btn-warning { background: #f39c12; }
-        .btn-lec { background: var(--lec-color); }
-        .btn-lab { background: var(--lab-color); }
-        .btn-tut { background: var(--tut-color); }
-        .btn:hover { opacity: 0.9; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .form-container { display: none; text-align: left; }
-        .form-container input, .form-container select, .form-container textarea {
-            width: 100%; padding: 10px; margin: 6px 0 14px 0; border: 1px solid #ccc;
-            border-radius: 4px; box-sizing: border-box; font-size: 13.5px; font-family: inherit;
-        }
-        .form-container label { font-size: 13px; font-weight: bold; color: #555; }
-        .submit-btn {
-            width: 100%; background: #333; color: #fff; padding: 11px;
-            border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;
-        }
-        .submit-btn:disabled { opacity: 0.6; cursor: wait; }
-        .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: var(--primary); cursor: pointer; }
-        .back-link { font-size: 12px; color: #666; cursor: pointer; margin-top: 12px; display: block; text-align: center; }
-        .status-msg { display: none; font-size: 13px; margin-top: 12px; padding: 9px; border-radius: 4px; text-align: center; line-height: 1.4; }
-        .status-loading { display: block; background: #e7f3ff; color: #0056b3; }
-        .status-error { display: block; background: #fdecea; color: #b71c1c; }
-        .status-success { display: block; background: #eafaf1; color: #1e8449; }
-        .status-warn { display: block; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-
-        .conn-badge { display: inline-block; margin-top: 16px; font-size: 12px; padding: 5px 10px; border-radius: 12px; cursor: pointer; }
-        .conn-ok { background: #eafaf1; color: #1e8449; border: 1px solid #a3e4d7; }
-        .conn-missing { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .clock-banner { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #1e293b; margin-bottom: 12px; text-align: center; }
-
-        #staffDashboard, #studentDashboard { display: none; padding: 20px 28px; max-width: 1550px; margin: 0 auto; }
-        .topbar {
-            display: flex; justify-content: space-between; align-items: center; background: #fff;
-            padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
-        }
-        .topbar h1 { margin: 0; font-size: 20px; color: var(--dark); }
-        .topbar-meta { font-size: 13px; color: #666; margin-top: 4px; }
-
-        .legend-bar {
-            display: flex; gap: 12px; flex-wrap: wrap; background: #fff; padding: 12px 20px;
-            border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 20px; font-size: 13px; align-items: center;
-        }
-        .legend-pill { padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-
-        .student-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #fff; padding: 16px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-left: 5px solid var(--primary); }
-        .stat-card h4 { margin: 0 0 6px 0; font-size: 12px; color: #64748b; text-transform: uppercase; }
-        .stat-card .stat-val { font-size: 24px; font-weight: bold; color: #1e293b; }
-
-        .session-picker-card { background: #fff; padding: 18px 24px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; border-left: 5px solid var(--lab-color); }
-        .session-picker-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
-        .week-window-badge { font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
-        .window-open { background: #dcfce7; color: #166534; }
-        .window-closed { background: #fee2e2; color: #991b1b; }
-
-        .course-panel { background: #fff; padding: 20px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
-        .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
-        .field-group label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 5px; text-transform: uppercase; }
-        .field-group input, .field-group select { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
-        .field-group input:disabled, .field-group select:disabled { background: #f8f9fa; color: #555; }
-
-        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-top: 20px; }
-        .schedule-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; background: #f8fafc; }
-        .schedule-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
-        .schedule-card-header h3 { margin: 0; font-size: 14px; text-transform: uppercase; }
-        .slot-row-lec { display: grid; grid-template-columns: 76px 1fr 1fr 1.2fr auto; gap: 6px; align-items: center; margin-bottom: 8px; background: #fff; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
-        .slot-label-lec { display: grid; grid-template-columns: 76px 1fr 1fr 1.2fr 28px; gap: 6px; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 4px; padding: 0 6px; }
-        .slot-row-cap { display: grid; grid-template-columns: 74px 1fr 1fr 1fr 74px auto; gap: 6px; align-items: center; margin-bottom: 8px; background: #fff; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
-        .slot-label-cap { display: grid; grid-template-columns: 74px 1fr 1fr 1fr 74px 28px; gap: 6px; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 4px; padding: 0 6px; }
-        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input { width: 100%; padding: 6px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
-
-        .requests-panel { background: #fff8e6; border: 2px solid #f39c12; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; display: none; }
-        .requests-panel h3 { margin: 0 0 10px 0; font-size: 15px; color: #9c640c; }
-        .req-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: #fff; }
-        .req-table th, .req-table td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
-        .req-table th { background: #fef3c7; color: #92400e; }
-
-        .dropbox-container { margin-top: 18px; }
-        .file-dropzone { border: 2px dashed #007BFF; background: #eef6ff; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; font-size: 14px; color: #0056b3; transition: all 0.2s; outline: none; }
-        .file-dropzone.dragover { background: #d0e7ff; border-color: #004085; }
-        .file-dropzone.staged { border-color: #28A745; background: #eafaf1; color: #155724; }
-        .file-dropzone.disabled-zone { border-color: #cbd5e1; background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
-        .enter-hint-badge { display: inline-block; margin-top: 8px; padding: 5px 14px; background: #28A745; color: #fff; border-radius: 4px; font-size: 12px; font-weight: bold; }
-
-        .tables-nav { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .sheet-wrapper { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; overflow-x: auto; margin-bottom: 28px; border-top: 4px solid var(--dark); }
-        .sheet-wrapper.lec-sheet { border-top-color: var(--lec-color); }
-        .sheet-wrapper.lab-sheet { border-top-color: var(--lab-color); }
-        .sheet-wrapper.tut-sheet { border-top-color: var(--tut-color); }
-        .sheet-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-        .sheet-title-badge { font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .rule-pill { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #f1f5f9; color: #334155; font-weight: normal; }
-        .schedule-summary-bar { font-size: 12px; color: #475569; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
-        .sync-badge { font-size: 13px; padding: 5px 12px; border-radius: 20px; background: #eef2f7; color: #333; font-weight: bold; }
-
-        table.spreadsheet { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
-        table.spreadsheet th, table.spreadsheet td { border: 1px solid #cbd5e1; padding: 0; text-align: left; }
-        table.spreadsheet th { background: #f1f5f9; color: #1e293b; font-weight: bold; padding: 8px 6px; text-align: center; white-space: nowrap; }
-        table.spreadsheet td.row-num { background: #f8fafc; text-align: center; font-weight: bold; color: #64748b; width: 34px; padding: 6px; }
-        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select { width: 100%; border: none; padding: 7px 6px; font-size: 12.5px; box-sizing: border-box; background: transparent; }
-        table.spreadsheet select.att-select { width: 100%; border: none; padding: 7px 2px; font-size: 12px; font-weight: bold; text-align: center; background: transparent; cursor: pointer; }
-        .lec-week-box { display: flex; align-items: center; justify-content: center; gap: 3px; padding: 3px 4px; }
-        .lec-sub-select { border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; font-weight: bold; padding: 3px 2px; cursor: pointer; background: #fff; }
-        .wk-status-chip { font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 3px; white-space: nowrap; }
-        .chip-full { background: #dcfce7; color: #166534; }
-        .chip-partial { background: #fef9c3; color: #854d0e; }
-        .chip-none { background: #fee2e2; color: #991b1b; }
-
-        .att-P { background-color: #d4edda !important; color: #155724 !important; }
-        .att-A { background-color: #f8d7da !important; color: #721c24 !important; }
-        .att-L { background-color: #fdebd0 !important; color: #9c640c !important; }
-        .att-REQ { background-color: #e0f2fe !important; color: #0369a1 !important; }
-        .summary-cell { text-align: center !important; font-weight: bold; padding: 7px !important; background: #f8fafc; white-space: nowrap; }
+        :root { --primary:#007BFF; --success:#28A745; --dark:#2c3e50; --border:#d1d5db; --bg:#f4f7f6; --lec-color:#1d4ed8; --lab-color:#047857; --tut-color:#6d28d9; }
+        body { font-family:Arial,sans-serif; background:var(--bg); margin:0; padding:0; color:#333; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:1000; }
+        .modal-box { background:#fff; padding:28px; border-radius:8px; width:420px; max-width:92vw; box-shadow:0 4px 15px rgba(0,0,0,0.2); text-align:center; }
+        .modal-box h2 { margin-top:0; color:#333; }
+        .btn-group { display:flex; gap:10px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
+        .btn { padding:9px 14px; border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold; color:#fff; transition:opacity 0.2s; }
+        .btn-staff { background:var(--primary); } .btn-student { background:var(--success); } .btn-dark { background:var(--dark); }
+        .btn-danger { background:#dc3545; } .btn-warning { background:#f39c12; } .btn-lec { background:var(--lec-color); }
+        .btn-lab { background:var(--lab-color); } .btn-tut { background:var(--tut-color); }
+        .btn:hover { opacity:0.9; } .btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .form-container { display:none; text-align:left; }
+        .form-container input, .form-container select, .form-container textarea { width:100%; padding:10px; margin:6px 0 14px 0; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; font-size:13.5px; font-family:inherit; }
+        .form-container label { font-size:13px; font-weight:bold; color:#555; }
+        .submit-btn { width:100%; background:#333; color:#fff; padding:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:14px; }
+        .submit-btn:disabled { opacity:0.6; cursor:wait; }
+        .toggle-link { margin-top:15px; font-size:13px; text-align:center; color:var(--primary); cursor:pointer; }
+        .back-link { font-size:12px; color:#666; cursor:pointer; margin-top:12px; display:block; text-align:center; }
+        .status-msg { display:none; font-size:13px; margin-top:12px; padding:9px; border-radius:4px; text-align:center; line-height:1.4; }
+        .status-loading { display:block; background:#e7f3ff; color:#0056b3; }
+        .status-error { display:block; background:#fdecea; color:#b71c1c; }
+        .status-success { display:block; background:#eafaf1; color:#1e8449; }
+        .status-warn { display:block; background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
+        .conn-badge { display:inline-block; margin-top:16px; font-size:12px; padding:5px 10px; border-radius:12px; cursor:pointer; }
+        .conn-ok { background:#eafaf1; color:#1e8449; border:1px solid #a3e4d7; }
+        .conn-missing { background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
+        .clock-banner { background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:8px 10px; font-size:12px; color:#1e293b; margin-bottom:12px; text-align:center; }
+        #staffDashboard, #studentDashboard { display:none; padding:20px 28px; max-width:1550px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:15px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+        .topbar h1 { margin:0; font-size:20px; color:var(--dark); }
+        .topbar-meta { font-size:13px; color:#666; margin-top:4px; }
+        .legend-bar { display:flex; gap:12px; flex-wrap:wrap; background:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.06); margin-bottom:20px; font-size:13px; align-items:center; }
+        .legend-pill { padding:4px 10px; border-radius:4px; font-weight:bold; font-size:12px; }
+        .student-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:20px; }
+        .stat-card { background:#fff; padding:16px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.07); border-left:5px solid var(--primary); }
+        .stat-card h4 { margin:0 0 6px 0; font-size:12px; color:#64748b; text-transform:uppercase; }
+        .stat-card .stat-val { font-size:24px; font-weight:bold; color:#1e293b; }
+        .session-picker-card { background:#fff; padding:18px 24px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; border-left:5px solid var(--lab-color); }
+        .session-picker-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+        .week-window-badge { font-size:12px; padding:5px 12px; border-radius:20px; font-weight:bold; }
+        .window-open { background:#dcfce7; color:#166534; } .window-closed { background:#fee2e2; color:#991b1b; }
+        .course-panel { background:#fff; padding:20px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; }
+        .panel-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px; }
+        .course-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; align-items:end; }
+        .field-group label { display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:5px; text-transform:uppercase; }
+        .field-group input, .field-group select { width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:4px; font-size:14px; box-sizing:border-box; }
+        .field-group input:disabled, .field-group select:disabled { background:#f8f9fa; color:#555; }
+        .schedule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:16px; margin-top:20px; }
+        .schedule-card { border:1px solid #cbd5e1; border-radius:8px; padding:14px; background:#f8fafc; }
+        .schedule-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #e2e8f0; }
+        .schedule-card-header h3 { margin:0; font-size:14px; text-transform:uppercase; }
+        .slot-row-lec { display:grid; grid-template-columns:76px 1fr 1fr 1.2fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-label-lec { display:grid; grid-template-columns:76px 1fr 1fr 1.2fr 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
+        .slot-row-cap { display:grid; grid-template-columns:74px 1fr 1fr 1fr 74px auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-label-cap { display:grid; grid-template-columns:74px 1fr 1fr 1fr 74px 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
+        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input { width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
+        .requests-panel { background:#fff8e6; border:2px solid #f39c12; border-radius:8px; padding:16px 20px; margin-bottom:20px; display:none; }
+        .requests-panel h3 { margin:0 0 10px 0; font-size:15px; color:#9c640c; }
+        .req-table { width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; }
+        .req-table th, .req-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; }
+        .req-table th { background:#fef3c7; color:#92400e; }
+        .dropbox-container { margin-top:18px; }
+        .file-dropzone { border:2px dashed #007BFF; background:#eef6ff; border-radius:8px; padding:16px; text-align:center; cursor:pointer; font-size:14px; color:#0056b3; transition:all 0.2s; outline:none; }
+        .file-dropzone.dragover { background:#d0e7ff; border-color:#004085; }
+        .file-dropzone.staged { border-color:#28A745; background:#eafaf1; color:#155724; }
+        .file-dropzone.disabled-zone { border-color:#cbd5e1; background:#f8fafc; color:#94a3b8; cursor:not-allowed; }
+        .enter-hint-badge { display:inline-block; margin-top:8px; padding:5px 14px; background:#28A745; color:#fff; border-radius:4px; font-size:12px; font-weight:bold; }
+        .tables-nav { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        .sheet-wrapper { background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); padding:20px; overflow-x:auto; margin-bottom:28px; border-top:4px solid var(--dark); }
+        .sheet-wrapper.lec-sheet { border-top-color:var(--lec-color); } .sheet-wrapper.lab-sheet { border-top-color:var(--lab-color); } .sheet-wrapper.tut-sheet { border-top-color:var(--tut-color); }
+        .sheet-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+        .sheet-title-badge { font-size:15px; font-weight:bold; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .rule-pill { font-size:12px; padding:4px 10px; border-radius:12px; background:#f1f5f9; color:#334155; font-weight:normal; }
+        .schedule-summary-bar { font-size:12px; color:#475569; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:12px; }
+        .sync-badge { font-size:13px; padding:5px 12px; border-radius:20px; background:#eef2f7; color:#333; font-weight:bold; }
+        table.spreadsheet { width:100%; border-collapse:collapse; font-size:12.5px; min-width:900px; }
+        table.spreadsheet th, table.spreadsheet td { border:1px solid #cbd5e1; padding:0; text-align:left; }
+        table.spreadsheet th { background:#f1f5f9; color:#1e293b; font-weight:bold; padding:8px 6px; text-align:center; white-space:nowrap; }
+        table.spreadsheet td.row-num { background:#f8fafc; text-align:center; font-weight:bold; color:#64748b; width:34px; padding:6px; }
+        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select { width:100%; border:none; padding:7px 6px; font-size:12.5px; box-sizing:border-box; background:transparent; }
+        table.spreadsheet select.att-select { width:100%; border:none; padding:7px 2px; font-size:12px; font-weight:bold; text-align:center; background:transparent; cursor:pointer; }
+        .lec-week-box { display:flex; align-items:center; justify-content:center; gap:3px; padding:3px 4px; }
+        .lec-sub-select { border:1px solid #cbd5e1; border-radius:3px; font-size:11px; font-weight:bold; padding:3px 2px; cursor:pointer; background:#fff; }
+        .wk-status-chip { font-size:10px; font-weight:bold; padding:2px 4px; border-radius:3px; white-space:nowrap; }
+        .chip-full { background:#dcfce7; color:#166534; } .chip-partial { background:#fef9c3; color:#854d0e; } .chip-none { background:#fee2e2; color:#991b1b; }
+        .att-P { background-color:#d4edda !important; color:#155724 !important; }
+        .att-A { background-color:#f8d7da !important; color:#721c24 !important; }
+        .att-L { background-color:#fdebd0 !important; color:#9c640c !important; }
+        .att-REQ { background-color:#e0f2fe !important; color:#0369a1 !important; }
+        .summary-cell { text-align:center !important; font-weight:bold; padding:7px !important; background:#f8fafc; white-space:nowrap; }
     </style>
 </head>
 <body>
@@ -200,7 +151,7 @@
                         <option value="">-- Select Course Unit First --</option>
                     </select>
 
-                    <!-- Shown if Student selects a Lab/Tutorial different from their designated session -->
+                    <!-- Shown when Student selects a Lab/Tutorial different from their designated session -->
                     <div id="mismatchReasonContainer" style="display:none; background:#fff8e6; border:1px solid #f39c12; padding:10px; border-radius:6px; margin-bottom:12px;">
                         <label style="color:#9c640c;">Reason for Attending Non-Designated Session (Required for Staff Approval)</label>
                         <textarea id="attReasonInput" rows="3" placeholder="Explain why you are attending this alternative Lab/Tutorial session..."></textarea>
@@ -247,9 +198,7 @@
         </div>
     </div>
 
-    <!-- ====================================================================== -->
     <!-- STUDENT CHECK ATTENDANCE DASHBOARD (Shows ONLY Logged-In Student Data) -->
-    <!-- ====================================================================== -->
     <div id="studentDashboard">
         <div class="topbar">
             <div>
@@ -278,7 +227,7 @@
                 <div>
                     <strong style="font-size:15px; color:var(--dark);">My Designated Lab & Tutorial Sessions</strong>
                     <div style="font-size:12px; color:#555; margin-top:2px;">
-                        Students may edit their Lab and Tutorial sessions during <strong>Weeks 1 & 2</strong> (subject to room capacity). Locked from Week 3 onwards (only Staff can change).
+                        Students may edit their Lab and Tutorial sessions during <strong>Weeks 1 & 2</strong> (subject to room capacity). Closed after Week 2 (only Staff can change).
                     </div>
                 </div>
                 <span class="week-window-badge window-open" id="stuWeekWindowBadge">Checking Semester Week...</span>
@@ -355,9 +304,7 @@
         </div>
     </div>
 
-    <!-- ====================================================================== -->
-    <!-- STAFF COURSE UNIT & 3-TABLE ATTENDANCE DASHBOARD                       -->
-    <!-- ====================================================================== -->
+    <!-- STAFF COURSE UNIT & 3-TABLE ATTENDANCE DASHBOARD -->
     <div id="staffDashboard">
         <div class="topbar">
             <div>
@@ -1032,7 +979,7 @@
             const tutCounts = (course.sessionCounts && course.sessionCounts.tutCounts) ? course.sessionCounts.tutCounts : {};
 
             const labSel = document.getElementById('stuPickLabSelect');
-            labSel.innerHTML = "";
+            labSel.innerHTML = `<option value="-1">-- Select Designated Lab Session --</option>`;
             labSlots.forEach((s, idx) => {
                 const maxCap = Number(s.capacity || 25);
                 const enrolled = Number(labCounts[idx] || 0);
@@ -1048,7 +995,7 @@
             });
 
             const tutSel = document.getElementById('stuPickTutSelect');
-            tutSel.innerHTML = "";
+            tutSel.innerHTML = `<option value="-1">-- Select Designated Tutorial Session --</option>`;
             tutSlots.forEach((s, idx) => {
                 const maxCap = Number(s.capacity || 25);
                 const enrolled = Number(tutCounts[idx] || 0);
@@ -1077,6 +1024,12 @@
             const tutIdx = parseInt(document.getElementById('stuPickTutSelect').value, 10);
             const statusMsg = document.getElementById('stuPickStatusMsg');
             const btn = document.getElementById('stuSaveSessionsBtn');
+
+            if (labIdx < 0 || tutIdx < 0) {
+                statusMsg.className = 'status-msg status-error';
+                statusMsg.innerText = 'Please select both a Lab session and a Tutorial session.';
+                return;
+            }
 
             const now = new Date();
             const pad = n => String(n).padStart(2, '0');
@@ -1129,12 +1082,15 @@
             const myLabIdx = st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0;
             const myTutIdx = st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0;
 
+            const desLabLabel = st.assignedLabIdx >= 0 ? formatSlotSummary(labSlots[myLabIdx], 'Lab', myLabIdx) : 'Not Selected Yet (Pick Above)';
+            const desTutLabel = st.assignedTutIdx >= 0 ? formatSlotSummary(tutSlots[myTutIdx], 'Tut', myTutIdx) : 'Not Selected Yet (Pick Above)';
+
             document.getElementById('stuLectureScheduleSummary').innerHTML =
                 `<strong>Scheduled Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))}`;
             document.getElementById('stuLabScheduleSummary').innerHTML =
-                `<strong>My Designated Lab:</strong> ${escapeHtml(formatSlotSummary(labSlots[myLabIdx] || labSlots[0], 'Lab', myLabIdx))}`;
+                `<strong>My Designated Lab:</strong> ${escapeHtml(desLabLabel)}`;
             document.getElementById('stuTutorialScheduleSummary').innerHTML =
-                `<strong>My Designated Tutorial:</strong> ${escapeHtml(formatSlotSummary(tutSlots[myTutIdx] || tutSlots[0], 'Tut', myTutIdx))}`;
+                `<strong>My Designated Tutorial:</strong> ${escapeHtml(desTutLabel)}`;
 
             // 1. Student Lecture Table
             let lecHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th>`;
@@ -1186,7 +1142,7 @@
             document.getElementById('stuLabBody').innerHTML = `<tr>
                 <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
                 <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuLabSlot, 'Lab', myLabIdx))}</td>
+                <td class="summary-cell">${escapeHtml(desLabLabel)}</td>
                 ${labCells}<td class="summary-cell">${labPresent} / ${labTotal || weeks.length}</td><td class="summary-cell">${labPct}</td>
             </tr>`;
 
@@ -1209,7 +1165,7 @@
             document.getElementById('stuTutorialBody').innerHTML = `<tr>
                 <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
                 <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuTutSlot, 'Tut', myTutIdx))}</td>
+                <td class="summary-cell">${escapeHtml(desTutLabel)}</td>
                 ${tutCells}<td class="summary-cell">${tutPresent} / ${tutTotal || weeks.length}</td><td class="summary-cell">${tutPct}</td>
             </tr>`;
 
@@ -1243,7 +1199,7 @@
         function createEmptyStudent(courseCode) {
             return {
                 studentId: "", lastName: "", firstName: "", course: courseCode || "", mode: "F",
-                assignedLabIdx: 0, assignedTutIdx: 0,
+                assignedLabIdx: -1, assignedTutIdx: -1,
                 lectureAttendance: {}, labAttendance: {}, tutorialAttendance: {}, hasLoggedIn: false
             };
         }
@@ -1310,8 +1266,8 @@
                 firstName: st.firstName || "",
                 course: st.course !== undefined ? st.course : (st.idUnit || c.courseCode || ""),
                 mode: st.mode || "F",
-                assignedLabIdx: st.assignedLabIdx !== undefined ? Number(st.assignedLabIdx) : 0,
-                assignedTutIdx: st.assignedTutIdx !== undefined ? Number(st.assignedTutIdx) : 0,
+                assignedLabIdx: st.assignedLabIdx !== undefined && st.assignedLabIdx !== null ? Number(st.assignedLabIdx) : -1,
+                assignedTutIdx: st.assignedTutIdx !== undefined && st.assignedTutIdx !== null ? Number(st.assignedTutIdx) : -1,
                 lectureAttendance: st.lectureAttendance || st.attendance || {},
                 labAttendance: st.labAttendance || {},
                 tutorialAttendance: st.tutorialAttendance || {},
@@ -1520,8 +1476,8 @@
                 return {
                     studentId: st.studentId, lastName: st.lastName, firstName: st.firstName,
                     course: st.course || currentCourse.courseCode || "", mode: st.mode || "F",
-                    assignedLabIdx: prev.assignedLabIdx !== undefined ? prev.assignedLabIdx : 0,
-                    assignedTutIdx: prev.assignedTutIdx !== undefined ? prev.assignedTutIdx : 0,
+                    assignedLabIdx: prev.assignedLabIdx !== undefined ? prev.assignedLabIdx : -1,
+                    assignedTutIdx: prev.assignedTutIdx !== undefined ? prev.assignedTutIdx : -1,
                     lectureAttendance: prev.lectureAttendance || {},
                     labAttendance: prev.labAttendance || {},
                     tutorialAttendance: prev.tutorialAttendance || {},
@@ -1793,8 +1749,9 @@
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
                 let pres = 0, mark = 0, cells = "";
-                const labOpts = labSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedLabIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))} [${getEnrolledCountForStream('labs', sIdx)}/${s.capacity || 25}]</option>`).join("");
-                const slot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
+                const labOpts = `<option value="-1" ${Number(st.assignedLabIdx) < 0 ? "selected" : ""}>-- Unassigned --</option>` +
+                    labSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedLabIdx) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))} [${getEnrolledCountForStream('labs', sIdx)}/${s.capacity || 25}]</option>`).join("");
+                const slot = labSlots[st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0] || labSlots[0];
 
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
@@ -1812,7 +1769,6 @@
                     </td>`;
                 });
                 const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
-                // Staff can always change student's designated Lab in Edit Mode (or anytime)
                 tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
                     <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">${labOpts}</select></td>
                     ${cells}<td class="summary-cell">${pres}/${mark || weeks.length}</td><td class="summary-cell">${pct}</td>`;
@@ -1834,8 +1790,9 @@
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
                 let pres = 0, mark = 0, cells = "";
-                const tutOpts = tutSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedTutIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))} [${getEnrolledCountForStream('tutorials', sIdx)}/${s.capacity || 25}]</option>`).join("");
-                const slot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
+                const tutOpts = `<option value="-1" ${Number(st.assignedTutIdx) < 0 ? "selected" : ""}>-- Unassigned --</option>` +
+                    tutSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedTutIdx) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))} [${getEnrolledCountForStream('tutorials', sIdx)}/${s.capacity || 25}]</option>`).join("");
+                const slot = tutSlots[st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0] || tutSlots[0];
 
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
@@ -1865,7 +1822,8 @@
         function computeOverallStudentPercentage(st, numWeeks, numLecs) {
             let pres = 0, mark = 0;
             const lecSlots = currentCourse.schedules.lectures || [], labSlots = currentCourse.schedules.labs || [], tutSlots = currentCourse.schedules.tutorials || [];
-            const labSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0], tutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
+            const labSlot = labSlots[st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0] || labSlots[0];
+            const tutSlot = tutSlots[st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0] || tutSlots[0];
             for (let w = 0; w < numWeeks; w++) {
                 for (let l = 0; l < numLecs; l++) {
                     const v = getEffectiveSessionStatus(st.lectureAttendance ? st.lectureAttendance[`W${w + 1}_L${l + 1}`] : "", currentCourse.semStart, w, lecSlots[l], st.hasLoggedIn);
@@ -1944,8 +1902,9 @@
             const labRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Lab", ...weeks, "Lab %"]];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
-                const slot = labSlots[st.assignedLabIdx || 0] || {};
-                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(slot, 'Lab', st.assignedLabIdx || 0)];
+                const slot = labSlots[st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0] || {};
+                const desLabel = st.assignedLabIdx >= 0 ? formatSlotSummary(slot, 'Lab', st.assignedLabIdx) : 'Unassigned';
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, desLabel];
                 weeks.forEach((_, wIdx) => {
                     const v = getEffectiveSessionStatus(st.labAttendance[`W${wIdx + 1}`] || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
                     row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
@@ -1958,8 +1917,9 @@
             const tutRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Tutorial", ...weeks, "Tutorial %", "Overall %"]];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
-                const slot = tutSlots[st.assignedTutIdx || 0] || {};
-                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(slot, 'Tut', st.assignedTutIdx || 0)];
+                const slot = tutSlots[st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0] || {};
+                const desLabel = st.assignedTutIdx >= 0 ? formatSlotSummary(slot, 'Tut', st.assignedTutIdx) : 'Unassigned';
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, desLabel];
                 weeks.forEach((_, wIdx) => {
                     const v = getEffectiveSessionStatus(st.tutorialAttendance[`W${wIdx + 1}`] || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
                     row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
