@@ -87,6 +87,10 @@
             cursor: pointer;
             font-weight: bold;
         }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
         .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: var(--primary); cursor: pointer; }
         .back-link { font-size: 12px; color: #666; cursor: pointer; margin-top: 10px; display: block; text-align: center; }
         .status-msg { display: none; font-size: 13px; margin-top: 12px; padding: 8px; border-radius: 4px; text-align: center; }
@@ -382,7 +386,6 @@
             background: transparent;
             cursor: pointer;
         }
-        /* Multi-lecture per week cell container */
         .lec-week-box {
             display: flex;
             align-items: center;
@@ -434,29 +437,29 @@
                 <h2>Welcome</h2>
                 <p>Please select your user category to proceed:</p>
                 <div class="btn-group">
-                    <button class="btn btn-staff" onclick="selectUserType('Staff')">Staff</button>
-                    <button class="btn btn-student" onclick="selectUserType('Student')">Student</button>
+                    <button type="button" class="btn btn-staff" onclick="selectUserType('Staff')">Staff</button>
+                    <button type="button" class="btn btn-student" onclick="selectUserType('Student')">Student</button>
                 </div>
             </div>
 
-            <!-- Step 2: Register / Login Form -->
+            <!-- Step 2: Register / Login Form (novalidate prevents hidden inputs from blocking submit) -->
             <div id="formStep" class="form-container">
                 <h2 id="formTitle">Register</h2>
-                <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <form id="authForm" novalidate onsubmit="handleAuthSubmit(event)">
                     
                     <div id="registerOnlyFields">
                         <label>Full Name</label>
-                        <input type="text" id="fullName" placeholder="Enter full name">
+                        <input type="text" id="fullName" placeholder="Enter full name" autocomplete="name">
 
                         <label>Email Address</label>
-                        <input type="email" id="email" placeholder="Enter email address">
+                        <input type="email" id="email" placeholder="Enter email address" autocomplete="email">
                     </div>
 
                     <label id="idLabel">Staff / Student ID Number</label>
-                    <input type="text" id="idNumber" required placeholder="Enter ID number">
+                    <input type="text" id="idNumber" placeholder="Enter ID number" autocomplete="username">
 
                     <label>Password</label>
-                    <input type="password" id="password" required placeholder="Enter password">
+                    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
 
                     <button type="submit" class="submit-btn" id="submitBtnText">Register</button>
                     <div class="status-msg" id="statusBox"></div>
@@ -478,27 +481,28 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <span class="sync-badge" id="syncIndicator">Ready</span>
-                <button class="btn btn-danger" onclick="logoutStaff()">Logout</button>
+                <button type="button" class="btn btn-danger" onclick="logoutStaff()">Logout</button>
             </div>
         </div>
 
         <!-- Course Configuration, Session Schedules & Classlist Dropbox -->
         <div class="course-panel">
             <div class="panel-header">
-                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <strong>Select Saved Course:</strong>
                     <select id="courseSelector" onchange="loadSelectedCourse()" style="padding:8px; border-radius:4px; border:1px solid #ccc; min-width:220px;">
                         <option value="">-- Create / Select Course Unit --</option>
                     </select>
-                    <button class="btn btn-staff" onclick="startNewCourse()">+ New Course Unit</button>
+                    <button type="button" class="btn btn-staff" onclick="startNewCourse()">+ New Course Unit</button>
+                    <button type="button" class="btn btn-danger" id="deleteCourseBtn" onclick="deleteCurrentCourse()">Delete Course Unit</button>
                 </div>
 
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                     <label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;">
                         <input type="checkbox" id="autoSaveToggle" checked> Auto-save on edit
                     </label>
-                    <button class="btn btn-warning" id="editModeBtn" onclick="toggleEditMode()">Enable Edit Mode</button>
-                    <button class="btn btn-student" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Google Sheet</button>
+                    <button type="button" class="btn btn-warning" id="editModeBtn" onclick="toggleEditMode()">Enable Edit Mode</button>
+                    <button type="button" class="btn btn-student" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Google Sheet</button>
                 </div>
             </div>
 
@@ -573,24 +577,19 @@
                     <input type="file" id="classlistFileInput" accept=".csv,.xls,.xlsx" style="display:none" onchange="handleClasslistFileSelect(event)">
                 </div>
             </div>
-
-            <div id="externalSheetLinkBox" style="margin-top:12px; font-size:13px; display:none;">
-                Dedicated Course Attendance Spreadsheet (with Lecture, Lab & Tutorial Tabs):
-                <a id="externalSheetLink" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">Open Course Attendance Sheet ↗</a>
-            </div>
         </div>
 
         <!-- Toolbar to Manage Roster & Jump Between the 3 Tables -->
         <div class="tables-nav">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <strong>Jump to Table:</strong>
-                <button class="btn btn-lec" onclick="document.getElementById('lectureSection').scrollIntoView({behavior:'smooth'})">1. Lecture Attendance Table</button>
-                <button class="btn btn-lab" onclick="document.getElementById('labSection').scrollIntoView({behavior:'smooth'})">2. Lab Attendance Table</button>
-                <button class="btn btn-tut" onclick="document.getElementById('tutorialSection').scrollIntoView({behavior:'smooth'})">3. Tutorial Attendance Table</button>
+                <button type="button" class="btn btn-lec" onclick="document.getElementById('lectureSection').scrollIntoView({behavior:'smooth'})">1. Lecture Attendance Table</button>
+                <button type="button" class="btn btn-lab" onclick="document.getElementById('labSection').scrollIntoView({behavior:'smooth'})">2. Lab Attendance Table</button>
+                <button type="button" class="btn btn-tut" onclick="document.getElementById('tutorialSection').scrollIntoView({behavior:'smooth'})">3. Tutorial Attendance Table</button>
             </div>
             <div style="display:flex; gap:8px;">
-                <button class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Manual Student Row</button>
-                <button class="btn btn-danger" id="clearRowsBtn" onclick="clearAllRows()">Clear Roster</button>
+                <button type="button" class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Manual Student Row</button>
+                <button type="button" class="btn btn-danger" id="clearRowsBtn" onclick="clearAllRows()">Clear Roster</button>
             </div>
         </div>
 
@@ -667,7 +666,6 @@
                 courseTitle: "",
                 semStart: today,
                 semEnd: future,
-                sheetUrl: "",
                 schedules: {
                     lectures: [
                         { day: "Mon", startTime: "09:00", endTime: "10:00", room: "" },
@@ -696,9 +694,9 @@
                 mode: "F",
                 assignedLabIdx: 0,
                 assignedTutIdx: 0,
-                lectureAttendance: {}, // e.g. { "W1_L1": "P", "W1_L2": "P" }
-                labAttendance: {},     // e.g. { "W1": "P" } (1 Lab per week)
-                tutorialAttendance: {} // e.g. { "W1": "P" } (1 Tutorial per week)
+                lectureAttendance: {},
+                labAttendance: {},
+                tutorialAttendance: {}
             };
         }
 
@@ -904,7 +902,6 @@
                 document.getElementById('courseCode').value = detectedCourse;
             }
 
-            // Preserve any existing attendance records by Student ID
             const existingMap = {};
             currentCourse.students.forEach(st => {
                 if (st.studentId) {
@@ -943,13 +940,14 @@
             saveCourseAndAttendance(false);
         }
 
-        /* ================= AUTHENTICATION LOGIC ================= */
+        /* ================= AUTHENTICATION LOGIC (FIXED) ================= */
 
         function selectUserType(type) {
             selectedUserType = type;
             document.getElementById('selectionStep').style.display = 'none';
             document.getElementById('formStep').style.display = 'block';
             isLoginMode = false;
+            hideStatus();
             updateFormView();
         }
 
@@ -973,9 +971,18 @@
             document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login with ID & Password' : 'Register';
             document.getElementById('idLabel').innerText = `${selectedUserType} ID Number`;
 
-            document.getElementById('registerOnlyFields').style.display = isLoginMode ? 'none' : 'block';
-            document.getElementById('fullName').required = !isLoginMode;
-            document.getElementById('email').required = !isLoginMode;
+            const regFields = document.getElementById('registerOnlyFields');
+            const fullNameInput = document.getElementById('fullName');
+            const emailInput = document.getElementById('email');
+
+            regFields.style.display = isLoginMode ? 'none' : 'block';
+            // Disable and clear hidden fields in Login mode so browser validation never blocks form submit
+            fullNameInput.disabled = isLoginMode;
+            emailInput.disabled = isLoginMode;
+            if (isLoginMode) {
+                fullNameInput.value = "";
+                emailInput.value = "";
+            }
 
             document.getElementById('toggleText').innerText = isLoginMode
                 ? "First time user? Register here"
@@ -1001,6 +1008,23 @@
             const password = document.getElementById('password').value;
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
+            const submitBtn = document.getElementById('submitBtnText');
+
+            // Explicit JavaScript validation
+            if (!idNumber || !password) {
+                showStatus("Please enter both your ID Number and Password.", "status-error");
+                return;
+            }
+            if (!isLoginMode) {
+                if (!fullName) {
+                    showStatus("Please enter your Full Name to register.", "status-error");
+                    return;
+                }
+                if (!email || !email.includes("@")) {
+                    showStatus("Please enter a valid Email Address to register.", "status-error");
+                    return;
+                }
+            }
 
             const payload = {
                 action: isLoginMode ? "login" : "register",
@@ -1011,19 +1035,29 @@
                 email: email
             };
 
-            showStatus("Communicating with Google Sheets...", "status-loading");
+            submitBtn.disabled = true;
+            showStatus(isLoginMode ? "Verifying ID & Password..." : "Saving registration...", "status-loading");
 
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    redirect: 'follow',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
-                const result = await response.json();
+                const rawText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(rawText);
+                } catch (parseErr) {
+                    showStatus("Apps Script returned an invalid response. Please re-deploy your Web App as a New Version with 'Anyone' access.", "status-error");
+                    console.error("Raw response from Apps Script:", rawText);
+                    return;
+                }
 
                 if (!result.success) {
-                    showStatus(result.message || "Authentication failed. Please check your credentials.", "status-error");
+                    showStatus(result.message || "Invalid ID Number or Password.", "status-error");
                     return;
                 }
 
@@ -1045,12 +1079,14 @@
                     }
                 }
             } catch (error) {
-                showStatus("Connection error: Make sure your Google Apps Script Web App is deployed with 'Anyone' access.", "status-error");
+                showStatus("Network error connecting to Google Sheets. Check your SCRIPT_URL and internet connection.", "status-error");
                 console.error(error);
+            } finally {
+                submitBtn.disabled = false;
             }
         }
 
-        /* ================= STAFF DASHBOARD & SCHEDULE MANAGEMENT ================= */
+        /* ================= STAFF DASHBOARD & COURSE DELETION ================= */
 
         function openStaffDashboard() {
             document.getElementById('portalModal').style.display = 'none';
@@ -1093,6 +1129,65 @@
             document.getElementById('courseSelector').value = "";
             currentCourse = createDefaultCourseObject();
             renderCourseToUI();
+        }
+
+        // Delete Course Unit & Any Related Spreadsheets in Google Drive / Master Sheet
+        async function deleteCurrentCourse() {
+            if (!isEditMode) {
+                alert("Please click 'Enable Edit Mode' first before deleting a course.");
+                return;
+            }
+
+            const code = (currentCourse.courseCode || document.getElementById('courseCode').value).trim().toUpperCase();
+            if (!code) {
+                alert("No Course Unit Code is currently selected to delete.");
+                return;
+            }
+
+            const confirmed = confirm(
+                `Are you sure you want to permanently DELETE course "${code}"?\n\nThis will delete its record, its sheet tab in the main Google Spreadsheet, and move its dedicated Course Attendance Spreadsheet to the Trash.`
+            );
+            if (!confirmed) return;
+
+            const indicator = document.getElementById('syncIndicator');
+            indicator.innerText = `Deleting ${code}...`;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: "deleteCourse",
+                        courseCode: code,
+                        staffId: loggedInStaff ? loggedInStaff.idNumber : ""
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    delete coursesStore[code];
+                    populateCourseDropdown();
+
+                    const remainingCodes = Object.keys(coursesStore);
+                    if (remainingCodes.length > 0) {
+                        document.getElementById('courseSelector').value = remainingCodes[0];
+                        loadSelectedCourse();
+                    } else {
+                        startNewCourse();
+                    }
+
+                    indicator.innerText = `Deleted ${code}`;
+                    alert(`Course "${code}" and its related spreadsheets have been deleted.`);
+                } else {
+                    indicator.innerText = "Delete failed";
+                    alert("Could not delete course: " + (result.message || "Unknown error"));
+                }
+            } catch (err) {
+                indicator.innerText = "Delete error";
+                console.error(err);
+                alert("Network error while trying to delete course.");
+            }
         }
 
         function normalizeCourseStructure(raw) {
@@ -1162,6 +1257,7 @@
             document.getElementById('addLecSlotBtn').disabled = !isEditMode;
             document.getElementById('addLabSlotBtn').disabled = !isEditMode;
             document.getElementById('addTutSlotBtn').disabled = !isEditMode;
+            document.getElementById('deleteCourseBtn').disabled = !isEditMode;
 
             const dz = document.getElementById('classlistDropzone');
             if (isEditMode) {
@@ -1310,15 +1406,6 @@
             document.getElementById('semStart').value = currentCourse.semStart || "";
             document.getElementById('semEnd').value = currentCourse.semEnd || "";
 
-            const linkBox = document.getElementById('externalSheetLinkBox');
-            const linkEl = document.getElementById('externalSheetLink');
-            if (currentCourse.sheetUrl) {
-                linkBox.style.display = 'block';
-                linkEl.href = currentCourse.sheetUrl;
-            } else {
-                linkBox.style.display = 'none';
-            }
-
             renderScheduleCards();
             renderAllThreeTables();
         }
@@ -1364,7 +1451,7 @@
             `;
         }
 
-        // TABLE 1: LECTURE TABLE (Requires attending ALL lectures in a week)
+        // TABLE 1: LECTURE TABLE
         function renderLectureTable() {
             const thead = document.getElementById('lectureTableHead');
             const tbody = document.getElementById('lectureTableBody');
@@ -1414,7 +1501,6 @@
                     let selectsHTML = "";
                     for (let lIdx = 0; lIdx < numLecs; lIdx++) {
                         const key = `W${wIdx + 1}_L${lIdx + 1}`;
-                        // Backward compatibility if W1 was stored directly
                         const fallbackVal = lIdx === 0 ? (st.lectureAttendance[`W${wIdx + 1}`] || "") : "";
                         const val = st.lectureAttendance[key] !== undefined ? st.lectureAttendance[key] : fallbackVal;
 
@@ -1467,13 +1553,13 @@
                     <td class="summary-cell">${totalLecAttended} / ${totalLecMarked || (weeks.length * numLecs)}</td>
                     <td class="summary-cell">${fullWeeksAttended} / ${weeksMarkedCount || weeks.length} Wks</td>
                     <td class="summary-cell">${lecPct}</td>
-                    ${isEditMode ? `<td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
+                    ${isEditMode ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // TABLE 2: LAB TABLE (Requires attending 1 Lab per week)
+        // TABLE 2: LAB TABLE
         function renderLabTable() {
             const thead = document.getElementById('labTableHead');
             const tbody = document.getElementById('labTableBody');
@@ -1547,7 +1633,7 @@
             });
         }
 
-        // TABLE 3: TUTORIAL TABLE (Requires attending 1 Tutorial per week)
+        // TABLE 3: TUTORIAL TABLE
         function renderTutorialTable() {
             const thead = document.getElementById('tutorialTableHead');
             const tbody = document.getElementById('tutorialTableBody');
@@ -1625,23 +1711,19 @@
             });
         }
 
-        // Calculates combined percentage based on: All Lectures + 1 Lab + 1 Tutorial each week
         function computeOverallStudentPercentage(st, numWeeks, numLecs) {
             let attended = 0;
             let marked = 0;
             for (let w = 1; w <= numWeeks; w++) {
-                // All Lectures in week w
                 for (let l = 1; l <= numLecs; l++) {
                     const v = st.lectureAttendance ? st.lectureAttendance[`W${w}_L${l}`] : "";
                     if (v === "P" || v === "L" || v === "E") { attended++; marked++; }
                     else if (v === "A") { marked++; }
                 }
-                // 1 Lab in week w
                 const labV = st.labAttendance ? st.labAttendance[`W${w}`] : "";
                 if (labV === "P" || labV === "L" || labV === "E") { attended++; marked++; }
                 else if (labV === "A") { marked++; }
 
-                // 1 Tutorial in week w
                 const tutV = st.tutorialAttendance ? st.tutorialAttendance[`W${w}`] : "";
                 if (tutV === "P" || tutV === "L" || tutV === "E") { attended++; marked++; }
                 else if (tutV === "A") { marked++; }
@@ -1653,7 +1735,7 @@
 
         function updateStudentField(rowIndex, field, value) {
             currentCourse.students[rowIndex][field] = value;
-            renderAllThreeTables(); // Keep all 3 tables in sync
+            renderAllThreeTables();
             queueAutoSave();
         }
 
@@ -1728,6 +1810,7 @@
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    redirect: 'follow',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
                         action: "saveCourseAndAttendance",
@@ -1738,9 +1821,6 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    if (result.sheetUrl) {
-                        currentCourse.sheetUrl = result.sheetUrl;
-                    }
                     coursesStore[currentCourse.courseCode] = JSON.parse(JSON.stringify(currentCourse));
                     populateCourseDropdown();
                     document.getElementById('courseSelector').value = currentCourse.courseCode;
