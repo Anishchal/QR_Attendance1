@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal - Staff & Student Login / Course Attendance (Supabase)</title>
+    <title>Portal - Staff & Student Login / Course Attendance</title>
     <!-- Supabase JS v2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- SheetJS for reading Classlist (.csv/.xls/.xlsx) & exporting Attendance Workbooks -->
@@ -41,7 +41,7 @@
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            width: 360px;
+            width: 380px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             text-align: center;
         }
@@ -89,16 +89,24 @@
             cursor: pointer;
             font-weight: bold;
         }
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
+        .submit-btn:disabled { opacity: 0.6; cursor: wait; }
         .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: var(--primary); cursor: pointer; }
         .back-link { font-size: 12px; color: #666; cursor: pointer; margin-top: 10px; display: block; text-align: center; }
         .status-msg { display: none; font-size: 13px; margin-top: 12px; padding: 8px; border-radius: 4px; text-align: center; }
         .status-loading { display: block; background: #e7f3ff; color: #0056b3; }
         .status-error { display: block; background: #fdecea; color: #b71c1c; }
         .status-success { display: block; background: #eafaf1; color: #1e8449; }
+
+        .conn-badge {
+            display: inline-block;
+            margin-top: 16px;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .conn-ok { background: #eafaf1; color: #1e8449; border: 1px solid #a3e4d7; }
+        .conn-missing { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 
         /* Staff Course & Attendance Dashboard */
         #staffDashboard {
@@ -165,7 +173,7 @@
             color: #555;
         }
 
-        /* Schedule Configuration Grid (Lecture / Lab / Tutorial) */
+        /* Schedule Configuration Grid */
         .schedule-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
@@ -222,9 +230,7 @@
         }
 
         /* Classlist Dropbox Styling */
-        .dropbox-container {
-            margin-top: 18px;
-        }
+        .dropbox-container { margin-top: 18px; }
         .file-dropzone {
             border: 2px dashed #007BFF;
             background: #eef6ff;
@@ -241,15 +247,8 @@
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.35);
             border-color: #004085;
         }
-        .file-dropzone.dragover {
-            background: #d0e7ff;
-            border-color: #004085;
-        }
-        .file-dropzone.staged {
-            border-color: #28A745;
-            background: #eafaf1;
-            color: #155724;
-        }
+        .file-dropzone.dragover { background: #d0e7ff; border-color: #004085; }
+        .file-dropzone.staged { border-color: #28A745; background: #eafaf1; color: #155724; }
         .file-dropzone.disabled-zone {
             border-color: #cbd5e1;
             background: #f8fafc;
@@ -267,7 +266,7 @@
             font-weight: bold;
         }
 
-        /* Quick Navigation Bar for the 3 Attendance Tables */
+        /* Quick Navigation Bar */
         .tables-nav {
             display: flex;
             justify-content: space-between;
@@ -430,7 +429,7 @@
 </head>
 <body>
 
-    <!-- AUTHENTICATION MODAL -->
+    <!-- AUTHENTICATION & CONNECTION SETUP MODAL -->
     <div class="modal-overlay" id="portalModal">
         <div class="modal-box">
             
@@ -442,6 +441,30 @@
                     <button type="button" class="btn btn-staff" onclick="selectUserType('Staff')">Staff</button>
                     <button type="button" class="btn btn-student" onclick="selectUserType('Student')">Student</button>
                 </div>
+                <div>
+                    <span id="connStatusBadge" class="conn-badge conn-missing" onclick="openConfigStep()">
+                        ⚙️ Configure Database Connection
+                    </span>
+                </div>
+            </div>
+
+            <!-- Step 1B: One-Time Supabase Connection Setup (Keeps Keys Out of GitHub Repo) -->
+            <div id="configStep" class="form-container">
+                <h2>Database Setup</h2>
+                <p style="font-size:12px; color:#555; margin-top:0;">
+                    Stored locally in your browser so your API key is never exposed in your GitHub repository.
+                </p>
+                <label>Supabase Project URL</label>
+                <input type="url" id="cfgUrl" placeholder="https://xyzcompany.supabase.co">
+
+                <label>Supabase Anon Public Key</label>
+                <input type="password" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
+
+                <button type="button" class="submit-btn" onclick="saveDbConfig()">Save Connection</button>
+                <button type="button" class="btn btn-staff" style="width:100%; margin-top:8px;" onclick="copyShareableSetupLink()">
+                    Copy One-Click Setup Link for Staff
+                </button>
+                <span class="back-link" onclick="closeConfigStep()">« Back to Welcome</span>
             </div>
 
             <!-- Step 2: Register / Login Form -->
@@ -483,7 +506,7 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <span class="sync-badge" id="syncIndicator">Connected to Supabase</span>
-                <button type="button" class="btn btn-dark" onclick="exportCourseToExcel()" title="Download Excel workbook with Lecture, Lab & Tutorial tabs">Export Excel (.xlsx)</button>
+                <button type="button" class="btn btn-dark" onclick="exportCourseToExcel()">Export Excel (.xlsx)</button>
                 <button type="button" class="btn btn-danger" onclick="logoutStaff()">Logout</button>
             </div>
         </div>
@@ -529,7 +552,7 @@
                 </div>
             </div>
 
-            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS, TUTORIALS (START TIME, END TIME, ROOM NUMBER) -->
+            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS, TUTORIALS -->
             <div class="schedule-grid">
                 <!-- 1. Lectures Schedule Box -->
                 <div class="schedule-card">
@@ -645,20 +668,16 @@
 
     <script>
         // ============================================================================
-        // REPLACE THESE TWO VALUES WITH YOUR SUPABASE PROJECT URL & ANON PUBLIC KEY
-        // (Found in Supabase Dashboard -> Project Settings -> API)
+        // ZERO HARDCODED KEYS IN SOURCE CODE (Prevents GitHub Secret Scanner Warnings)
+        // Keys are read from Browser localStorage or URL #setup hash parameter.
         // ============================================================================
-        const SUPABASE_URL = "https://ecdqapbbbafamvehmoyp.supabase.co/rest/v1/";
-        const SUPABASE_ANON_KEY = "sb_secret_10nXnvvyFKtWRlO8SRk6vA_8CxBLsu1";
-
-        // Initialize Supabase Client
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        let sb = null;
         const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         let selectedUserType = "";
         let isLoginMode = false;
         let loggedInStaff = null;
+        let staffSessionPassword = ""; // Used to authenticate RPC calls securely
         let isEditMode = false;
         let autoSaveTimer = null;
 
@@ -667,6 +686,91 @@
 
         let coursesStore = {};
         let currentCourse = createDefaultCourseObject();
+
+        /* ================= INITIALIZE CONNECTION & DROPBOX ================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            checkUrlSetupParams();
+            initSupabaseFromStorage();
+            setupFileDropzone();
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode) {
+                    e.preventDefault();
+                    applyStagedClasslistAndSync();
+                }
+            });
+        });
+
+        function checkUrlSetupParams() {
+            if (window.location.hash && window.location.hash.startsWith("#setup=")) {
+                try {
+                    const encoded = window.location.hash.replace("#setup=", "");
+                    const decoded = JSON.parse(atob(encoded));
+                    if (decoded.u && decoded.k) {
+                        localStorage.setItem("portal_sb_url", decoded.u);
+                        localStorage.setItem("portal_sb_key", decoded.k);
+                        history.replaceState(null, "", window.location.pathname + window.location.search);
+                    }
+                } catch (e) {
+                    console.error("Invalid setup link:", e);
+                }
+            }
+        }
+
+        function initSupabaseFromStorage() {
+            const url = (localStorage.getItem("portal_sb_url") || "").trim();
+            const key = (localStorage.getItem("portal_sb_key") || "").trim();
+            const badge = document.getElementById("connStatusBadge");
+
+            if (url && key && url.startsWith("https://")) {
+                sb = window.supabase.createClient(url, key);
+                badge.className = "conn-badge conn-ok";
+                badge.innerText = "✓ Database Connected (Click to Update)";
+            } else {
+                sb = null;
+                badge.className = "conn-badge conn-missing";
+                badge.innerText = "⚠️ Click Here to Configure Database Key";
+            }
+        }
+
+        function openConfigStep() {
+            document.getElementById('selectionStep').style.display = 'none';
+            document.getElementById('configStep').style.display = 'block';
+            document.getElementById('cfgUrl').value = localStorage.getItem("portal_sb_url") || "";
+            document.getElementById('cfgKey').value = localStorage.getItem("portal_sb_key") || "";
+        }
+
+        function closeConfigStep() {
+            document.getElementById('configStep').style.display = 'none';
+            document.getElementById('selectionStep').style.display = 'block';
+        }
+
+        function saveDbConfig() {
+            const url = document.getElementById('cfgUrl').value.trim();
+            const key = document.getElementById('cfgKey').value.trim();
+            if (!url.startsWith("https://") || !key) {
+                alert("Please enter both a valid Supabase Project URL (https://...) and your Anon Public Key.");
+                return;
+            }
+            localStorage.setItem("portal_sb_url", url);
+            localStorage.setItem("portal_sb_key", key);
+            initSupabaseFromStorage();
+            closeConfigStep();
+        }
+
+        function copyShareableSetupLink() {
+            const url = document.getElementById('cfgUrl').value.trim();
+            const key = document.getElementById('cfgKey').value.trim();
+            if (!url.startsWith("https://") || !key) {
+                alert("Enter your Supabase URL and Anon Key first.");
+                return;
+            }
+            const token = btoa(JSON.stringify({ u: url, k: key }));
+            const fullLink = `${window.location.origin}${window.location.pathname}#setup=${token}`;
+            navigator.clipboard.writeText(fullLink).then(() => {
+                alert("One-Click Setup Link copied to clipboard! Bookmark it or send it to staff so their browser connects automatically.");
+            });
+        }
 
         function createDefaultCourseObject() {
             const today = new Date().toISOString().split('T')[0];
@@ -710,17 +814,7 @@
             };
         }
 
-        /* ================= INITIALIZE DROPBOX & ENTER KEY LISTENER ================= */
-        window.addEventListener('DOMContentLoaded', () => {
-            setupFileDropzone();
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode) {
-                    e.preventDefault();
-                    applyStagedClasslistAndSync();
-                }
-            });
-        });
+        /* ================= DROPBOX & CSV PARSER ================= */
 
         function triggerFileSelect() {
             if (!isEditMode) {
@@ -950,9 +1044,14 @@
             saveCourseAndAttendance(false);
         }
 
-        /* ================= SUPABASE AUTHENTICATION & ID LOGIN ================= */
+        /* ================= SUPABASE RPC AUTHENTICATION ================= */
 
         function selectUserType(type) {
+            if (!sb) {
+                alert("Please configure your Supabase Database URL and Anon Key first.");
+                openConfigStep();
+                return;
+            }
             selectedUserType = type;
             document.getElementById('selectionStep').style.display = 'none';
             document.getElementById('formStep').style.display = 'block';
@@ -1013,8 +1112,8 @@
         async function handleAuthSubmit(e) {
             e.preventDefault();
 
-            if (SUPABASE_URL.includes("YOUR_PROJECT_ID")) {
-                showStatus("Please set your SUPABASE_URL and SUPABASE_ANON_KEY in the HTML script first.", "status-error");
+            if (!sb) {
+                showStatus("Database connection not configured.", "status-error");
                 return;
             }
 
@@ -1040,30 +1139,16 @@
             }
 
             submitBtn.disabled = true;
-            showStatus(isLoginMode ? "Verifying ID & Password..." : "Registering account in Supabase...", "status-loading");
+            showStatus(isLoginMode ? "Verifying ID & Password..." : "Registering account...", "status-loading");
 
             try {
                 if (!isLoginMode) {
-                    // 1. Register in Supabase Auth (optional best-effort) + PostgreSQL portal_users (bcrypt hashed)
-                    let authUserId = null;
-                    try {
-                        const { data: authData } = await sb.auth.signUp({
-                            email: email,
-                            password: password,
-                            options: {
-                                data: { full_name: fullName, id_number: idNumber, user_type: selectedUserType }
-                            }
-                        });
-                        if (authData && authData.user) authUserId = authData.user.id;
-                    } catch (_) {}
-
                     const { data: rpcResult, error: rpcError } = await sb.rpc('register_portal_user', {
                         p_user_type: selectedUserType,
                         p_id_number: idNumber,
                         p_full_name: fullName,
                         p_email: email,
-                        p_password: password,
-                        p_auth_user_id: authUserId
+                        p_password: password
                     });
 
                     if (rpcError) {
@@ -1075,7 +1160,6 @@
                         return;
                     }
 
-                    // Redirect directly to Login Mode with ID pre-filled
                     isLoginMode = true;
                     updateFormView();
                     document.getElementById('idNumber').value = idNumber;
@@ -1083,7 +1167,6 @@
                     showStatus("Registration complete! Please enter your ID and Password to log in.", "status-success");
 
                 } else {
-                    // 2. Verify ID Number & Password via PostgreSQL bcrypt RPC
                     const { data: loginRes, error: loginErr } = await sb.rpc('verify_portal_login', {
                         p_user_type: selectedUserType,
                         p_id_number: idNumber,
@@ -1099,16 +1182,16 @@
                         return;
                     }
 
-                    // Also sign in to Supabase Auth session in the background if email confirmation is off
-                    if (loginRes.user && loginRes.user.email) {
-                        sb.auth.signInWithPassword({ email: loginRes.user.email, password: password }).catch(() => {});
-                    }
-
-                    showStatus("Login verified! Loading courses...", "status-success");
+                    showStatus("Login verified! Loading portal...", "status-success");
 
                     if (selectedUserType === "Staff") {
                         loggedInStaff = loginRes.user;
-                        await fetchAllCoursesFromSupabase();
+                        staffSessionPassword = password;
+                        coursesStore = {};
+                        const rawCourses = loginRes.courses || {};
+                        Object.keys(rawCourses).forEach(code => {
+                            coursesStore[code] = normalizeCourseStructure(rawCourses[code]);
+                        });
                         openStaffDashboard();
                     } else {
                         alert(`Welcome ${loginRes.user.fullName} (${loginRes.user.idNumber})! Student login verified.`);
@@ -1123,59 +1206,7 @@
             }
         }
 
-        /* ================= SUPABASE DATABASE CRUD OPERATIONS ================= */
-
-        async function fetchAllCoursesFromSupabase() {
-            coursesStore = {};
-            const { data: coursesData, error: cErr } = await sb
-                .from('courses')
-                .select('*')
-                .order('course_code', { ascending: true });
-
-            if (cErr || !coursesData) {
-                console.error("Error fetching courses:", cErr);
-                return;
-            }
-
-            const { data: enrollmentsData, error: eErr } = await sb
-                .from('course_enrollments')
-                .select('*')
-                .order('sort_order', { ascending: true });
-
-            if (eErr) {
-                console.error("Error fetching enrollments:", eErr);
-            }
-
-            const enrollmentsByCourse = {};
-            (enrollmentsData || []).forEach(row => {
-                const code = row.course_code;
-                if (!enrollmentsByCourse[code]) enrollmentsByCourse[code] = [];
-                enrollmentsByCourse[code].push({
-                    studentId: row.student_id || "",
-                    lastName: row.last_name || "",
-                    firstName: row.first_name || "",
-                    course: code,
-                    mode: row.mode || "F",
-                    assignedLabIdx: Number(row.assigned_lab_idx || 0),
-                    assignedTutIdx: Number(row.assigned_tut_idx || 0),
-                    lectureAttendance: row.lecture_attendance || {},
-                    labAttendance: row.lab_attendance || {},
-                    tutorialAttendance: row.tutorial_attendance || {}
-                });
-            });
-
-            coursesData.forEach(c => {
-                coursesStore[c.course_code] = normalizeCourseStructure({
-                    courseCode: c.course_code,
-                    courseTitle: c.course_title || "",
-                    semStart: c.sem_start || "",
-                    semEnd: c.sem_end || "",
-                    schedules: c.schedules,
-                    weeks: c.weeks,
-                    students: enrollmentsByCourse[c.course_code] || []
-                });
-            });
-        }
+        /* ================= SECURE SUPABASE RPC SAVE & DELETE ================= */
 
         async function saveCourseAndAttendance(manualClick) {
             currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
@@ -1193,52 +1224,14 @@
             indicator.innerText = "Saving to Supabase...";
 
             try {
-                // 1. Upsert Course Record in `public.courses`
-                const { error: courseErr } = await sb
-                    .from('courses')
-                    .upsert({
-                        course_code: code,
-                        course_title: currentCourse.courseTitle,
-                        sem_start: currentCourse.semStart || null,
-                        sem_end: currentCourse.semEnd || null,
-                        staff_id: loggedInStaff ? loggedInStaff.idNumber : "",
-                        schedules: currentCourse.schedules,
-                        weeks: currentCourse.weeks,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'course_code' });
+                const { data: res, error } = await sb.rpc('save_portal_course', {
+                    p_staff_id: loggedInStaff.idNumber,
+                    p_password: staffSessionPassword,
+                    p_course: currentCourse
+                });
 
-                if (courseErr) throw courseErr;
-
-                // 2. Replace Student Enrollment Rows for this Course in `public.course_enrollments`
-                const { error: delErr } = await sb
-                    .from('course_enrollments')
-                    .delete()
-                    .eq('course_code', code);
-
-                if (delErr) throw delErr;
-
-                const validRows = currentCourse.students
-                    .filter(st => st.studentId || st.lastName || st.firstName)
-                    .map((st, idx) => ({
-                        course_code: code,
-                        student_id: String(st.studentId || "").trim(),
-                        last_name: String(st.lastName || "").trim(),
-                        first_name: String(st.firstName || "").trim(),
-                        mode: st.mode || "F",
-                        assigned_lab_idx: Number(st.assignedLabIdx || 0),
-                        assigned_tut_idx: Number(st.assignedTutIdx || 0),
-                        lecture_attendance: st.lectureAttendance || {},
-                        lab_attendance: st.labAttendance || {},
-                        tutorial_attendance: st.tutorialAttendance || {},
-                        sort_order: idx
-                    }));
-
-                if (validRows.length > 0) {
-                    const { error: insErr } = await sb
-                        .from('course_enrollments')
-                        .insert(validRows);
-                    if (insErr) throw insErr;
-                }
+                if (error) throw error;
+                if (!res || !res.success) throw new Error((res && res.message) || "Save rejected.");
 
                 coursesStore[code] = JSON.parse(JSON.stringify(currentCourse));
                 populateCourseDropdown();
@@ -1253,7 +1246,6 @@
             }
         }
 
-        // Delete Course Unit & All Related Student Attendance Data from Supabase
         async function deleteCurrentCourse() {
             if (!isEditMode) {
                 alert("Please click 'Enable Edit Mode' first before deleting a course.");
@@ -1275,13 +1267,14 @@
             indicator.innerText = `Deleting ${code}...`;
 
             try {
-                // ON DELETE CASCADE automatically deletes all rows in course_enrollments for this course_code
-                const { error } = await sb
-                    .from('courses')
-                    .delete()
-                    .eq('course_code', code);
+                const { data: res, error } = await sb.rpc('delete_portal_course', {
+                    p_staff_id: loggedInStaff.idNumber,
+                    p_password: staffSessionPassword,
+                    p_course_code: code
+                });
 
                 if (error) throw error;
+                if (!res || !res.success) throw new Error((res && res.message) || "Delete rejected.");
 
                 delete coursesStore[code];
                 populateCourseDropdown();
@@ -1325,7 +1318,7 @@
 
         function logoutStaff() {
             loggedInStaff = null;
-            sb.auth.signOut().catch(() => {});
+            staffSessionPassword = "";
             document.getElementById('staffDashboard').style.display = 'none';
             document.getElementById('portalModal').style.display = 'flex';
             resetModal();
@@ -1952,7 +1945,6 @@
             }, 600);
         }
 
-        // One-Click Export to Multi-Tab Excel Workbook (.xlsx)
         function exportCourseToExcel() {
             const code = currentCourse.courseCode || "Course";
             const weeks = currentCourse.weeks || [];
@@ -1961,7 +1953,6 @@
             const tutSlots = currentCourse.schedules.tutorials || [];
             const wb = XLSX.utils.book_new();
 
-            // 1. Lectures Tab
             const lecHeaders = ["ID", "Last Name", "First Name", "Course", "Mode"];
             weeks.forEach(w => {
                 lecSlots.forEach((s, lIdx) => {
@@ -1987,7 +1978,6 @@
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(lecRows), `${code}_Lectures`);
 
-            // 2. Labs Tab
             const labHeaders = ["ID", "Last Name", "First Name", "Course", "Mode", "Assigned Lab", ...weeks, "Lab %"];
             const labRows = [labHeaders];
             currentCourse.students.forEach(st => {
@@ -2005,7 +1995,6 @@
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(labRows), `${code}_Labs`);
 
-            // 3. Tutorials Tab
             const tutHeaders = ["ID", "Last Name", "First Name", "Course", "Mode", "Assigned Tutorial", ...weeks, "Tutorial %", "Overall Course %"];
             const tutRows = [tutHeaders];
             currentCourse.students.forEach(st => {
