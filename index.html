@@ -38,8 +38,8 @@
         .topbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:15px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; flex-wrap:wrap; gap:12px; }
         .topbar h1 { margin:0; font-size:20px; color:var(--dark); }
         .topbar-meta { font-size:13px; color:#666; margin-top:4px; }
-        .legend-bar { display:flex; gap:12px; flex-wrap:wrap; background:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.06); margin-bottom:20px; font-size:13px; align-items:center; }
-        .legend-pill { padding:4px 10px; border-radius:4px; font-weight:bold; font-size:12px; }
+        .legend-bar { display:flex; gap:10px; flex-wrap:wrap; background:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.06); margin-bottom:20px; font-size:12.5px; align-items:center; }
+        .legend-pill { padding:4px 9px; border-radius:4px; font-weight:bold; font-size:11.5px; }
         .student-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:20px; }
         .stat-card { background:#fff; padding:16px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.07); border-left:5px solid var(--primary); }
         .stat-card h4 { margin:0 0 6px 0; font-size:12px; color:#64748b; text-transform:uppercase; }
@@ -50,19 +50,20 @@
         .window-open { background:#dcfce7; color:#166534; } .window-closed { background:#fee2e2; color:#991b1b; }
         .course-panel { background:#fff; padding:20px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; }
         .panel-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px; }
-        .course-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; align-items:end; }
+        .course-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; align-items:end; }
         .field-group label { display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:5px; text-transform:uppercase; }
-        .field-group input, .field-group select { width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:4px; font-size:14px; box-sizing:border-box; }
+        .field-group input, .field-group select { width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:4px; font-size:13.5px; box-sizing:border-box; }
         .field-group input:disabled, .field-group select:disabled { background:#f8f9fa; color:#555; }
-        .schedule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:16px; margin-top:20px; }
+        .schedule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(410px,1fr)); gap:16px; margin-top:18px; }
         .schedule-card { border:1px solid #cbd5e1; border-radius:8px; padding:14px; background:#f8fafc; }
         .schedule-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #e2e8f0; }
-        .schedule-card-header h3 { margin:0; font-size:14px; text-transform:uppercase; }
-        .slot-row-lec { display:grid; grid-template-columns:76px 1fr 1fr 1.2fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
-        .slot-label-lec { display:grid; grid-template-columns:76px 1fr 1fr 1.2fr 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
-        .slot-row-cap { display:grid; grid-template-columns:74px 1fr 1fr 1fr 74px auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
-        .slot-label-cap { display:grid; grid-template-columns:74px 1fr 1fr 1fr 74px 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
-        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input { width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
+        .schedule-card-header h3 { margin:0; font-size:13.5px; text-transform:uppercase; }
+        .slot-row-lec { display:grid; grid-template-columns:82px 1fr 1fr 1.2fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-label-lec { display:grid; grid-template-columns:82px 1fr 1fr 1.2fr 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
+        .slot-row-cap { display:grid; grid-template-columns:80px 1fr 1fr 1fr 70px auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-label-cap { display:grid; grid-template-columns:80px 1fr 1fr 1fr 70px 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
+        .slot-row-2col { display:grid; grid-template-columns:145px 1fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input, .slot-row-2col select, .slot-row-2col input { width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
         .requests-panel { background:#fff8e6; border:2px solid #f39c12; border-radius:8px; padding:16px 20px; margin-bottom:20px; display:none; }
         .requests-panel h3 { margin:0 0 10px 0; font-size:15px; color:#9c640c; }
         .req-table { width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; }
@@ -96,6 +97,8 @@
         .att-A { background-color:#f8d7da !important; color:#721c24 !important; }
         .att-L { background-color:#fdebd0 !important; color:#9c640c !important; }
         .att-REQ { background-color:#e0f2fe !important; color:#0369a1 !important; }
+        .att-HOL { background-color:#ede9fe !important; color:#5b21b6 !important; }
+        .att-BRK { background-color:#e2e8f0 !important; color:#475569 !important; }
         .summary-cell { text-align:center !important; font-weight:bold; padding:7px !important; background:#f8fafc; white-space:nowrap; }
     </style>
 </head>
@@ -104,7 +107,6 @@
     <!-- AUTHENTICATION & STUDENT OPTIONS MODAL -->
     <div class="modal-overlay" id="portalModal">
         <div class="modal-box">
-            <!-- Step 1: User Category -->
             <div id="selectionStep">
                 <h2>Welcome</h2>
                 <p>Please select your user category to proceed:</p>
@@ -112,58 +114,43 @@
                     <button type="button" class="btn btn-staff" onclick="selectUserType('Staff')">Staff</button>
                     <button type="button" class="btn btn-student" onclick="selectUserType('Student')">Student</button>
                 </div>
-                <div>
-                    <span id="connStatusBadge" class="conn-badge conn-ok" onclick="openConfigStep()">✓ Database Connected</span>
-                </div>
+                <div><span id="connStatusBadge" class="conn-badge conn-ok" onclick="openConfigStep()">✓ Database Connected</span></div>
             </div>
 
-            <!-- Step 1B: Student Choice (Give Attendance vs Check Attendance) -->
             <div id="studentChoiceStep" style="display:none;">
                 <h2>Student Portal</h2>
                 <p style="font-size:13.5px; color:#555;">Please choose an option below:</p>
                 <div style="display:flex; flex-direction:column; gap:12px; margin-top:18px;">
-                    <button type="button" class="btn btn-student" style="padding:13px; font-size:15px;" onclick="openGiveAttendanceStep()">
-                        ✓ Give Attendance (Live Session)
-                    </button>
-                    <button type="button" class="btn btn-staff" style="padding:13px; font-size:15px;" onclick="openStudentCheckAttendanceAuth()">
-                        📊 Check My Attendance & Select Lab/Tut
-                    </button>
+                    <button type="button" class="btn btn-student" style="padding:13px; font-size:15px;" onclick="openGiveAttendanceStep()">✓ Give Attendance (Live Session)</button>
+                    <button type="button" class="btn btn-staff" style="padding:13px; font-size:15px;" onclick="openStudentCheckAttendanceAuth()">📊 Check My Attendance & Select Lab/Tut</button>
                 </div>
                 <span class="back-link" onclick="resetModal()">« Back to User Category</span>
             </div>
 
-            <!-- Step 1C: Student "Give Attendance" Form -->
             <div id="giveAttendanceStep" class="form-container">
                 <h2 style="text-align:center; margin-bottom:10px;">Give Session Attendance</h2>
                 <div class="clock-banner" id="liveClockBanner">Loading current time...</div>
-
                 <form id="giveAttForm" onsubmit="handleGiveAttendanceSubmit(event)">
                     <label>Student ID Number</label>
                     <input type="text" id="attStudentId" required placeholder="e.g. S11255443">
-
                     <label>Select Course Unit</label>
                     <select id="attCourseSelect" required onchange="populateGiveAttendanceSessions()">
                         <option value="">-- Loading Course Units... --</option>
                     </select>
-
                     <label>Select Lecture, Lab or Tutorial Session</label>
                     <select id="attSessionSelect" required onchange="resetMismatchReasonBox()">
                         <option value="">-- Select Course Unit First --</option>
                     </select>
-
-                    <!-- Shown when Student selects a Lab/Tutorial different from their designated session -->
                     <div id="mismatchReasonContainer" style="display:none; background:#fff8e6; border:1px solid #f39c12; padding:10px; border-radius:6px; margin-bottom:12px;">
-                        <label style="color:#9c640c;">Reason for Attending Non-Designated Session (Required for Staff Approval)</label>
+                        <label style="color:#9c640c;">Reason for Attending Non-Designated Session (Required unless your session fell on a Holiday)</label>
                         <textarea id="attReasonInput" rows="3" placeholder="Explain why you are attending this alternative Lab/Tutorial session..."></textarea>
                     </div>
-
                     <button type="submit" class="submit-btn" id="giveAttSubmitBtn" style="background:var(--success);">Submit Attendance</button>
                     <div class="status-msg" id="giveAttStatusBox"></div>
                 </form>
                 <span class="back-link" onclick="backToStudentChoice()">« Back to Student Options</span>
             </div>
 
-            <!-- Step 1D: Database Override -->
             <div id="configStep" class="form-container">
                 <h2>Database Connection</h2>
                 <label>Supabase Project URL</label>
@@ -175,7 +162,6 @@
                 <span class="back-link" onclick="closeConfigStep()">« Back to Welcome</span>
             </div>
 
-            <!-- Step 2: Register / Login Form -->
             <div id="formStep" class="form-container">
                 <h2 id="formTitle" style="text-align:center;">Register</h2>
                 <form id="authForm" novalidate onsubmit="handleAuthSubmit(event)">
@@ -198,7 +184,7 @@
         </div>
     </div>
 
-    <!-- STUDENT CHECK ATTENDANCE DASHBOARD (Shows ONLY Logged-In Student Data) -->
+    <!-- STUDENT CHECK ATTENDANCE DASHBOARD -->
     <div id="studentDashboard">
         <div class="topbar">
             <div>
@@ -216,89 +202,60 @@
         <div class="legend-bar">
             <strong>Attendance Key:</strong>
             <span class="legend-pill att-P">P = Present</span>
-            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance in Session)</span>
+            <span class="legend-pill att-A">A = Absent (Missed Session)</span>
             <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
-            <span class="legend-pill att-REQ">REQ = Pending Staff Approval (Alternate Session)</span>
+            <span class="legend-pill att-REQ">REQ = Pending Staff Approval</span>
+            <span class="legend-pill att-HOL">HOL = Holiday (Exempt / No Penalty)</span>
+            <span class="legend-pill att-BRK">BRK = Study Break / Exempt Week</span>
         </div>
 
-        <!-- WEEK 1 & 2 STUDENT LAB & TUTORIAL SELF-SELECTION PANEL -->
         <div class="session-picker-card" id="studentSessionPickerBox">
             <div class="session-picker-header">
                 <div>
                     <strong style="font-size:15px; color:var(--dark);">My Designated Lab & Tutorial Sessions</strong>
                     <div style="font-size:12px; color:#555; margin-top:2px;">
-                        Students may edit their Lab and Tutorial sessions during <strong>Weeks 1 & 2</strong> (subject to room capacity). Closed after Week 2 (only Staff can change).
+                        Editable during <strong>Weeks 1 & 2</strong> (subject to room capacity). Closed after Week 2 (only Staff can change). If your designated session falls on a Holiday, you may attend any alternative session that week without Staff approval.
                     </div>
                 </div>
                 <span class="week-window-badge window-open" id="stuWeekWindowBadge">Checking Semester Week...</span>
             </div>
-
             <div class="course-grid">
                 <div class="field-group">
-                    <label>Select My Lab Session (1 Required / Week)</label>
+                    <label>Select My Lab Session</label>
                     <select id="stuPickLabSelect"></select>
                 </div>
                 <div class="field-group">
-                    <label>Select My Tutorial Session (1 Required / Week)</label>
+                    <label>Select My Tutorial Session</label>
                     <select id="stuPickTutSelect"></select>
                 </div>
                 <div class="field-group">
-                    <button type="button" class="btn btn-lab" id="stuSaveSessionsBtn" style="width:100%; padding:10px;" onclick="saveStudentSessionSelection()">
-                        Save My Lab & Tutorial Selection
-                    </button>
+                    <button type="button" class="btn btn-lab" id="stuSaveSessionsBtn" style="width:100%; padding:10px;" onclick="saveStudentSessionSelection()">Save My Lab & Tutorial Selection</button>
                 </div>
             </div>
             <div class="status-msg" id="stuPickStatusMsg"></div>
         </div>
 
         <div class="student-stats-grid">
-            <div class="stat-card" style="border-left-color:var(--lec-color);">
-                <h4>My Lecture Attendance (Attend ALL/Wk)</h4>
-                <div class="stat-val" id="stuLecStat">0%</div>
-            </div>
-            <div class="stat-card" style="border-left-color:var(--lab-color);">
-                <h4>My Lab Attendance (Attend 1/Wk)</h4>
-                <div class="stat-val" id="stuLabStat">0%</div>
-            </div>
-            <div class="stat-card" style="border-left-color:var(--tut-color);">
-                <h4>My Tutorial Attendance (Attend 1/Wk)</h4>
-                <div class="stat-val" id="stuTutStat">0%</div>
-            </div>
-            <div class="stat-card" style="border-left-color:var(--dark);">
-                <h4>Overall Combined Attendance</h4>
-                <div class="stat-val" id="stuOverallStat">0%</div>
-            </div>
+            <div class="stat-card" style="border-left-color:var(--lec-color);"><h4>My Lecture Attendance</h4><div class="stat-val" id="stuLecStat">0%</div></div>
+            <div class="stat-card" style="border-left-color:var(--lab-color);"><h4>My Lab Attendance</h4><div class="stat-val" id="stuLabStat">0%</div></div>
+            <div class="stat-card" style="border-left-color:var(--tut-color);"><h4>My Tutorial Attendance</h4><div class="stat-val" id="stuTutStat">0%</div></div>
+            <div class="stat-card" style="border-left-color:var(--dark);"><h4>Overall Combined Attendance</h4><div class="stat-val" id="stuOverallStat">0%</div></div>
         </div>
 
         <div class="sheet-wrapper lec-sheet">
-            <div class="sheet-toolbar">
-                <div class="sheet-title-badge" style="color:var(--lec-color);">
-                    <span>1. MY LECTURE WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Attend <strong>ALL scheduled lectures</strong> each week</span>
-                </div>
-            </div>
+            <div class="sheet-toolbar"><div class="sheet-title-badge" style="color:var(--lec-color);"><span>1. MY LECTURE ATTENDANCE</span></div></div>
             <div class="schedule-summary-bar" id="stuLectureScheduleSummary"></div>
             <table class="spreadsheet"><thead id="stuLectureHead"></thead><tbody id="stuLectureBody"></tbody></table>
         </div>
 
         <div class="sheet-wrapper lab-sheet">
-            <div class="sheet-toolbar">
-                <div class="sheet-title-badge" style="color:var(--lab-color);">
-                    <span>2. MY LAB WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Attend <strong>1 Lab session</strong> each week</span>
-                </div>
-            </div>
+            <div class="sheet-toolbar"><div class="sheet-title-badge" style="color:var(--lab-color);"><span>2. MY LAB ATTENDANCE</span></div></div>
             <div class="schedule-summary-bar" id="stuLabScheduleSummary"></div>
             <table class="spreadsheet"><thead id="stuLabHead"></thead><tbody id="stuLabBody"></tbody></table>
         </div>
 
         <div class="sheet-wrapper tut-sheet">
-            <div class="sheet-toolbar">
-                <div class="sheet-title-badge" style="color:var(--tut-color);">
-                    <span>3. MY TUTORIAL WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Attend <strong>1 Tutorial session</strong> each week</span>
-                </div>
-            </div>
+            <div class="sheet-toolbar"><div class="sheet-title-badge" style="color:var(--tut-color);"><span>3. MY TUTORIAL ATTENDANCE</span></div></div>
             <div class="schedule-summary-bar" id="stuTutorialScheduleSummary"></div>
             <table class="spreadsheet"><thead id="stuTutorialHead"></thead><tbody id="stuTutorialBody"></tbody></table>
         </div>
@@ -308,7 +265,7 @@
     <div id="staffDashboard">
         <div class="topbar">
             <div>
-                <h1>Course Unit, Timetable & Semester Attendance Portal</h1>
+                <h1>Course Unit, Timetable, Holidays & Attendance Portal</h1>
                 <div class="topbar-meta" id="staffWelcomeMeta">Logged in as Staff</div>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
@@ -319,27 +276,21 @@
         </div>
 
         <div class="legend-bar">
-            <strong>Attendance Status Codes:</strong>
+            <strong>Status Codes:</strong>
             <span class="legend-pill att-P">P = Present</span>
-            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance in Session)</span>
+            <span class="legend-pill att-A">A = Absent (Missed Session)</span>
             <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
-            <span class="legend-pill att-REQ">REQ = Pending Staff Approval (Non-Designated Session)</span>
+            <span class="legend-pill att-REQ">REQ = Pending Approval</span>
+            <span class="legend-pill att-HOL">HOL = Holiday (No Penalty / Alt Session Auto-Approved)</span>
+            <span class="legend-pill att-BRK">BRK = Exempt / Study Break Week</span>
         </div>
 
-        <!-- STAFF APPROVAL PANEL FOR NON-DESIGNATED LAB/TUTORIAL REQUESTS -->
         <div class="requests-panel" id="staffRequestsPanel">
             <h3>⚠️ Pending Alternate-Session Attendance Requests (<span id="pendingReqCount">0</span>)</h3>
             <div style="overflow-x:auto;">
                 <table class="req-table">
                     <thead>
-                        <tr>
-                            <th>Student ID & Name</th>
-                            <th>Session & Week</th>
-                            <th>Designated Session</th>
-                            <th>Attended Session</th>
-                            <th>Student's Reason</th>
-                            <th style="width:165px;">Staff Decision</th>
-                        </tr>
+                        <tr><th>Student ID & Name</th><th>Session & Period</th><th>Designated Session</th><th>Attended Session</th><th>Student's Reason</th><th style="width:165px;">Staff Decision</th></tr>
                     </thead>
                     <tbody id="staffRequestsBody"></tbody>
                 </table>
@@ -356,7 +307,6 @@
                     <button type="button" class="btn btn-staff" onclick="startNewCourse()">+ New Course Unit</button>
                     <button type="button" class="btn btn-danger" id="deleteCourseBtn" onclick="deleteCurrentCourse()">Delete Course Unit</button>
                 </div>
-
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                     <label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;">
                         <input type="checkbox" id="autoSaveToggle" checked> Auto-save on edit
@@ -366,6 +316,7 @@
                 </div>
             </div>
 
+            <!-- Basic Course Metadata + Weekly/Daily Mode Toggle -->
             <div class="course-grid">
                 <div class="field-group">
                     <label>Course Unit Code</label>
@@ -383,35 +334,69 @@
                     <label>Semester End Date</label>
                     <input type="date" id="semEnd" onchange="handleDateRangeChange()">
                 </div>
+                <div class="field-group">
+                    <label>Attendance Tracking Mode</label>
+                    <select id="attendanceModeSelect" onchange="handleAttendanceModeChange()">
+                        <option value="weekly">Weekly Attendance (Default)</option>
+                        <option value="daily">Daily Attendance (Daily Sessions)</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS (WITH MAX CAPACITY), TUTORIALS (WITH MAX CAPACITY) -->
+            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS, TUTORIALS -->
             <div class="schedule-grid">
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--lec-color);">1. Weekly Lectures (Attend ALL)</h3>
+                        <h3 style="color:var(--lec-color);">1. Lectures (Attend ALL)</h3>
                         <button type="button" class="btn btn-lec" id="addLecSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('lectures')">+ Add Lecture</button>
                     </div>
-                    <div class="slot-label-lec"><span>Day</span><span>Start</span><span>End</span><span>Place (Room #)</span><span></span></div>
+                    <div class="slot-label-lec"><span>Day/Mode</span><span>Start</span><span>End</span><span>Place (Room #)</span><span></span></div>
                     <div id="lecturesSlotList"></div>
                 </div>
 
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--lab-color);">2. Lab Sessions (1/Wk + Capacity)</h3>
+                        <h3 style="color:var(--lab-color);">2. Lab Sessions (1 Req + Capacity)</h3>
                         <button type="button" class="btn btn-lab" id="addLabSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('labs')">+ Add Lab</button>
                     </div>
-                    <div class="slot-label-cap"><span>Day</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
+                    <div class="slot-label-cap"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
                     <div id="labsSlotList"></div>
                 </div>
 
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--tut-color);">3. Tutorials (1/Wk + Capacity)</h3>
+                        <h3 style="color:var(--tut-color);">3. Tutorials (1 Req + Capacity)</h3>
                         <button type="button" class="btn btn-tut" id="addTutSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('tutorials')">+ Add Tutorial</button>
                     </div>
-                    <div class="slot-label-cap"><span>Day</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
+                    <div class="slot-label-cap"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
                     <div id="tutorialsSlotList"></div>
+                </div>
+            </div>
+
+            <!-- HOLIDAYS & EXEMPT WEEKS (STUDY BREAKS) EDITING CARDS -->
+            <div class="schedule-grid">
+                <!-- 4. Holidays Card -->
+                <div class="schedule-card" style="border-color:#c4b5fd; background:#faf5ff;">
+                    <div class="schedule-card-header">
+                        <h3 style="color:#5b21b6;">4. Public Holidays (No Penalty & Auto-Approve Alt Session)</h3>
+                        <button type="button" class="btn btn-tut" id="addHolidayBtn" style="padding:5px 10px; font-size:11px;" onclick="addHolidayRow()">+ Add Holiday</button>
+                    </div>
+                    <div style="font-size:11.5px; color:#4c1d95; margin-bottom:8px;">
+                        Students whose session falls on a Holiday are not penalized (<strong>HOL</strong>). If they attend an alternative Lab/Tutorial that week, no Staff approval is needed.
+                    </div>
+                    <div id="holidaysListContainer"></div>
+                </div>
+
+                <!-- 5. Exempt Study Break Weeks Card -->
+                <div class="schedule-card" style="border-color:#94a3b8; background:#f8fafc;">
+                    <div class="schedule-card-header">
+                        <h3 style="color:#334155;">5. Study Breaks / Exempt Weeks (No Attendance Taken)</h3>
+                        <button type="button" class="btn btn-dark" id="addExemptWeekBtn" style="padding:5px 10px; font-size:11px;" onclick="addExemptWeekRow()">+ Add Exempt Week</button>
+                    </div>
+                    <div style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+                        Designate study break weeks where attendance is not taken and specify the reason (marked as <strong>BRK</strong>).
+                    </div>
+                    <div id="exemptWeeksListContainer"></div>
                 </div>
             </div>
 
@@ -442,8 +427,8 @@
         <div class="sheet-wrapper lec-sheet" id="lectureSection">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--lec-color);">
-                    <span>TABLE 1: LECTURE WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>ALL scheduled lectures</strong> each week</span>
+                    <span id="lecTableTitle">TABLE 1: LECTURE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>ALL scheduled lectures</strong></span>
                 </div>
             </div>
             <div class="schedule-summary-bar" id="lectureScheduleSummary"></div>
@@ -453,8 +438,8 @@
         <div class="sheet-wrapper lab-sheet" id="labSection">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--lab-color);">
-                    <span>TABLE 2: LAB WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>1 Lab session</strong> each week (Staff can change assigned Lab anytime)</span>
+                    <span id="labTableTitle">TABLE 2: LAB ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>their designated Lab session</strong></span>
                 </div>
             </div>
             <div class="schedule-summary-bar" id="labScheduleSummary"></div>
@@ -464,8 +449,8 @@
         <div class="sheet-wrapper tut-sheet" id="tutorialSection">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--tut-color);">
-                    <span>TABLE 3: TUTORIAL WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>1 Tutorial session</strong> each week (Staff can change assigned Tutorial anytime)</span>
+                    <span id="tutTableTitle">TABLE 3: TUTORIAL ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>their designated Tutorial session</strong></span>
                 </div>
             </div>
             <div class="schedule-summary-bar" id="tutorialScheduleSummary"></div>
@@ -483,7 +468,7 @@
         ];
 
         let sb = null;
-        const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Daily"];
         const JS_DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         let selectedUserType = "";
@@ -623,6 +608,151 @@
             isLoginMode = false;
         }
 
+        /* ================= DATE, HOLIDAY, STUDY BREAK & DAILY/WEEKLY HELPERS ================= */
+
+        function toIsoDateStr(d) {
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        }
+
+        // Returns the exact YYYY-MM-DD of a session's weekday within Week (weekIndex0 + 1)
+        function getSessionDateInWeek(semStartStr, weekIndex0, slotDayName) {
+            if (!semStartStr || !slotDayName || slotDayName === "Daily") return "";
+            const parts = semStartStr.split('-');
+            if (parts.length !== 3) return "";
+            const weekStart = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            if (isNaN(weekStart)) return "";
+            weekStart.setDate(weekStart.getDate() + (weekIndex0 * 7));
+
+            const targetDayIdx = JS_DAY_NAMES.indexOf(slotDayName);
+            if (targetDayIdx === -1) return "";
+            const startDayIdx = weekStart.getDay();
+            let dayOffset = targetDayIdx - startDayIdx;
+            if (dayOffset < 0) dayOffset += 7;
+
+            const sessionDate = new Date(weekStart);
+            sessionDate.setDate(weekStart.getDate() + dayOffset);
+            return toIsoDateStr(sessionDate);
+        }
+
+        function findHolidayForDate(course, isoDateStr) {
+            if (!isoDateStr || !course || !course.schedules || !Array.isArray(course.schedules.holidays)) return null;
+            return course.schedules.holidays.find(h => h.date === isoDateStr) || null;
+        }
+
+        function findExemptWeek(course, weekNum1) {
+            if (!course || !course.schedules || !Array.isArray(course.schedules.exemptWeeks)) return null;
+            return course.schedules.exemptWeeks.find(ew => Number(ew.weekNum) === Number(weekNum1)) || null;
+        }
+
+        // Generates active teaching columns: either Weekly columns or Daily columns
+        function getActiveColumnsForCourse(course) {
+            const mode = (course.schedules && course.schedules.attendanceMode) ? course.schedules.attendanceMode : "weekly";
+            if (mode === "daily") {
+                return generateDailyColumns(course.semStart, course.semEnd);
+            }
+            const weeks = course.weeks || [];
+            return weeks.map((wLabel, idx) => ({
+                mode: "weekly",
+                index0: idx,
+                weekNum: idx + 1,
+                keyPrefix: `W${idx + 1}`,
+                label: wLabel,
+                isoDate: ""
+            }));
+        }
+
+        // Generates Mon-Fri teaching days between semStart and semEnd for Daily Attendance Mode
+        function generateDailyColumns(startStr, endStr) {
+            if (!startStr || !endStr) return [{ mode: "daily", index0: 0, weekNum: 1, keyPrefix: "D_Day1", label: "Day 1", isoDate: "" }];
+            const sp = startStr.split('-'), ep = endStr.split('-');
+            if (sp.length !== 3 || ep.length !== 3) return [];
+            const start = new Date(Number(sp[0]), Number(sp[1]) - 1, Number(sp[2]));
+            const end = new Date(Number(ep[0]), Number(ep[1]) - 1, Number(ep[2]));
+            if (isNaN(start) || isNaN(end) || end < start) return [];
+
+            const cols = [];
+            let curr = new Date(start);
+            let count = 0;
+            while (curr <= end && count < 90) {
+                const dow = curr.getDay();
+                if (dow >= 1 && dow <= 5) { // Mon–Fri
+                    const iso = toIsoDateStr(curr);
+                    const diffDays = Math.floor((curr - start) / 86400000);
+                    const wkNum = Math.floor(diffDays / 7) + 1;
+                    const shortLabel = curr.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+                    cols.push({
+                        mode: "daily",
+                        index0: count,
+                        weekNum: wkNum,
+                        keyPrefix: `D_${iso}`,
+                        label: shortLabel,
+                        isoDate: iso,
+                        dayName: JS_DAY_NAMES[dow]
+                    });
+                    count++;
+                }
+                curr.setDate(curr.getDate() + 1);
+            }
+            return cols;
+        }
+
+        /**
+         * Evaluates effective status for a cell:
+         * 1. If the week is in exemptWeeks (Study Break) -> returns 'BRK' (No penalty)
+         * 2. If the session's date is in holidays and rawVal is not 'P' -> returns 'HOL' (No penalty)
+         * 3. If explicitly marked 'P', 'A', 'L', 'REQ', 'HOL', 'BRK' -> returns that mark
+         * 4. If session time has passed without attendance -> returns 'A' (if logged in) or 'L' (if never logged in)
+         */
+        function getEffectiveSessionStatus(course, rawVal, colObj, slotObj, hasLoggedIn) {
+            if (!course || !colObj) return rawVal || "";
+
+            // 1. Check if this column belongs to an Exempt / Study Break Week
+            const exemptWk = findExemptWeek(course, colObj.weekNum);
+            if (exemptWk) return "BRK";
+
+            // 2. Determine the exact date of this session
+            const sessionIsoDate = colObj.mode === "daily"
+                ? colObj.isoDate
+                : getSessionDateInWeek(course.semStart, colObj.index0, slotObj ? slotObj.day : "");
+
+            // 3. If student already attended ('P', e.g. via an alternative session during a holiday week), keep 'P'!
+            if (rawVal === "P") return "P";
+
+            // 4. Check if session date falls on a designated Holiday
+            if (sessionIsoDate && findHolidayForDate(course, sessionIsoDate)) {
+                return "HOL";
+            }
+
+            if (rawVal === "A" || rawVal === "L" || rawVal === "REQ" || rawVal === "HOL" || rawVal === "BRK") {
+                return rawVal;
+            }
+
+            if (!sessionIsoDate || !slotObj || !slotObj.endTime) return "";
+
+            const dp = sessionIsoDate.split('-');
+            if (dp.length !== 3) return "";
+            const sessionEndDt = new Date(Number(dp[0]), Number(dp[1]) - 1, Number(dp[2]));
+            const [eh, em] = slotObj.endTime.split(':').map(Number);
+            if (isNaN(eh) || isNaN(em)) return "";
+            sessionEndDt.setHours(eh, em + 10, 0, 0);
+
+            if (new Date() > sessionEndDt) {
+                return hasLoggedIn ? "A" : "L";
+            }
+            return "";
+        }
+
+        function calculateCurrentSemesterWeek(semStartStr) {
+            if (!semStartStr) return 1;
+            const parts = semStartStr.split('-');
+            if (parts.length !== 3) return 1;
+            const start = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            if (isNaN(start)) return 1;
+            const diffDays = Math.floor((new Date() - start) / 86400000);
+            return diffDays < 0 ? 1 : Math.floor(diffDays / 7) + 1;
+        }
+
         /* ================= STUDENT "GIVE ATTENDANCE" WORKFLOW ================= */
 
         async function openGiveAttendanceStep() {
@@ -656,7 +786,8 @@
                 publicCoursesList.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.courseCode;
-                    opt.textContent = `${c.courseCode} — ${c.courseTitle || 'Course Unit'}`;
+                    const modeTag = (c.schedules && c.schedules.attendanceMode === 'daily') ? '[Daily Mode]' : '[Weekly Mode]';
+                    opt.textContent = `${c.courseCode} — ${c.courseTitle || 'Course Unit'} ${modeTag}`;
                     courseSel.appendChild(opt);
                 });
             } catch (err) {
@@ -731,11 +862,11 @@
             const clientDay = JS_DAY_NAMES[now.getDay()];
             const pad = n => String(n).padStart(2, '0');
             const clientTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            const clientDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            const clientDate = toIsoDateStr(now);
 
             submitBtn.disabled = true;
             statusBox.className = 'status-msg status-loading';
-            statusBox.innerText = 'Verifying session schedule, time window, and designated session...';
+            statusBox.innerText = 'Verifying session schedule, holidays, and designated session...';
 
             try {
                 const { data: res, error } = await sb.rpc('submit_student_attendance', {
@@ -776,44 +907,6 @@
             document.getElementById('studentDashboard').style.display = 'none';
             document.getElementById('portalModal').style.display = 'flex';
             openGiveAttendanceStep();
-        }
-
-        /* ================= SESSION STATUS & SEMESTER WEEK HELPERS ================= */
-
-        function getEffectiveSessionStatus(rawVal, semStartStr, weekIndex0, slotObj, hasLoggedIn) {
-            if (rawVal === "P" || rawVal === "A" || rawVal === "L" || rawVal === "REQ") return rawVal;
-            if (!semStartStr || !slotObj || !slotObj.day || !slotObj.endTime) return "";
-
-            const startParts = semStartStr.split('-');
-            if (startParts.length !== 3) return "";
-            const weekStart = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
-            if (isNaN(weekStart)) return "";
-            weekStart.setDate(weekStart.getDate() + (weekIndex0 * 7));
-
-            const targetDayIdx = JS_DAY_NAMES.indexOf(slotObj.day);
-            const startDayIdx = weekStart.getDay();
-            let dayOffset = targetDayIdx - startDayIdx;
-            if (dayOffset < 0) dayOffset += 7;
-
-            const sessionDate = new Date(weekStart);
-            sessionDate.setDate(weekStart.getDate() + dayOffset);
-
-            const [eh, em] = slotObj.endTime.split(':').map(Number);
-            if (isNaN(eh) || isNaN(em)) return "";
-            sessionDate.setHours(eh, em + 10, 0, 0);
-
-            if (new Date() > sessionDate) return hasLoggedIn ? "A" : "L";
-            return "";
-        }
-
-        function calculateCurrentSemesterWeek(semStartStr) {
-            if (!semStartStr) return 1;
-            const parts = semStartStr.split('-');
-            if (parts.length !== 3) return 1;
-            const start = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-            if (isNaN(start)) return 1;
-            const diffDays = Math.floor((new Date() - start) / 86400000);
-            return diffDays < 0 ? 1 : Math.floor(diffDays / 7) + 1;
         }
 
         /* ================= REGISTER & LOGIN AUTHENTICATION ================= */
@@ -1031,10 +1124,7 @@
                 return;
             }
 
-            const now = new Date();
-            const pad = n => String(n).padStart(2, '0');
-            const clientDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-
+            const clientDate = toIsoDateStr(new Date());
             btn.disabled = true;
             statusMsg.className = 'status-msg status-loading';
             statusMsg.innerText = 'Checking session capacity and saving selection...';
@@ -1074,7 +1164,7 @@
             const st = course.students[0];
             renderStudentSessionPicker(course, st);
 
-            const weeks = course.weeks || [];
+            const cols = getActiveColumnsForCourse(course);
             const lecSlots = course.schedules.lectures || [];
             const labSlots = course.schedules.labs || [];
             const tutSlots = course.schedules.tutorials || [];
@@ -1085,88 +1175,87 @@
             const desLabLabel = st.assignedLabIdx >= 0 ? formatSlotSummary(labSlots[myLabIdx], 'Lab', myLabIdx) : 'Not Selected Yet (Pick Above)';
             const desTutLabel = st.assignedTutIdx >= 0 ? formatSlotSummary(tutSlots[myTutIdx], 'Tut', myTutIdx) : 'Not Selected Yet (Pick Above)';
 
+            const holidaysStr = (course.schedules.holidays || []).map(h => `${h.date} (${h.name})`).join(", ") || "None";
+            const breaksStr = (course.schedules.exemptWeeks || []).map(b => `Wk ${b.weekNum} (${b.reason})`).join(", ") || "None";
+
             document.getElementById('stuLectureScheduleSummary').innerHTML =
-                `<strong>Scheduled Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))}`;
-            document.getElementById('stuLabScheduleSummary').innerHTML =
-                `<strong>My Designated Lab:</strong> ${escapeHtml(desLabLabel)}`;
-            document.getElementById('stuTutorialScheduleSummary').innerHTML =
-                `<strong>My Designated Tutorial:</strong> ${escapeHtml(desTutLabel)}`;
+                `<strong>Mode:</strong> ${course.schedules.attendanceMode === 'daily' ? 'Daily' : 'Weekly'} | <strong>Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))} | <strong>Holidays:</strong> ${escapeHtml(holidaysStr)} | <strong>Study Breaks:</strong> ${escapeHtml(breaksStr)}`;
+            document.getElementById('stuLabScheduleSummary').innerHTML = `<strong>My Designated Lab:</strong> ${escapeHtml(desLabLabel)}`;
+            document.getElementById('stuTutorialScheduleSummary').innerHTML = `<strong>My Designated Tutorial:</strong> ${escapeHtml(desTutLabel)}`;
 
             // 1. Student Lecture Table
             let lecHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th>`;
-            weeks.forEach(w => {
-                const sub = lecSlots.map((s, idx) => `L${idx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
-                lecHead += `<th><div>${w}</div><div style="font-size:10px; font-weight:normal;">${escapeHtml(sub)}</div></th>`;
+            cols.forEach(c => {
+                const brk = findExemptWeek(course, c.weekNum);
+                const sub = brk ? `🚫 ${brk.reason}` : lecSlots.map((s, idx) => `L${idx + 1}`).join(' / ');
+                lecHead += `<th><div>${escapeHtml(c.label)}</div><div style="font-size:10px; font-weight:normal;">${escapeHtml(sub)}</div></th>`;
             });
-            lecHead += `<th>Lectures Present</th><th>Full Weeks</th><th>Lecture %</th></tr>`;
+            lecHead += `<th>Lectures Present</th><th>Lecture %</th></tr>`;
             document.getElementById('stuLectureHead').innerHTML = lecHead;
 
-            let lecPresent = 0, lecTotal = 0, fullWeeks = 0, weeksEval = 0, lecCells = "";
-            weeks.forEach((w, wIdx) => {
-                let wkPres = 0, wkMark = 0, badges = "";
+            let lecPresent = 0, lecTotal = 0, lecCells = "";
+            cols.forEach(c => {
+                let badges = "";
                 for (let lIdx = 0; lIdx < numLecs; lIdx++) {
-                    const rawVal = st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "";
-                    const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, lecSlots[lIdx], true);
-                    if (val === "P") { lecPresent++; lecTotal++; wkPres++; wkMark++; }
-                    else if (val === "A" || val === "L") { lecTotal++; wkMark++; }
+                    const key = `${c.keyPrefix}_L${lIdx + 1}`;
+                    const rawVal = st.lectureAttendance[key] || "";
+                    const val = getEffectiveSessionStatus(course, rawVal, c, lecSlots[lIdx], true);
+                    if (val === "P") { lecPresent++; lecTotal++; }
+                    else if (val === "A" || val === "L") { lecTotal++; }
                     badges += `<span class="legend-pill ${val ? 'att-' + val : ''}" style="border:1px solid #cbd5e1;">L${lIdx + 1}: ${val || '-'}</span>`;
                 }
-                if (wkMark > 0) { weeksEval++; if (wkPres === numLecs) fullWeeks++; }
                 lecCells += `<td><div class="lec-week-box">${badges}</div></td>`;
             });
-            const lecPct = lecTotal > 0 ? Math.round((lecPresent / lecTotal) * 100) + "%" : "0%";
+            const lecPct = lecTotal > 0 ? Math.round((lecPresent / lecTotal) * 100) + "%" : "100%";
             document.getElementById('stuLectureBody').innerHTML = `<tr>
                 <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
                 <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(st.course || code)}</td>
                 <td class="summary-cell">${escapeHtml(st.mode)}</td>${lecCells}
-                <td class="summary-cell">${lecPresent} / ${lecTotal || (weeks.length * numLecs)}</td>
-                <td class="summary-cell">${fullWeeks} / ${weeksEval || weeks.length}</td><td class="summary-cell">${lecPct}</td>
+                <td class="summary-cell">${lecPresent} / ${lecTotal}</td><td class="summary-cell">${lecPct}</td>
             </tr>`;
 
             // 2. Student Lab Table
             let labHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>My Designated Lab</th>`;
-            weeks.forEach(w => { labHead += `<th>${w}</th>`; });
+            cols.forEach(c => { labHead += `<th>${escapeHtml(c.label)}</th>`; });
             labHead += `<th>Labs Present</th><th>Lab %</th></tr>`;
             document.getElementById('stuLabHead').innerHTML = labHead;
 
             let labPresent = 0, labTotal = 0, labCells = "";
             const stuLabSlot = labSlots[myLabIdx] || labSlots[0];
-            weeks.forEach((w, wIdx) => {
-                const rawVal = st.labAttendance[`W${wIdx + 1}`] || "";
-                const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, stuLabSlot, true);
+            cols.forEach(c => {
+                const rawVal = st.labAttendance[c.keyPrefix] || "";
+                const val = getEffectiveSessionStatus(course, rawVal, c, stuLabSlot, true);
                 if (val === "P") { labPresent++; labTotal++; }
                 else if (val === "A" || val === "L") { labTotal++; }
                 labCells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
             });
-            const labPct = labTotal > 0 ? Math.round((labPresent / labTotal) * 100) + "%" : "0%";
+            const labPct = labTotal > 0 ? Math.round((labPresent / labTotal) * 100) + "%" : "100%";
             document.getElementById('stuLabBody').innerHTML = `<tr>
                 <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
-                <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(desLabLabel)}</td>
-                ${labCells}<td class="summary-cell">${labPresent} / ${labTotal || weeks.length}</td><td class="summary-cell">${labPct}</td>
+                <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(desLabLabel)}</td>
+                ${labCells}<td class="summary-cell">${labPresent} / ${labTotal}</td><td class="summary-cell">${labPct}</td>
             </tr>`;
 
             // 3. Student Tutorial Table
             let tutHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>My Designated Tutorial</th>`;
-            weeks.forEach(w => { tutHead += `<th>${w}</th>`; });
+            cols.forEach(c => { tutHead += `<th>${escapeHtml(c.label)}</th>`; });
             tutHead += `<th>Tutorials Present</th><th>Tutorial %</th></tr>`;
             document.getElementById('stuTutorialHead').innerHTML = tutHead;
 
             let tutPresent = 0, tutTotal = 0, tutCells = "";
             const stuTutSlot = tutSlots[myTutIdx] || tutSlots[0];
-            weeks.forEach((w, wIdx) => {
-                const rawVal = st.tutorialAttendance[`W${wIdx + 1}`] || "";
-                const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, stuTutSlot, true);
+            cols.forEach(c => {
+                const rawVal = st.tutorialAttendance[c.keyPrefix] || "";
+                const val = getEffectiveSessionStatus(course, rawVal, c, stuTutSlot, true);
                 if (val === "P") { tutPresent++; tutTotal++; }
                 else if (val === "A" || val === "L") { tutTotal++; }
                 tutCells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
             });
-            const tutPct = tutTotal > 0 ? Math.round((tutPresent / tutTotal) * 100) + "%" : "0%";
+            const tutPct = tutTotal > 0 ? Math.round((tutPresent / tutTotal) * 100) + "%" : "100%";
             document.getElementById('stuTutorialBody').innerHTML = `<tr>
                 <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
-                <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(desTutLabel)}</td>
-                ${tutCells}<td class="summary-cell">${tutPresent} / ${tutTotal || weeks.length}</td><td class="summary-cell">${tutPct}</td>
+                <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(desTutLabel)}</td>
+                ${tutCells}<td class="summary-cell">${tutPresent} / ${tutTotal}</td><td class="summary-cell">${tutPct}</td>
             </tr>`;
 
             const overallMark = lecTotal + labTotal + tutTotal;
@@ -1174,7 +1263,7 @@
             document.getElementById('stuLecStat').innerText = lecPct;
             document.getElementById('stuLabStat').innerText = labPct;
             document.getElementById('stuTutStat').innerText = tutPct;
-            document.getElementById('stuOverallStat').innerText = overallMark > 0 ? Math.round((overallPres / overallMark) * 100) + "%" : "0%";
+            document.getElementById('stuOverallStat').innerText = overallMark > 0 ? Math.round((overallPres / overallMark) * 100) + "%" : "100%";
         }
 
         /* ================= STAFF DASHBOARD & COURSE MANAGEMENT ================= */
@@ -1185,9 +1274,12 @@
             return {
                 courseCode: "", courseTitle: "", semStart: today, semEnd: future,
                 schedules: {
+                    attendanceMode: "weekly",
                     lectures: [{ day: "Mon", startTime: "09:00", endTime: "10:00", room: "" }, { day: "Wed", startTime: "09:00", endTime: "10:00", room: "" }],
                     labs: [{ day: "Tue", startTime: "14:00", endTime: "17:00", room: "", capacity: 25 }],
-                    tutorials: [{ day: "Thu", startTime: "11:00", endTime: "12:00", room: "", capacity: 25 }]
+                    tutorials: [{ day: "Thu", startTime: "11:00", endTime: "12:00", room: "", capacity: 25 }],
+                    holidays: [],
+                    exemptWeeks: []
                 },
                 weeks: generateWeeksList(today, future),
                 students: [createEmptyStudent("")],
@@ -1252,9 +1344,12 @@
             const def = createDefaultCourseObject();
             const c = Object.assign({}, def, raw);
             if (!c.schedules) c.schedules = def.schedules;
+            if (!c.schedules.attendanceMode) c.schedules.attendanceMode = "weekly";
             if (!Array.isArray(c.schedules.lectures) || !c.schedules.lectures.length) c.schedules.lectures = def.schedules.lectures;
             if (!Array.isArray(c.schedules.labs) || !c.schedules.labs.length) c.schedules.labs = def.schedules.labs;
             if (!Array.isArray(c.schedules.tutorials) || !c.schedules.tutorials.length) c.schedules.tutorials = def.schedules.tutorials;
+            if (!Array.isArray(c.schedules.holidays)) c.schedules.holidays = [];
+            if (!Array.isArray(c.schedules.exemptWeeks)) c.schedules.exemptWeeks = [];
 
             c.schedules.labs = c.schedules.labs.map(s => Object.assign({ capacity: 25 }, s));
             c.schedules.tutorials = c.schedules.tutorials.map(s => Object.assign({ capacity: 25 }, s));
@@ -1292,7 +1387,11 @@
             btn.innerText = isEditMode ? "Lock / View Only" : "Enable Edit Mode";
             btn.className = isEditMode ? "btn btn-dark" : "btn btn-warning";
 
-            ['courseCode', 'courseTitle', 'semStart', 'semEnd', 'addRowBtn', 'clearRowsBtn', 'addLecSlotBtn', 'addLabSlotBtn', 'addTutSlotBtn', 'deleteCourseBtn'].forEach(id => {
+            [
+                'courseCode', 'courseTitle', 'semStart', 'semEnd', 'attendanceModeSelect',
+                'addRowBtn', 'clearRowsBtn', 'addLecSlotBtn', 'addLabSlotBtn', 'addTutSlotBtn',
+                'addHolidayBtn', 'addExemptWeekBtn', 'deleteCourseBtn'
+            ].forEach(id => {
                 document.getElementById(id).disabled = !isEditMode;
             });
 
@@ -1301,8 +1400,113 @@
             else { dz.classList.add('disabled-zone'); dz.classList.remove('staged'); stagedClasslist = null; }
 
             renderScheduleCards();
+            renderHolidaysAndExemptWeeks();
             renderAllThreeTables();
         }
+
+        /* ================= HOLIDAYS & EXEMPT STUDY BREAK WEEKS EDITORS ================= */
+
+        function renderHolidaysAndExemptWeeks() {
+            const holContainer = document.getElementById('holidaysListContainer');
+            const exContainer = document.getElementById('exemptWeeksListContainer');
+            holContainer.innerHTML = "";
+            exContainer.innerHTML = "";
+            const dis = isEditMode ? "" : "disabled";
+
+            const holidays = currentCourse.schedules.holidays || [];
+            if (holidays.length === 0) {
+                holContainer.innerHTML = `<div style="font-size:12px; color:#64748b; padding:4px;">No holidays added yet.</div>`;
+            } else {
+                holidays.forEach((h, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'slot-row-2col';
+                    row.innerHTML = `
+                        <input type="date" value="${escapeHtml(h.date || '')}" ${dis} onchange="updateHolidayField(${idx}, 'date', this.value)">
+                        <input type="text" value="${escapeHtml(h.name || '')}" placeholder="Holiday Name (e.g. Fiji Day)" ${dis} oninput="updateHolidayField(${idx}, 'name', this.value)">
+                        ${isEditMode ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeHolidayRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
+                    `;
+                    holContainer.appendChild(row);
+                });
+            }
+
+            const exemptWeeks = currentCourse.schedules.exemptWeeks || [];
+            const weeksList = currentCourse.weeks || [];
+            if (exemptWeeks.length === 0) {
+                exContainer.innerHTML = `<div style="font-size:12px; color:#64748b; padding:4px;">No exempt/study break weeks designated.</div>`;
+            } else {
+                exemptWeeks.forEach((ew, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'slot-row-2col';
+                    const wkOpts = weeksList.map((wLabel, wIdx) =>
+                        `<option value="${wIdx + 1}" ${Number(ew.weekNum) === (wIdx + 1) ? "selected" : ""}>${escapeHtml(wLabel)}</option>`
+                    ).join("");
+                    row.innerHTML = `
+                        <select ${dis} onchange="updateExemptWeekField(${idx}, 'weekNum', Number(this.value))">${wkOpts}</select>
+                        <input type="text" value="${escapeHtml(ew.reason || '')}" placeholder="Why no attendance? (e.g. Study Break)" ${dis} oninput="updateExemptWeekField(${idx}, 'reason', this.value)">
+                        ${isEditMode ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeExemptWeekRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
+                    `;
+                    exContainer.appendChild(row);
+                });
+            }
+        }
+
+        function addHolidayRow() {
+            if (!isEditMode) return;
+            currentCourse.schedules.holidays.push({ date: currentCourse.semStart || toIsoDateStr(new Date()), name: "Public Holiday" });
+            renderHolidaysAndExemptWeeks();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function updateHolidayField(idx, field, val) {
+            currentCourse.schedules.holidays[idx][field] = val;
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function removeHolidayRow(idx) {
+            if (!isEditMode) return;
+            currentCourse.schedules.holidays.splice(idx, 1);
+            renderHolidaysAndExemptWeeks();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function addExemptWeekRow() {
+            if (!isEditMode) return;
+            currentCourse.schedules.exemptWeeks.push({ weekNum: 1, reason: "Mid-Semester Study Break" });
+            renderHolidaysAndExemptWeeks();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function updateExemptWeekField(idx, field, val) {
+            currentCourse.schedules.exemptWeeks[idx][field] = val;
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function removeExemptWeekRow(idx) {
+            if (!isEditMode) return;
+            currentCourse.schedules.exemptWeeks.splice(idx, 1);
+            renderHolidaysAndExemptWeeks();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function handleAttendanceModeChange() {
+            const newMode = document.getElementById('attendanceModeSelect').value;
+            currentCourse.schedules.attendanceMode = newMode;
+            if (newMode === "daily") {
+                // Default slots to "Daily" if switching to Daily Mode
+                currentCourse.schedules.lectures.forEach(s => { if (!s.day) s.day = "Daily"; });
+            }
+            renderScheduleCards();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        /* ================= STAFF PENDING APPROVAL REQUESTS ================= */
 
         function renderStaffPendingRequests() {
             const panel = document.getElementById('staffRequestsPanel');
@@ -1594,7 +1798,8 @@
 
         function addScheduleSlot(groupKey) {
             if (!isEditMode) return;
-            const slot = { day: "Mon", startTime: "10:00", endTime: "11:00", room: "" };
+            const defaultDay = currentCourse.schedules.attendanceMode === 'daily' ? 'Daily' : 'Mon';
+            const slot = { day: defaultDay, startTime: "10:00", endTime: "11:00", room: "" };
             if (groupKey !== 'lectures') slot.capacity = 25;
             currentCourse.schedules[groupKey].push(slot);
             renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
@@ -1618,12 +1823,22 @@
         }
 
         function updateScheduleSummaryBars() {
+            const isDaily = currentCourse.schedules.attendanceMode === 'daily';
+            const modeText = isDaily ? "DAILY ATTENDANCE MODE" : "WEEKLY ATTENDANCE MODE";
+            document.getElementById('lecTableTitle').innerText = `TABLE 1: LECTURE ATTENDANCE (${modeText})`;
+            document.getElementById('labTableTitle').innerText = `TABLE 2: LAB ATTENDANCE (${modeText})`;
+            document.getElementById('tutTableTitle').innerText = `TABLE 3: TUTORIAL ATTENDANCE (${modeText})`;
+
             const lecs = currentCourse.schedules.lectures.map((s, i) => formatSlotSummary(s, 'Lec', i)).join("  |  ");
             const labs = currentCourse.schedules.labs.map((s, i) => `${formatSlotSummary(s, 'Lab', i)} [Cap: ${getEnrolledCountForStream('labs', i)}/${s.capacity || 25}]`).join("  |  ");
             const tuts = currentCourse.schedules.tutorials.map((s, i) => `${formatSlotSummary(s, 'Tut', i)} [Cap: ${getEnrolledCountForStream('tutorials', i)}/${s.capacity || 25}]`).join("  |  ");
-            document.getElementById('lectureScheduleSummary').innerHTML = `<strong>Scheduled Weekly Lectures (Attend ALL):</strong> ${escapeHtml(lecs)}`;
-            document.getElementById('labScheduleSummary').innerHTML = `<strong>Lab Streams (1/Wk — Capacity Tracked):</strong> ${escapeHtml(labs)}`;
-            document.getElementById('tutorialScheduleSummary').innerHTML = `<strong>Tutorial Streams (1/Wk — Capacity Tracked):</strong> ${escapeHtml(tuts)}`;
+            const hols = (currentCourse.schedules.holidays || []).map(h => `${h.date} (${h.name})`).join(", ") || "None";
+            const brks = (currentCourse.schedules.exemptWeeks || []).map(b => `Wk ${b.weekNum}: ${b.reason}`).join(", ") || "None";
+
+            document.getElementById('lectureScheduleSummary').innerHTML =
+                `<strong>Lectures:</strong> ${escapeHtml(lecs)} &nbsp;|&nbsp; <strong>Holidays:</strong> ${escapeHtml(hols)} &nbsp;|&nbsp; <strong>Exempt Study Breaks:</strong> ${escapeHtml(brks)}`;
+            document.getElementById('labScheduleSummary').innerHTML = `<strong>Lab Streams (Capacity Tracked):</strong> ${escapeHtml(labs)}`;
+            document.getElementById('tutorialScheduleSummary').innerHTML = `<strong>Tutorial Streams (Capacity Tracked):</strong> ${escapeHtml(tuts)}`;
         }
 
         function generateWeeksList(startStr, endStr) {
@@ -1649,7 +1864,9 @@
             currentCourse.semStart = document.getElementById('semStart').value;
             currentCourse.semEnd = document.getElementById('semEnd').value;
             currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
-            renderAllThreeTables(); queueAutoSave();
+            renderHolidaysAndExemptWeeks();
+            renderAllThreeTables();
+            queueAutoSave();
         }
 
         function renderCourseToUI() {
@@ -1657,8 +1874,10 @@
             document.getElementById('courseTitle').value = currentCourse.courseTitle || "";
             document.getElementById('semStart').value = currentCourse.semStart || "";
             document.getElementById('semEnd').value = currentCourse.semEnd || "";
+            document.getElementById('attendanceModeSelect').value = (currentCourse.schedules && currentCourse.schedules.attendanceMode) || "weekly";
             renderStaffPendingRequests();
             renderScheduleCards();
+            renderHolidaysAndExemptWeeks();
             renderAllThreeTables();
         }
 
@@ -1687,13 +1906,15 @@
         }
 
         function renderLectureTable() {
-            const weeks = currentCourse.weeks || [], lecSlots = currentCourse.schedules.lectures || [], numLecs = lecSlots.length;
+            const cols = getActiveColumnsForCourse(currentCourse);
+            const lecSlots = currentCourse.schedules.lectures || [], numLecs = lecSlots.length;
             let head = `<tr><th>#</th><th style="min-width:110px;">ID</th><th style="min-width:130px;">Last Name</th><th style="min-width:120px;">First Name</th><th>Course</th><th>Mode</th>`;
-            weeks.forEach(w => {
-                const sub = lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
-                head += `<th style="min-width:${Math.max(100, numLecs * 46)}px;"><div>${w}</div><div style="font-size:10px; font-weight:normal;">${escapeHtml(sub)}</div></th>`;
+            cols.forEach(c => {
+                const brk = findExemptWeek(currentCourse, c.weekNum);
+                const sub = brk ? `🚫 ${brk.reason}` : lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
+                head += `<th style="min-width:${Math.max(100, numLecs * 46)}px;"><div>${escapeHtml(c.label)}</div><div style="font-size:10px; font-weight:normal; color:${brk ? '#b91c1c' : '#475569'};">${escapeHtml(sub)}</div></th>`;
             });
-            head += `<th>Present</th><th>Full Wks</th><th>Lecture %</th>${isEditMode ? `<th>Del</th>` : ""}</tr>`;
+            head += `<th>Present</th><th>Lecture %</th>${isEditMode ? `<th>Del</th>` : ""}</tr>`;
             document.getElementById('lectureTableHead').innerHTML = head;
 
             const tbody = document.getElementById('lectureTableBody');
@@ -1702,33 +1923,28 @@
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let totPres = 0, totMark = 0, fullWks = 0, wksMark = 0, cells = "";
-                weeks.forEach((w, wIdx) => {
-                    let wkPres = 0, wkMark = 0, sels = "";
+                let totPres = 0, totMark = 0, cells = "";
+                cols.forEach(c => {
+                    let sels = "";
                     for (let lIdx = 0; lIdx < numLecs; lIdx++) {
-                        const key = `W${wIdx + 1}_L${lIdx + 1}`;
-                        const val = getEffectiveSessionStatus(st.lectureAttendance[key] || "", currentCourse.semStart, wIdx, lecSlots[lIdx], st.hasLoggedIn);
-                        if (val === "P") { wkPres++; wkMark++; totPres++; totMark++; }
-                        else if (val === "A" || val === "L") { wkMark++; totMark++; }
+                        const key = `${c.keyPrefix}_L${lIdx + 1}`;
+                        const val = getEffectiveSessionStatus(currentCourse, st.lectureAttendance[key] || "", c, lecSlots[lIdx], st.hasLoggedIn);
+                        if (val === "P") { totPres++; totMark++; }
+                        else if (val === "A" || val === "L") { totMark++; }
                         sels += `<select class="lec-sub-select ${val ? 'att-' + val : ''}" ${dis} onchange="updateLectureCell(${idx}, '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>L${lIdx + 1}:-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L${lIdx + 1}:L</option>
+                            <option value="HOL" ${val === "HOL" ? "selected" : ""}>L${lIdx + 1}:HOL</option>
+                            <option value="BRK" ${val === "BRK" ? "selected" : ""}>L${lIdx + 1}:BRK</option>
                         </select>`;
                     }
-                    let chip = "";
-                    if (wkMark > 0) {
-                        wksMark++;
-                        if (wkPres === numLecs) { fullWks++; chip = `<span class="wk-status-chip chip-full">${wkPres}/${numLecs}✓</span>`; }
-                        else chip = `<span class="wk-status-chip ${wkPres > 0 ? 'chip-partial' : 'chip-none'}">${wkPres}/${numLecs}</span>`;
-                    }
-                    cells += `<td><div class="lec-week-box">${sels}${chip}</div></td>`;
+                    cells += `<td><div class="lec-week-box">${sels}</div></td>`;
                 });
-                const pct = totMark > 0 ? Math.round((totPres / totMark) * 100) + "%" : "0%";
+                const pct = totMark > 0 ? Math.round((totPres / totMark) * 100) + "%" : "100%";
                 tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}${cells}
-                    <td class="summary-cell">${totPres}/${totMark || (weeks.length * numLecs)}</td>
-                    <td class="summary-cell">${fullWks}/${wksMark || weeks.length}</td>
+                    <td class="summary-cell">${totPres}/${totMark}</td>
                     <td class="summary-cell">${pct}</td>
                     ${isEditMode ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}`;
                 tbody.appendChild(tr);
@@ -1736,9 +1952,12 @@
         }
 
         function renderLabTable() {
-            const weeks = currentCourse.weeks || [], labSlots = currentCourse.schedules.labs || [];
+            const cols = getActiveColumnsForCourse(currentCourse), labSlots = currentCourse.schedules.labs || [];
             let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Lab (Staff Override)</th>`;
-            weeks.forEach(w => { head += `<th>${w}</th>`; });
+            cols.forEach(c => {
+                const brk = findExemptWeek(currentCourse, c.weekNum);
+                head += `<th><div>${escapeHtml(c.label)}</div>${brk ? `<div style="font-size:9.5px; color:#b91c1c;">🚫 ${escapeHtml(brk.reason)}</div>` : ''}</th>`;
+            });
             head += `<th>Labs Present</th><th>Lab %</th></tr>`;
             document.getElementById('labTableHead').innerHTML = head;
 
@@ -1753,9 +1972,9 @@
                     labSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedLabIdx) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))} [${getEnrolledCountForStream('labs', sIdx)}/${s.capacity || 25}]</option>`).join("");
                 const slot = labSlots[st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0] || labSlots[0];
 
-                weeks.forEach((w, wIdx) => {
-                    const key = `W${wIdx + 1}`;
-                    const val = getEffectiveSessionStatus((st.labAttendance && st.labAttendance[key]) || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                cols.forEach(c => {
+                    const key = c.keyPrefix;
+                    const val = getEffectiveSessionStatus(currentCourse, (st.labAttendance && st.labAttendance[key]) || "", c, slot, st.hasLoggedIn);
                     if (val === "P") { pres++; mark++; }
                     else if (val === "A" || val === "L") { mark++; }
                     cells += `<td class="${val ? 'att-' + val : ''}">
@@ -1765,21 +1984,26 @@
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L</option>
                             <option value="REQ" ${val === "REQ" ? "selected" : ""}>REQ</option>
+                            <option value="HOL" ${val === "HOL" ? "selected" : ""}>HOL</option>
+                            <option value="BRK" ${val === "BRK" ? "selected" : ""}>BRK</option>
                         </select>
                     </td>`;
                 });
-                const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
+                const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "100%";
                 tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
                     <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">${labOpts}</select></td>
-                    ${cells}<td class="summary-cell">${pres}/${mark || weeks.length}</td><td class="summary-cell">${pct}</td>`;
+                    ${cells}<td class="summary-cell">${pres}/${mark}</td><td class="summary-cell">${pct}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function renderTutorialTable() {
-            const weeks = currentCourse.weeks || [], tutSlots = currentCourse.schedules.tutorials || [], numLecs = (currentCourse.schedules.lectures || []).length;
+            const cols = getActiveColumnsForCourse(currentCourse), tutSlots = currentCourse.schedules.tutorials || [], numLecs = (currentCourse.schedules.lectures || []).length;
             let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Tutorial (Staff Override)</th>`;
-            weeks.forEach(w => { head += `<th>${w}</th>`; });
+            cols.forEach(c => {
+                const brk = findExemptWeek(currentCourse, c.weekNum);
+                head += `<th><div>${escapeHtml(c.label)}</div>${brk ? `<div style="font-size:9.5px; color:#b91c1c;">🚫 ${escapeHtml(brk.reason)}</div>` : ''}</th>`;
+            });
             head += `<th>Tuts Present</th><th>Tutorial %</th><th>Overall %</th></tr>`;
             document.getElementById('tutorialTableHead').innerHTML = head;
 
@@ -1794,9 +2018,9 @@
                     tutSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedTutIdx) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))} [${getEnrolledCountForStream('tutorials', sIdx)}/${s.capacity || 25}]</option>`).join("");
                 const slot = tutSlots[st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0] || tutSlots[0];
 
-                weeks.forEach((w, wIdx) => {
-                    const key = `W${wIdx + 1}`;
-                    const val = getEffectiveSessionStatus((st.tutorialAttendance && st.tutorialAttendance[key]) || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                cols.forEach(c => {
+                    const key = c.keyPrefix;
+                    const val = getEffectiveSessionStatus(currentCourse, (st.tutorialAttendance && st.tutorialAttendance[key]) || "", c, slot, st.hasLoggedIn);
                     if (val === "P") { pres++; mark++; }
                     else if (val === "A" || val === "L") { mark++; }
                     cells += `<td class="${val ? 'att-' + val : ''}">
@@ -1806,35 +2030,37 @@
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L</option>
                             <option value="REQ" ${val === "REQ" ? "selected" : ""}>REQ</option>
+                            <option value="HOL" ${val === "HOL" ? "selected" : ""}>HOL</option>
+                            <option value="BRK" ${val === "BRK" ? "selected" : ""}>BRK</option>
                         </select>
                     </td>`;
                 });
-                const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
-                const overall = computeOverallStudentPercentage(st, weeks.length, numLecs);
+                const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "100%";
+                const overall = computeOverallStudentPercentage(st, cols, numLecs);
                 tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
                     <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedTutIdx', Number(this.value))">${tutOpts}</select></td>
-                    ${cells}<td class="summary-cell">${pres}/${mark || weeks.length}</td><td class="summary-cell">${pct}</td>
+                    ${cells}<td class="summary-cell">${pres}/${mark}</td><td class="summary-cell">${pct}</td>
                     <td class="summary-cell" style="background:#eef2ff; color:#1e3a8a;">${overall}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        function computeOverallStudentPercentage(st, numWeeks, numLecs) {
+        function computeOverallStudentPercentage(st, cols, numLecs) {
             let pres = 0, mark = 0;
             const lecSlots = currentCourse.schedules.lectures || [], labSlots = currentCourse.schedules.labs || [], tutSlots = currentCourse.schedules.tutorials || [];
             const labSlot = labSlots[st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0] || labSlots[0];
             const tutSlot = tutSlots[st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0] || tutSlots[0];
-            for (let w = 0; w < numWeeks; w++) {
+            cols.forEach(c => {
                 for (let l = 0; l < numLecs; l++) {
-                    const v = getEffectiveSessionStatus(st.lectureAttendance ? st.lectureAttendance[`W${w + 1}_L${l + 1}`] : "", currentCourse.semStart, w, lecSlots[l], st.hasLoggedIn);
+                    const v = getEffectiveSessionStatus(currentCourse, st.lectureAttendance ? st.lectureAttendance[`${c.keyPrefix}_L${l + 1}`] : "", c, lecSlots[l], st.hasLoggedIn);
                     if (v === "P") { pres++; mark++; } else if (v === "A" || v === "L") mark++;
                 }
-                const lv = getEffectiveSessionStatus(st.labAttendance ? st.labAttendance[`W${w + 1}`] : "", currentCourse.semStart, w, labSlot, st.hasLoggedIn);
+                const lv = getEffectiveSessionStatus(currentCourse, st.labAttendance ? st.labAttendance[c.keyPrefix] : "", c, labSlot, st.hasLoggedIn);
                 if (lv === "P") { pres++; mark++; } else if (lv === "A" || lv === "L") mark++;
-                const tv = getEffectiveSessionStatus(st.tutorialAttendance ? st.tutorialAttendance[`W${w + 1}`] : "", currentCourse.semStart, w, tutSlot, st.hasLoggedIn);
+                const tv = getEffectiveSessionStatus(currentCourse, st.tutorialAttendance ? st.tutorialAttendance[c.keyPrefix] : "", c, tutSlot, st.hasLoggedIn);
                 if (tv === "P") { pres++; mark++; } else if (tv === "A" || tv === "L") mark++;
-            }
-            return mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
+            });
+            return mark > 0 ? Math.round((pres / mark) * 100) + "%" : "100%";
         }
 
         function updateStudentField(rowIndex, field, value) {
@@ -1847,8 +2073,8 @@
             renderAllThreeTables(); queueAutoSave();
         }
 
-        function updateSingleSessionCell(rowIndex, mapName, weekKey, value) {
-            currentCourse.students[rowIndex][mapName][weekKey] = value;
+        function updateSingleSessionCell(rowIndex, mapName, key, value) {
+            currentCourse.students[rowIndex][mapName][key] = value;
             renderAllThreeTables(); queueAutoSave();
         }
 
@@ -1879,53 +2105,54 @@
         }
 
         function exportCourseToExcel() {
-            const code = currentCourse.courseCode || "Course", weeks = currentCourse.weeks || [];
+            const code = currentCourse.courseCode || "Course";
+            const cols = getActiveColumnsForCourse(currentCourse);
             const lecSlots = currentCourse.schedules.lectures || [], labSlots = currentCourse.schedules.labs || [], tutSlots = currentCourse.schedules.tutorials || [];
             const wb = XLSX.utils.book_new();
 
             const lecHeaders = ["ID", "Last Name", "First Name", "Course", "Mode"];
-            weeks.forEach(w => lecSlots.forEach((s, lIdx) => lecHeaders.push(`${w} - L${lIdx + 1}`)));
+            cols.forEach(c => lecSlots.forEach((s, lIdx) => lecHeaders.push(`${c.label} - L${lIdx + 1}`)));
             lecHeaders.push("Lecture %");
             const lecRows = [lecHeaders];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode];
-                weeks.forEach((_, wIdx) => lecSlots.forEach((slotObj, lIdx) => {
-                    const v = getEffectiveSessionStatus(st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "", currentCourse.semStart, wIdx, slotObj, st.hasLoggedIn);
+                cols.forEach(c => lecSlots.forEach((slotObj, lIdx) => {
+                    const v = getEffectiveSessionStatus(currentCourse, st.lectureAttendance[`${c.keyPrefix}_L${lIdx + 1}`] || "", c, slotObj, st.hasLoggedIn);
                     row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
                 }));
-                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
+                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "100%");
                 lecRows.push(row);
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(lecRows), `${code}_Lectures`);
 
-            const labRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Lab", ...weeks, "Lab %"]];
+            const labRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Lab", ...cols.map(c => c.label), "Lab %"]];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
                 const slot = labSlots[st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0] || {};
                 const desLabel = st.assignedLabIdx >= 0 ? formatSlotSummary(slot, 'Lab', st.assignedLabIdx) : 'Unassigned';
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, desLabel];
-                weeks.forEach((_, wIdx) => {
-                    const v = getEffectiveSessionStatus(st.labAttendance[`W${wIdx + 1}`] || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                cols.forEach(c => {
+                    const v = getEffectiveSessionStatus(currentCourse, st.labAttendance[c.keyPrefix] || "", c, slot, st.hasLoggedIn);
                     row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
                 });
-                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
+                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "100%");
                 labRows.push(row);
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(labRows), `${code}_Labs`);
 
-            const tutRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Tutorial", ...weeks, "Tutorial %", "Overall %"]];
+            const tutRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Tutorial", ...cols.map(c => c.label), "Tutorial %", "Overall %"]];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
                 const slot = tutSlots[st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0] || {};
                 const desLabel = st.assignedTutIdx >= 0 ? formatSlotSummary(slot, 'Tut', st.assignedTutIdx) : 'Unassigned';
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, desLabel];
-                weeks.forEach((_, wIdx) => {
-                    const v = getEffectiveSessionStatus(st.tutorialAttendance[`W${wIdx + 1}`] || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                cols.forEach(c => {
+                    const v = getEffectiveSessionStatus(currentCourse, st.tutorialAttendance[c.keyPrefix] || "", c, slot, st.hasLoggedIn);
                     row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
                 });
-                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
-                row.push(computeOverallStudentPercentage(st, weeks.length, lecSlots.length));
+                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "100%");
+                row.push(computeOverallStudentPercentage(st, cols, lecSlots.length));
                 tutRows.push(row);
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tutRows), `${code}_Tutorials`);
