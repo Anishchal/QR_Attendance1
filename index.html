@@ -6,91 +6,97 @@
     <title>Portal - Staff & Student Course Attendance</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Leaflet CSS & JS for Interactive Satellite Maps of Laucala Campus, Suva, Fiji -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root { --primary:#007BFF; --success:#28A745; --dark:#2c3e50; --border:#d1d5db; --bg:#f4f7f6; --lec-color:#1d4ed8; --lab-color:#047857; --tut-color:#6d28d9; }
         body { font-family:Arial,sans-serif; background:var(--bg); margin:0; padding:0; color:#333; }
-        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:1000; }
-        .modal-box { background:#fff; padding:28px; border-radius:8px; width:420px; max-width:92vw; box-shadow:0 4px 15px rgba(0,0,0,0.2); text-align:center; }
-        .modal-box h2 { margin-top:0; color:#333; }
-        .btn-group { display:flex; gap:10px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
-        .btn { padding:9px 14px; border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold; color:#fff; transition:opacity 0.2s; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:1000; padding:12px; box-sizing:border-box; }
+        .modal-box { background:#fff; padding:24px; border-radius:8px; width:460px; max-width:95vw; max-height:92vh; overflow-y:auto; box-shadow:0 4px 15px rgba(0,0,0,0.2); text-align:center; }
+        .modal-box h2 { margin-top:0; color:#333; font-size:20px; }
+        .btn-group { display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+        .btn { padding:8px 13px; border:none; border-radius:4px; cursor:pointer; font-size:12.5px; font-weight:bold; color:#fff; transition:opacity 0.2s; }
         .btn-staff { background:var(--primary); } .btn-student { background:var(--success); } .btn-dark { background:var(--dark); }
         .btn-danger { background:#dc3545; } .btn-warning { background:#f39c12; } .btn-lec { background:var(--lec-color); }
         .btn-lab { background:var(--lab-color); } .btn-tut { background:var(--tut-color); }
         .btn:hover { opacity:0.9; } .btn:disabled { opacity:0.5; cursor:not-allowed; }
         .form-container { display:none; text-align:left; }
-        .form-container input, .form-container select, .form-container textarea { width:100%; padding:10px; margin:6px 0 14px 0; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; font-size:13.5px; font-family:inherit; }
-        .form-container label { font-size:13px; font-weight:bold; color:#555; }
+        .form-container input, .form-container select, .form-container textarea { width:100%; padding:9px; margin:5px 0 12px 0; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; font-size:13px; font-family:inherit; }
+        .form-container label { font-size:12.5px; font-weight:bold; color:#555; }
         .submit-btn { width:100%; background:#333; color:#fff; padding:11px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:14px; }
         .submit-btn:disabled { opacity:0.6; cursor:wait; }
-        .toggle-link { margin-top:15px; font-size:13px; text-align:center; color:var(--primary); cursor:pointer; }
-        .back-link { font-size:12px; color:#666; cursor:pointer; margin-top:12px; display:block; text-align:center; }
-        .status-msg { display:none; font-size:13px; margin-top:12px; padding:9px; border-radius:4px; text-align:center; line-height:1.4; }
+        .toggle-link { margin-top:14px; font-size:13px; text-align:center; color:var(--primary); cursor:pointer; }
+        .back-link { font-size:12px; color:#666; cursor:pointer; margin-top:10px; display:block; text-align:center; }
+        .status-msg { display:none; font-size:12.5px; margin-top:10px; padding:9px; border-radius:4px; text-align:center; line-height:1.4; }
         .status-loading { display:block; background:#e7f3ff; color:#0056b3; }
         .status-error { display:block; background:#fdecea; color:#b71c1c; }
         .status-success { display:block; background:#eafaf1; color:#1e8449; }
         .status-warn { display:block; background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
-        .conn-badge { display:inline-block; margin-top:16px; font-size:12px; padding:5px 10px; border-radius:12px; cursor:pointer; }
+        .conn-badge { display:inline-block; margin-top:14px; font-size:12px; padding:5px 10px; border-radius:12px; cursor:pointer; }
         .conn-ok { background:#eafaf1; color:#1e8449; border:1px solid #a3e4d7; }
         .conn-missing { background:#fff3cd; color:#856404; border:1px solid #ffeeba; }
-        .clock-banner { background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:8px 10px; font-size:12px; color:#1e293b; margin-bottom:12px; text-align:center; }
-        #staffDashboard, #studentDashboard { display:none; padding:20px 28px; max-width:1550px; margin:0 auto; }
-        .topbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:15px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-        .topbar h1 { margin:0; font-size:20px; color:var(--dark); }
+        .clock-banner { background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:8px 10px; font-size:12px; color:#1e293b; margin-bottom:10px; text-align:center; }
+        #staffDashboard, #studentDashboard { display:none; padding:20px 26px; max-width:1550px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:14px 22px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:18px; flex-wrap:wrap; gap:12px; }
+        .topbar h1 { margin:0; font-size:19px; color:var(--dark); }
         .topbar-meta { font-size:13px; color:#666; margin-top:4px; }
-        .legend-bar { display:flex; gap:10px; flex-wrap:wrap; background:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.06); margin-bottom:20px; font-size:12.5px; align-items:center; }
+        .legend-bar { display:flex; gap:10px; flex-wrap:wrap; background:#fff; padding:11px 18px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.06); margin-bottom:18px; font-size:12px; align-items:center; }
         .legend-pill { padding:4px 9px; border-radius:4px; font-weight:bold; font-size:11.5px; }
-        .student-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:20px; }
-        .stat-card { background:#fff; padding:16px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.07); border-left:5px solid var(--primary); }
-        .stat-card h4 { margin:0 0 6px 0; font-size:12px; color:#64748b; text-transform:uppercase; }
-        .stat-card .stat-val { font-size:24px; font-weight:bold; color:#1e293b; }
-        .session-picker-card { background:#fff; padding:18px 24px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; border-left:5px solid var(--lab-color); }
+        .student-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:18px; }
+        .stat-card { background:#fff; padding:15px 18px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.07); border-left:5px solid var(--primary); }
+        .stat-card h4 { margin:0 0 6px 0; font-size:11.5px; color:#64748b; text-transform:uppercase; }
+        .stat-card .stat-val { font-size:23px; font-weight:bold; color:#1e293b; }
+        .session-picker-card { background:#fff; padding:16px 22px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:18px; border-left:5px solid var(--lab-color); }
         .session-picker-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
         .week-window-badge { font-size:12px; padding:5px 12px; border-radius:20px; font-weight:bold; }
         .window-open { background:#dcfce7; color:#166534; } .window-closed { background:#fee2e2; color:#991b1b; }
-        .course-panel { background:#fff; padding:20px 25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; }
-        .panel-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px; }
-        .course-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; align-items:end; }
-        .field-group label { display:block; font-size:12px; font-weight:bold; color:#555; margin-bottom:5px; text-transform:uppercase; }
-        .field-group input, .field-group select { width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:4px; font-size:13.5px; box-sizing:border-box; }
+        .course-panel { background:#fff; padding:18px 22px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:18px; }
+        .panel-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid #eee; padding-bottom:14px; margin-bottom:14px; }
+        .course-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:13px; align-items:end; }
+        .field-group label { display:block; font-size:11.5px; font-weight:bold; color:#555; margin-bottom:5px; text-transform:uppercase; }
+        .field-group input, .field-group select { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:4px; font-size:13px; box-sizing:border-box; }
         .field-group input:disabled, .field-group select:disabled { background:#f8f9fa; color:#555; }
-        .schedule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(410px,1fr)); gap:16px; margin-top:18px; }
-        .schedule-card { border:1px solid #cbd5e1; border-radius:8px; padding:14px; background:#f8fafc; }
-        .schedule-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #e2e8f0; }
-        .schedule-card-header h3 { margin:0; font-size:13.5px; text-transform:uppercase; }
-        .slot-row-lec { display:grid; grid-template-columns:82px 1fr 1fr 1.2fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
-        .slot-label-lec { display:grid; grid-template-columns:82px 1fr 1fr 1.2fr 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
-        .slot-row-cap { display:grid; grid-template-columns:80px 1fr 1fr 1fr 70px auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
-        .slot-label-cap { display:grid; grid-template-columns:80px 1fr 1fr 1fr 70px 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
-        .slot-row-2col { display:grid; grid-template-columns:145px 1fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
-        .slot-row-access { display:grid; grid-template-columns:1.2fr 1fr auto; gap:8px; align-items:center; margin-bottom:8px; background:#fff; padding:8px; border-radius:4px; border:1px solid #cbd5e1; font-size:12.5px; }
-        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input, .slot-row-2col select, .slot-row-2col input, .slot-row-access select { width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
+        .schedule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(440px,1fr)); gap:15px; margin-top:16px; }
+        .schedule-card { border:1px solid #cbd5e1; border-radius:8px; padding:12px; background:#f8fafc; }
+        .schedule-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-bottom:7px; border-bottom:2px solid #e2e8f0; }
+        .schedule-card-header h3 { margin:0; font-size:13px; text-transform:uppercase; }
+        /* Updated slot grids with Geofence button column */
+        .slot-row-lec { display:grid; grid-template-columns:76px 1fr 1fr 1fr auto auto; gap:5px; align-items:center; margin-bottom:7px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-label-lec { display:grid; grid-template-columns:76px 1fr 1fr 1fr 92px 26px; gap:5px; font-size:10.5px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
+        .slot-row-cap { display:grid; grid-template-columns:74px 1fr 1fr 0.9fr 58px auto auto; gap:5px; align-items:center; margin-bottom:7px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-label-cap { display:grid; grid-template-columns:74px 1fr 1fr 0.9fr 58px 92px 26px; gap:5px; font-size:10.5px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
+        .slot-row-2col { display:grid; grid-template-columns:140px 1fr auto; gap:6px; align-items:center; margin-bottom:7px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
+        .slot-row-access { display:grid; grid-template-columns:1.2fr 1fr auto; gap:8px; align-items:center; margin-bottom:7px; background:#fff; padding:7px; border-radius:4px; border:1px solid #cbd5e1; font-size:12px; }
+        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input, .slot-row-2col select, .slot-row-2col input, .slot-row-access select { width:100%; padding:5px; font-size:11.5px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
+        .geo-btn-on { background:#047857 !important; color:#fff; font-size:11px; padding:5px 7px; white-space:nowrap; }
+        .geo-btn-off { background:#64748b !important; color:#fff; font-size:11px; padding:5px 7px; white-space:nowrap; }
         .access-role-badge { font-size:12px; padding:4px 10px; border-radius:12px; font-weight:bold; background:#e0e7ff; color:#1e40af; }
-        .requests-panel { background:#fff8e6; border:2px solid #f39c12; border-radius:8px; padding:16px 20px; margin-bottom:20px; display:none; }
-        .requests-panel h3 { margin:0 0 10px 0; font-size:15px; color:#9c640c; }
-        .req-table { width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; }
-        .req-table th, .req-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; }
+        .requests-panel { background:#fff8e6; border:2px solid #f39c12; border-radius:8px; padding:15px 18px; margin-bottom:18px; display:none; }
+        .requests-panel h3 { margin:0 0 10px 0; font-size:14.5px; color:#9c640c; }
+        .req-table { width:100%; border-collapse:collapse; font-size:12px; background:#fff; }
+        .req-table th, .req-table td { border:1px solid #e2e8f0; padding:7px 9px; text-align:left; }
         .req-table th { background:#fef3c7; color:#92400e; }
-        .dropbox-container { margin-top:18px; }
-        .file-dropzone { border:2px dashed #007BFF; background:#eef6ff; border-radius:8px; padding:16px; text-align:center; cursor:pointer; font-size:14px; color:#0056b3; transition:all 0.2s; outline:none; }
+        .dropbox-container { margin-top:16px; }
+        .file-dropzone { border:2px dashed #007BFF; background:#eef6ff; border-radius:8px; padding:14px; text-align:center; cursor:pointer; font-size:13.5px; color:#0056b3; transition:all 0.2s; outline:none; }
         .file-dropzone.dragover { background:#d0e7ff; border-color:#004085; }
         .file-dropzone.staged { border-color:#28A745; background:#eafaf1; color:#155724; }
         .file-dropzone.disabled-zone { border-color:#cbd5e1; background:#f8fafc; color:#94a3b8; cursor:not-allowed; }
-        .enter-hint-badge { display:inline-block; margin-top:8px; padding:5px 14px; background:#28A745; color:#fff; border-radius:4px; font-size:12px; font-weight:bold; }
-        .tables-nav { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:20px; flex-wrap:wrap; gap:10px; }
-        .sheet-wrapper { background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); padding:20px; overflow-x:auto; margin-bottom:28px; border-top:4px solid var(--dark); }
+        .enter-hint-badge { display:inline-block; margin-top:6px; padding:5px 12px; background:#28A745; color:#fff; border-radius:4px; font-size:11.5px; font-weight:bold; }
+        .tables-nav { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:11px 18px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+        .sheet-wrapper { background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08); padding:18px; overflow-x:auto; margin-bottom:24px; border-top:4px solid var(--dark); }
         .sheet-wrapper.lec-sheet { border-top-color:var(--lec-color); } .sheet-wrapper.lab-sheet { border-top-color:var(--lab-color); } .sheet-wrapper.tut-sheet { border-top-color:var(--tut-color); }
-        .sheet-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
-        .sheet-title-badge { font-size:15px; font-weight:bold; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-        .rule-pill { font-size:12px; padding:4px 10px; border-radius:12px; background:#f1f5f9; color:#334155; font-weight:normal; }
-        .schedule-summary-bar { font-size:12px; color:#475569; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:12px; }
-        .sync-badge { font-size:13px; padding:5px 12px; border-radius:20px; background:#eef2f7; color:#333; font-weight:bold; }
-        table.spreadsheet { width:100%; border-collapse:collapse; font-size:12.5px; min-width:900px; }
+        .sheet-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px; }
+        .sheet-title-badge { font-size:14.5px; font-weight:bold; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+        .rule-pill { font-size:11.5px; padding:3px 9px; border-radius:12px; background:#f1f5f9; color:#334155; font-weight:normal; }
+        .schedule-summary-bar { font-size:11.5px; color:#475569; background:#f8fafc; padding:7px 11px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:10px; }
+        .sync-badge { font-size:12.5px; padding:5px 11px; border-radius:20px; background:#eef2f7; color:#333; font-weight:bold; }
+        table.spreadsheet { width:100%; border-collapse:collapse; font-size:12px; min-width:900px; }
         table.spreadsheet th, table.spreadsheet td { border:1px solid #cbd5e1; padding:0; text-align:left; }
-        table.spreadsheet th { background:#f1f5f9; color:#1e293b; font-weight:bold; padding:8px 6px; text-align:center; white-space:nowrap; }
-        table.spreadsheet td.row-num { background:#f8fafc; text-align:center; font-weight:bold; color:#64748b; width:34px; padding:6px; }
-        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select { width:100%; border:none; padding:7px 6px; font-size:12.5px; box-sizing:border-box; background:transparent; }
-        table.spreadsheet select.att-select { width:100%; border:none; padding:7px 2px; font-size:12px; font-weight:bold; text-align:center; background:transparent; cursor:pointer; }
+        table.spreadsheet th { background:#f1f5f9; color:#1e293b; font-weight:bold; padding:7px 5px; text-align:center; white-space:nowrap; }
+        table.spreadsheet td.row-num { background:#f8fafc; text-align:center; font-weight:bold; color:#64748b; width:32px; padding:5px; }
+        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select { width:100%; border:none; padding:6px 5px; font-size:12px; box-sizing:border-box; background:transparent; }
+        table.spreadsheet select.att-select { width:100%; border:none; padding:6px 2px; font-size:11.5px; font-weight:bold; text-align:center; background:transparent; cursor:pointer; }
         .lec-week-box { display:flex; align-items:center; justify-content:center; gap:3px; padding:3px 4px; }
         .lec-sub-select { border:1px solid #cbd5e1; border-radius:3px; font-size:11px; font-weight:bold; padding:3px 2px; cursor:pointer; background:#fff; }
         .wk-status-chip { font-size:10px; font-weight:bold; padding:2px 4px; border-radius:3px; white-space:nowrap; }
@@ -101,10 +107,57 @@
         .att-REQ { background-color:#e0f2fe !important; color:#0369a1 !important; }
         .att-HOL { background-color:#ede9fe !important; color:#5b21b6 !important; }
         .att-BRK { background-color:#e2e8f0 !important; color:#475569 !important; }
-        .summary-cell { text-align:center !important; font-weight:bold; padding:7px !important; background:#f8fafc; white-space:nowrap; }
+        .summary-cell { text-align:center !important; font-weight:bold; padding:6px !important; background:#f8fafc; white-space:nowrap; }
+
+        /* Satellite Map & Pokémon GO Radar Styles */
+        .satellite-map-box { width:100%; height:290px; border-radius:8px; border:2px solid #1e293b; margin:8px 0; overflow:hidden; }
+        .radar-panel { background:#0f172a; color:#f8fafc; border-radius:8px; padding:12px; margin:8px 0 12px 0; border:2px solid #38bdf8; }
+        .radar-status-bar { font-size:12.5px; font-weight:bold; padding:7px 10px; border-radius:6px; margin-top:6px; text-align:center; }
+        .radar-in { background:#065f46; color:#a7f3d0; border:1px solid #10b981; }
+        .radar-out { background:#7f1d1d; color:#fecaca; border:1px solid #ef4444; }
+        .radar-denied { background:#78350f; color:#fde68a; border:1px solid #f59e0b; }
+        @keyframes pulseRing { 0% { box-shadow:0 0 0 0 rgba(56,189,248,0.8); } 70% { box-shadow:0 0 0 14px rgba(56,189,248,0); } 100% { box-shadow:0 0 0 0 rgba(56,189,248,0); } }
+        .student-gps-dot { width:16px; height:16px; background:#38bdf8; border:3px solid #fff; border-radius:50%; animation:pulseRing 1.6s infinite; }
     </style>
 </head>
 <body>
+
+    <!-- STAFF GEOFENCE SATELLITE MAP PICKER MODAL (LAUCALA, SUVA, FIJI) -->
+    <div class="modal-overlay" id="geofenceModal" style="display:none; z-index:2000;">
+        <div class="modal-box" style="width:580px;">
+            <h2 id="geoModalTitle">🛰️ Room Geofencing — Laucala Campus, Suva, Fiji</h2>
+            <p style="font-size:12px; color:#475569; margin:4px 0 10px 0;">
+                Click on the Satellite Map of Laucala Campus to pin the exact Lecture/Lab/Tutorial room and set the effective radius (<strong>Min: 100m, Max: 250m</strong>).
+            </p>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; text-align:left;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:bold; cursor:pointer; color:#047857;">
+                    <input type="checkbox" id="geoEnableCheckbox" onchange="updateStaffGeoCircle()"> Enable Room Geofencing for This Session
+                </label>
+                <button type="button" class="btn btn-staff" style="padding:5px 10px; font-size:11px;" onclick="recenterLaucalaMap()">Center on Laucala Campus</button>
+            </div>
+
+            <div id="staffGeoMap" class="satellite-map-box"></div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:left; margin-top:8px;">
+                <div>
+                    <label style="font-size:11.5px; font-weight:bold; color:#555;">Selected Coordinates (Lat, Lng)</label>
+                    <input type="text" id="geoCoordsDisplay" readonly style="width:100%; padding:7px; font-size:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:11.5px; font-weight:bold; color:#555;">Effective Radius: <span id="geoRadiusValLabel">150</span>m (100m–250m)</label>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="range" id="geoRadiusSlider" min="100" max="250" step="5" value="150" style="flex:1;" oninput="syncGeoRadiusInput(this.value)">
+                        <input type="number" id="geoRadiusNumber" min="100" max="250" value="150" style="width:64px; padding:6px; border:1px solid #cbd5e1; border-radius:4px;" onchange="syncGeoRadiusInput(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group" style="margin-top:14px;">
+                <button type="button" class="btn btn-student" onclick="saveStaffGeofenceModal()">✓ Save Room Geofence</button>
+                <button type="button" class="btn btn-danger" onclick="closeStaffGeofenceModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <!-- AUTHENTICATION & STUDENT OPTIONS MODAL -->
     <div class="modal-overlay" id="portalModal">
@@ -123,14 +176,15 @@
                 <h2>Student Portal</h2>
                 <p style="font-size:13.5px; color:#555;">Please choose an option below:</p>
                 <div style="display:flex; flex-direction:column; gap:12px; margin-top:18px;">
-                    <button type="button" class="btn btn-student" style="padding:13px; font-size:15px;" onclick="openGiveAttendanceStep()">✓ Give Attendance (Live Session)</button>
+                    <button type="button" class="btn btn-student" style="padding:13px; font-size:15px;" onclick="openGiveAttendanceStep()">✓ Give Attendance (Live Session & Radar)</button>
                     <button type="button" class="btn btn-staff" style="padding:13px; font-size:15px;" onclick="openStudentCheckAttendanceAuth()">📊 Check My Attendance & Select Lab/Tut</button>
                 </div>
                 <span class="back-link" onclick="resetModal()">« Back to User Category</span>
             </div>
 
+            <!-- STUDENT "GIVE ATTENDANCE" WITH POKEMON-GO LIVE SATELLITE RADAR -->
             <div id="giveAttendanceStep" class="form-container">
-                <h2 style="text-align:center; margin-bottom:10px;">Give Session Attendance</h2>
+                <h2 style="text-align:center; margin-bottom:8px;">Give Session Attendance</h2>
                 <div class="clock-banner" id="liveClockBanner">Loading current time...</div>
                 <form id="giveAttForm" onsubmit="handleGiveAttendanceSubmit(event)">
                     <label>Student ID Number</label>
@@ -140,12 +194,35 @@
                         <option value="">-- Loading Course Units... --</option>
                     </select>
                     <label>Select Lecture, Lab or Tutorial Session</label>
-                    <select id="attSessionSelect" required onchange="resetMismatchReasonBox()">
+                    <select id="attSessionSelect" required onchange="handleStudentSessionPickChange()">
                         <option value="">-- Select Course Unit First --</option>
                     </select>
+
+                    <!-- POKEMON-GO STYLE GEOFENCE CONSENT & LIVE SATELLITE RADAR -->
+                    <div id="studentGeoBox" class="radar-panel" style="display:none;">
+                        <div style="font-size:12.5px; font-weight:bold; color:#38bdf8; margin-bottom:6px;">
+                            🛰️ Room Geofence Active (<span id="stuGeoTargetInfo">Radius: 150m</span>)
+                        </div>
+                        <div style="font-size:11.5px; color:#cbd5e1; margin-bottom:8px;">
+                            Share your live GPS location to verify you are inside the session room radius, or deny location sharing (attendance will require Staff approval).
+                        </div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+                            <button type="button" class="btn btn-student" style="flex:1; font-size:11.5px; padding:7px;" onclick="startStudentLiveRadar()">
+                                📍 Agree & Track Live Location
+                            </button>
+                            <button type="button" class="btn btn-warning" style="flex:1; font-size:11.5px; padding:7px;" onclick="denyStudentLocationSharing()">
+                                🚫 Deny Location Sharing (Staff Approval)
+                            </button>
+                        </div>
+                        <div id="studentRadarMap" class="satellite-map-box" style="height:220px; display:none; border-color:#38bdf8;"></div>
+                        <div id="studentRadarStatus" class="radar-status-bar radar-denied">
+                            Awaiting Location Sharing Choice...
+                        </div>
+                    </div>
+
                     <div id="mismatchReasonContainer" style="display:none; background:#fff8e6; border:1px solid #f39c12; padding:10px; border-radius:6px; margin-bottom:12px;">
-                        <label style="color:#9c640c;">Reason for Attending Non-Designated Session (Required unless your session fell on a Holiday)</label>
-                        <textarea id="attReasonInput" rows="3" placeholder="Explain why you are attending this alternative Lab/Tutorial session..."></textarea>
+                        <label id="reasonBoxLabel" style="color:#9c640c;">Reason / Note for Staff Approval</label>
+                        <textarea id="attReasonInput" rows="2" placeholder="Enter reason for Staff approval..."></textarea>
                     </div>
                     <button type="submit" class="submit-btn" id="giveAttSubmitBtn" style="background:var(--success);">Submit Attendance</button>
                     <div class="status-msg" id="giveAttStatusBox"></div>
@@ -216,23 +293,15 @@
                 <div>
                     <strong style="font-size:15px; color:var(--dark);">My Designated Lab & Tutorial Sessions</strong>
                     <div style="font-size:12px; color:#555; margin-top:2px;">
-                        Editable during <strong>Weeks 1 & 2</strong> (subject to room capacity). Closed after Week 2 (only Staff can change). If your designated session falls on a Holiday, you may attend any alternative session that week without Staff approval.
+                        Editable during <strong>Weeks 1 & 2</strong> (subject to room capacity). Closed after Week 2 (only Staff can change).
                     </div>
                 </div>
                 <span class="week-window-badge window-open" id="stuWeekWindowBadge">Checking Semester Week...</span>
             </div>
             <div class="course-grid">
-                <div class="field-group">
-                    <label>Select My Lab Session</label>
-                    <select id="stuPickLabSelect"></select>
-                </div>
-                <div class="field-group">
-                    <label>Select My Tutorial Session</label>
-                    <select id="stuPickTutSelect"></select>
-                </div>
-                <div class="field-group">
-                    <button type="button" class="btn btn-lab" id="stuSaveSessionsBtn" style="width:100%; padding:10px;" onclick="saveStudentSessionSelection()">Save My Lab & Tutorial Selection</button>
-                </div>
+                <div class="field-group"><label>Select My Lab Session</label><select id="stuPickLabSelect"></select></div>
+                <div class="field-group"><label>Select My Tutorial Session</label><select id="stuPickTutSelect"></select></div>
+                <div class="field-group"><button type="button" class="btn btn-lab" id="stuSaveSessionsBtn" style="width:100%; padding:10px;" onclick="saveStudentSessionSelection()">Save My Lab & Tutorial Selection</button></div>
             </div>
             <div class="status-msg" id="stuPickStatusMsg"></div>
         </div>
@@ -267,7 +336,7 @@
     <div id="staffDashboard">
         <div class="topbar">
             <div>
-                <h1>Course Unit, Timetable, Access Control & Attendance Portal</h1>
+                <h1>Course Unit, Satellite Geofencing, Access Control & Attendance Portal</h1>
                 <div class="topbar-meta" id="staffWelcomeMeta">Logged in as Staff</div>
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
@@ -283,17 +352,17 @@
             <span class="legend-pill att-P">P = Present</span>
             <span class="legend-pill att-A">A = Absent (Missed Session)</span>
             <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
-            <span class="legend-pill att-REQ">REQ = Pending Approval</span>
-            <span class="legend-pill att-HOL">HOL = Holiday (No Penalty / Alt Session Auto-Approved)</span>
-            <span class="legend-pill att-BRK">BRK = Exempt / Study Break Week</span>
+            <span class="legend-pill att-REQ">REQ = Pending Approval (Denied GPS / Alt Session)</span>
+            <span class="legend-pill att-HOL">HOL = Holiday (Exempt / Alt Auto-Approved)</span>
+            <span class="legend-pill att-BRK">BRK = Study Break Week</span>
         </div>
 
         <div class="requests-panel" id="staffRequestsPanel">
-            <h3>⚠️ Pending Alternate-Session Attendance Requests (<span id="pendingReqCount">0</span>)</h3>
+            <h3>⚠️ Pending Attendance Requests — Denied Location Sharing or Alternate Sessions (<span id="pendingReqCount">0</span>)</h3>
             <div style="overflow-x:auto;">
                 <table class="req-table">
                     <thead>
-                        <tr><th>Student ID & Name</th><th>Session & Period</th><th>Designated Session</th><th>Attended Session</th><th>Student's Reason</th><th style="width:165px;">Staff Decision</th></tr>
+                        <tr><th>Student ID & Name</th><th>Session & Period</th><th>Designated Session</th><th>Attended Session</th><th>Reason / GPS Status</th><th style="width:165px;">Staff Decision</th></tr>
                     </thead>
                     <tbody id="staffRequestsBody"></tbody>
                 </table>
@@ -319,24 +388,11 @@
                 </div>
             </div>
 
-            <!-- Basic Course Metadata + Weekly/Daily Mode Toggle -->
             <div class="course-grid">
-                <div class="field-group">
-                    <label>Course Unit Code</label>
-                    <input type="text" id="courseCode" placeholder="e.g. PH103" oninput="handleCourseMetaEdit()">
-                </div>
-                <div class="field-group">
-                    <label>Course Unit Title</label>
-                    <input type="text" id="courseTitle" placeholder="e.g. Physics I" oninput="handleCourseMetaEdit()">
-                </div>
-                <div class="field-group">
-                    <label>Semester Start Date</label>
-                    <input type="date" id="semStart" onchange="handleDateRangeChange()">
-                </div>
-                <div class="field-group">
-                    <label>Semester End Date</label>
-                    <input type="date" id="semEnd" onchange="handleDateRangeChange()">
-                </div>
+                <div class="field-group"><label>Course Unit Code</label><input type="text" id="courseCode" placeholder="e.g. PH103" oninput="handleCourseMetaEdit()"></div>
+                <div class="field-group"><label>Course Unit Title</label><input type="text" id="courseTitle" placeholder="e.g. Physics I" oninput="handleCourseMetaEdit()"></div>
+                <div class="field-group"><label>Semester Start Date</label><input type="date" id="semStart" onchange="handleDateRangeChange()"></div>
+                <div class="field-group"><label>Semester End Date</label><input type="date" id="semEnd" onchange="handleDateRangeChange()"></div>
                 <div class="field-group">
                     <label>Attendance Tracking Mode</label>
                     <select id="attendanceModeSelect" onchange="handleAttendanceModeChange()">
@@ -346,85 +402,71 @@
                 </div>
             </div>
 
-            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS, TUTORIALS -->
+            <!-- SCHEDULE CONFIGURATION WITH LAUCALA SATELLITE GEOFENCING -->
             <div class="schedule-grid">
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--lec-color);">1. Lectures (Attend ALL)</h3>
+                        <h3 style="color:var(--lec-color);">1. Lectures (Attend ALL + Geofence)</h3>
                         <button type="button" class="btn btn-lec" id="addLecSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('lectures')">+ Add Lecture</button>
                     </div>
-                    <div class="slot-label-lec"><span>Day/Mode</span><span>Start</span><span>End</span><span>Place (Room #)</span><span></span></div>
+                    <div class="slot-label-lec"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Geofence</span><span></span></div>
                     <div id="lecturesSlotList"></div>
                 </div>
 
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--lab-color);">2. Lab Sessions (1 Req + Capacity)</h3>
+                        <h3 style="color:var(--lab-color);">2. Labs (1 Req + Cap + Geofence)</h3>
                         <button type="button" class="btn btn-lab" id="addLabSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('labs')">+ Add Lab</button>
                     </div>
-                    <div class="slot-label-cap"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
+                    <div class="slot-label-cap"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Cap</span><span>Geofence</span><span></span></div>
                     <div id="labsSlotList"></div>
                 </div>
 
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--tut-color);">3. Tutorials (1 Req + Capacity)</h3>
+                        <h3 style="color:var(--tut-color);">3. Tutorials (1 Req + Cap + Geofence)</h3>
                         <button type="button" class="btn btn-tut" id="addTutSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('tutorials')">+ Add Tutorial</button>
                     </div>
-                    <div class="slot-label-cap"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
+                    <div class="slot-label-cap"><span>Day/Mode</span><span>Start</span><span>End</span><span>Room #</span><span>Cap</span><span>Geofence</span><span></span></div>
                     <div id="tutorialsSlotList"></div>
                 </div>
             </div>
 
             <!-- HOLIDAYS, EXEMPT WEEKS, AND MULTI-STAFF ACCESS CONTROL CARDS -->
             <div class="schedule-grid">
-                <!-- 4. Holidays Card -->
                 <div class="schedule-card" style="border-color:#c4b5fd; background:#faf5ff;">
                     <div class="schedule-card-header">
-                        <h3 style="color:#5b21b6;">4. Public Holidays (No Penalty & Auto-Approve Alt Session)</h3>
+                        <h3 style="color:#5b21b6;">4. Public Holidays (No Penalty & Auto-Approve Alt)</h3>
                         <button type="button" class="btn btn-tut" id="addHolidayBtn" style="padding:5px 10px; font-size:11px;" onclick="addHolidayRow()">+ Add Holiday</button>
-                    </div>
-                    <div style="font-size:11.5px; color:#4c1d95; margin-bottom:8px;">
-                        Students whose session falls on a Holiday are not penalized (<strong>HOL</strong>). If they attend an alternative Lab/Tutorial that week, no Staff approval is needed.
                     </div>
                     <div id="holidaysListContainer"></div>
                 </div>
 
-                <!-- 5. Exempt Study Break Weeks Card -->
                 <div class="schedule-card" style="border-color:#94a3b8; background:#f8fafc;">
                     <div class="schedule-card-header">
-                        <h3 style="color:#334155;">5. Study Breaks / Exempt Weeks (No Attendance Taken)</h3>
+                        <h3 style="color:#334155;">5. Study Breaks / Exempt Weeks</h3>
                         <button type="button" class="btn btn-dark" id="addExemptWeekBtn" style="padding:5px 10px; font-size:11px;" onclick="addExemptWeekRow()">+ Add Exempt Week</button>
-                    </div>
-                    <div style="font-size:11.5px; color:#475569; margin-bottom:8px;">
-                        Designate study break weeks where attendance is not taken and specify the reason (marked as <strong>BRK</strong>).
                     </div>
                     <div id="exemptWeeksListContainer"></div>
                 </div>
 
-                <!-- 6. Course Access & Staff Permissions Card (Owner Can Share With Unlimited Registered Staff) -->
                 <div class="schedule-card" style="border-color:#93c5fd; background:#eff6ff;">
                     <div class="schedule-card-header">
                         <h3 style="color:#1e40af;">6. Staff Access & Attendance Editing Permissions</h3>
-                        <span id="courseOwnerLabel" style="font-size:11.5px; font-weight:bold; color:#1e3a8a;"></span>
+                        <span id="courseOwnerLabel" style="font-size:11px; font-weight:bold; color:#1e3a8a;"></span>
                     </div>
-                    <div style="font-size:11.5px; color:#1e3a8a; margin-bottom:8px;">
-                        Each Staff member can only view courses they created or were granted access to below. <strong>If a Staff member's name is not in the dropdown, they must register on the Staff Registration page first.</strong>
+                    <div style="font-size:11px; color:#1e3a8a; margin-bottom:7px;">
+                        Grant access to registered Staff (if not listed, they must register first).
                     </div>
-
-                    <!-- Add Registered Staff Form (Active for Course Owner in Edit Mode) -->
-                    <div id="grantStaffAccessControls" style="display:grid; grid-template-columns:1.2fr 1fr auto; gap:6px; margin-bottom:10px;">
-                        <select id="grantStaffSelect" style="padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;">
-                            <option value="">-- Select Registered Staff --</option>
-                        </select>
-                        <select id="grantLevelSelect" style="padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;">
+                    <div id="grantStaffAccessControls" style="display:grid; grid-template-columns:1.2fr 1fr auto; gap:6px; margin-bottom:8px;">
+                        <select id="grantStaffSelect" style="padding:5px; font-size:11.5px; border:1px solid #cbd5e1; border-radius:4px;"></select>
+                        <select id="grantLevelSelect" style="padding:5px; font-size:11.5px; border:1px solid #cbd5e1; border-radius:4px;">
                             <option value="attendance_only">Attendance Editing Only</option>
                             <option value="full_edit">Full Edit (Co-Editor)</option>
                             <option value="view_only">View & Export Only</option>
                         </select>
-                        <button type="button" class="btn btn-staff" id="grantStaffBtn" style="padding:6px 10px; font-size:11.5px;" onclick="grantStaffAccess()">+ Grant Access</button>
+                        <button type="button" class="btn btn-staff" id="grantStaffBtn" style="padding:5px 9px; font-size:11px;" onclick="grantStaffAccess()">+ Grant</button>
                     </div>
-
                     <div id="sharedStaffListContainer"></div>
                 </div>
             </div>
@@ -454,34 +496,19 @@
         </div>
 
         <div class="sheet-wrapper lec-sheet" id="lectureSection">
-            <div class="sheet-toolbar">
-                <div class="sheet-title-badge" style="color:var(--lec-color);">
-                    <span id="lecTableTitle">TABLE 1: LECTURE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>ALL scheduled lectures</strong></span>
-                </div>
-            </div>
+            <div class="sheet-toolbar"><div class="sheet-title-badge" style="color:var(--lec-color);"><span id="lecTableTitle">TABLE 1: LECTURE ATTENDANCE</span></div></div>
             <div class="schedule-summary-bar" id="lectureScheduleSummary"></div>
             <table class="spreadsheet"><thead id="lectureTableHead"></thead><tbody id="lectureTableBody"></tbody></table>
         </div>
 
         <div class="sheet-wrapper lab-sheet" id="labSection">
-            <div class="sheet-toolbar">
-                <div class="sheet-title-badge" style="color:var(--lab-color);">
-                    <span id="labTableTitle">TABLE 2: LAB ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>their designated Lab session</strong></span>
-                </div>
-            </div>
+            <div class="sheet-toolbar"><div class="sheet-title-badge" style="color:var(--lab-color);"><span id="labTableTitle">TABLE 2: LAB ATTENDANCE</span></div></div>
             <div class="schedule-summary-bar" id="labScheduleSummary"></div>
             <table class="spreadsheet"><thead id="labTableHead"></thead><tbody id="labTableBody"></tbody></table>
         </div>
 
         <div class="sheet-wrapper tut-sheet" id="tutorialSection">
-            <div class="sheet-toolbar">
-                <div class="sheet-title-badge" style="color:var(--tut-color);">
-                    <span id="tutTableTitle">TABLE 3: TUTORIAL ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>their designated Tutorial session</strong></span>
-                </div>
-            </div>
+            <div class="sheet-toolbar"><div class="sheet-title-badge" style="color:var(--tut-color);"><span id="tutTableTitle">TABLE 3: TUTORIAL ATTENDANCE</span></div></div>
             <div class="schedule-summary-bar" id="tutorialScheduleSummary"></div>
             <table class="spreadsheet"><thead id="tutorialTableHead"></thead><tbody id="tutorialTableBody"></tbody></table>
         </div>
@@ -495,6 +522,9 @@
             "RHJrdDlGUmh5QUJubFNPeVpBX25kMUxl",
             "OXlNIn0="
         ];
+
+        // Laucala Campus, Suva, Fiji Default Center Coordinates
+        const LAUCALA_DEFAULT = { lat: -18.1485, lng: 178.4465 };
 
         let sb = null;
         const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Daily"];
@@ -512,9 +542,16 @@
         let stagedFileName = "";
 
         let publicCoursesList = [];
-        let registeredStaffDirectory = []; // All registered Staff from portal_users
+        let registeredStaffDirectory = [];
         let coursesStore = {};
         let currentCourse = createDefaultCourseObject();
+
+        // Geofence Map State (Staff & Student)
+        let staffMap = null, staffMarker = null, staffCircle = null;
+        let editingGeoTarget = null; // { groupKey, idx, lat, lng, radius, enabled }
+        let studentMap = null, studentTargetCircle = null, studentTargetMarker = null, studentUserMarker = null;
+        let geoWatchId = null;
+        let currentStudentGeoState = { status: "NOT_REQUIRED", distanceM: null };
 
         window.addEventListener('DOMContentLoaded', () => {
             initSupabaseFromStorage();
@@ -568,10 +605,7 @@
         function saveDbConfig() {
             const url = cleanSupabaseUrl(document.getElementById('cfgUrl').value);
             const key = document.getElementById('cfgKey').value.trim();
-            if (!url.startsWith("https://") || !key) {
-                alert("Please enter both a valid Supabase Project URL and Publishable Key.");
-                return;
-            }
+            if (!url.startsWith("https://") || !key) { alert("Enter valid URL and Key."); return; }
             localStorage.setItem("portal_sb_url", url);
             localStorage.setItem("portal_sb_key", key);
             initSupabaseFromStorage();
@@ -585,28 +619,31 @@
             closeConfigStep();
         }
 
+        function stopStudentGeoWatch() {
+            if (geoWatchId !== null && navigator.geolocation) {
+                navigator.geolocation.clearWatch(geoWatchId);
+                geoWatchId = null;
+            }
+        }
+
         function hideAllModalSteps() {
             ['selectionStep', 'studentChoiceStep', 'giveAttendanceStep', 'configStep', 'formStep'].forEach(id => {
                 document.getElementById(id).style.display = 'none';
             });
             if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+            stopStudentGeoWatch();
         }
 
         function selectUserType(type) {
             if (!sb) initSupabaseFromStorage();
             selectedUserType = type;
             hideAllModalSteps();
-            if (type === 'Student') {
-                document.getElementById('studentChoiceStep').style.display = 'block';
-            } else {
-                isLoginMode = false;
-                hideStatus();
-                document.getElementById('formStep').style.display = 'block';
-                updateFormView();
-            }
+            if (type === 'Student') document.getElementById('studentChoiceStep').style.display = 'block';
+            else { isLoginMode = false; hideStatus(); document.getElementById('formStep').style.display = 'block'; updateFormView(); }
         }
 
         function backToStudentChoice() {
+            stopStudentGeoWatch();
             if (loggedInUser && loggedInUser.userType === 'Student') {
                 document.getElementById('portalModal').style.display = 'none';
                 document.getElementById('studentDashboard').style.display = 'block';
@@ -638,27 +675,285 @@
             isLoginMode = false;
         }
 
+        /* ================= STAFF SATELLITE MAP GEOFENCE PICKER (LAUCALA, SUVA) ================= */
+
+        function computeHaversineMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const toRad = d => (d * Math.PI) / 180;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
+        function openStaffGeofenceModal(groupKey, idx) {
+            if (!isEditMode || !canEditCourseStructure()) {
+                alert("Enable Edit Mode with Owner/Co-Editor permission to configure room geofencing.");
+                return;
+            }
+            const slot = currentCourse.schedules[groupKey][idx];
+            const geo = slot.geofence || {};
+            const lat = Number(geo.lat) || LAUCALA_DEFAULT.lat;
+            const lng = Number(geo.lng) || LAUCALA_DEFAULT.lng;
+            const radius = Math.min(250, Math.max(100, Number(geo.radius) || 150));
+            const enabled = geo.enabled !== undefined ? Boolean(geo.enabled) : true;
+
+            editingGeoTarget = { groupKey, idx, lat, lng, radius, enabled };
+
+            const labelType = groupKey === 'lectures' ? 'Lecture' : (groupKey === 'labs' ? 'Lab' : 'Tutorial');
+            document.getElementById('geoModalTitle').innerText =
+                `🛰️ Geofence ${labelType} ${idx + 1} (${slot.room || 'Laucala Campus, Suva'})`;
+            document.getElementById('geoEnableCheckbox').checked = enabled;
+            syncGeoRadiusInput(radius);
+            updateGeoCoordsBox(lat, lng);
+
+            document.getElementById('geofenceModal').style.display = 'flex';
+
+            setTimeout(() => {
+                if (!staffMap) {
+                    staffMap = L.map('staffGeoMap', { center: [lat, lng], zoom: 17 });
+                    // Esri World Imagery Satellite Layer + Hybrid Reference Labels
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        maxZoom: 19, attribution: 'Satellite &copy; Esri — Laucala, Suva, Fiji'
+                    }).addTo(staffMap);
+                    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                        maxZoom: 19
+                    }).addTo(staffMap);
+
+                    staffMap.on('click', (e) => {
+                        editingGeoTarget.lat = Number(e.latlng.lat.toFixed(6));
+                        editingGeoTarget.lng = Number(e.latlng.lng.toFixed(6));
+                        document.getElementById('geoEnableCheckbox').checked = true;
+                        editingGeoTarget.enabled = true;
+                        updateGeoCoordsBox(editingGeoTarget.lat, editingGeoTarget.lng);
+                        updateStaffGeoCircle();
+                    });
+                } else {
+                    staffMap.invalidateSize();
+                    staffMap.setView([lat, lng], 17);
+                }
+                updateStaffGeoCircle();
+            }, 120);
+        }
+
+        function recenterLaucalaMap() {
+            if (!staffMap || !editingGeoTarget) return;
+            editingGeoTarget.lat = LAUCALA_DEFAULT.lat;
+            editingGeoTarget.lng = LAUCALA_DEFAULT.lng;
+            staffMap.setView([LAUCALA_DEFAULT.lat, LAUCALA_DEFAULT.lng], 17);
+            updateGeoCoordsBox(editingGeoTarget.lat, editingGeoTarget.lng);
+            updateStaffGeoCircle();
+        }
+
+        function updateGeoCoordsBox(lat, lng) {
+            document.getElementById('geoCoordsDisplay').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+
+        function syncGeoRadiusInput(val) {
+            const clamped = Math.min(250, Math.max(100, Number(val) || 150));
+            document.getElementById('geoRadiusSlider').value = clamped;
+            document.getElementById('geoRadiusNumber').value = clamped;
+            document.getElementById('geoRadiusValLabel').innerText = clamped;
+            if (editingGeoTarget) {
+                editingGeoTarget.radius = clamped;
+                updateStaffGeoCircle();
+            }
+        }
+
+        function updateStaffGeoCircle() {
+            if (!staffMap || !editingGeoTarget) return;
+            editingGeoTarget.enabled = document.getElementById('geoEnableCheckbox').checked;
+            const pos = [editingGeoTarget.lat, editingGeoTarget.lng];
+
+            if (!staffMarker) {
+                staffMarker = L.marker(pos).addTo(staffMap);
+            } else {
+                staffMarker.setLatLng(pos);
+            }
+
+            if (!staffCircle) {
+                staffCircle = L.circle(pos, {
+                    radius: editingGeoTarget.radius,
+                    color: editingGeoTarget.enabled ? '#10b981' : '#94a3b8',
+                    fillColor: editingGeoTarget.enabled ? '#10b981' : '#94a3b8',
+                    fillOpacity: 0.25
+                }).addTo(staffMap);
+            } else {
+                staffCircle.setLatLng(pos);
+                staffCircle.setRadius(editingGeoTarget.radius);
+                staffCircle.setStyle({
+                    color: editingGeoTarget.enabled ? '#10b981' : '#94a3b8',
+                    fillColor: editingGeoTarget.enabled ? '#10b981' : '#94a3b8'
+                });
+            }
+        }
+
+        function saveStaffGeofenceModal() {
+            if (!editingGeoTarget) return;
+            const { groupKey, idx, lat, lng, radius, enabled } = editingGeoTarget;
+            currentCourse.schedules[groupKey][idx].geofence = {
+                enabled: Boolean(enabled),
+                lat: Number(lat),
+                lng: Number(lng),
+                radius: Math.min(250, Math.max(100, Number(radius) || 150))
+            };
+            closeStaffGeofenceModal();
+            renderScheduleCards();
+            queueAutoSave();
+        }
+
+        function closeStaffGeofenceModal() {
+            document.getElementById('geofenceModal').style.display = 'none';
+            editingGeoTarget = null;
+        }
+
+        /* ================= STUDENT POKEMON-GO LIVE SATELLITE RADAR ================= */
+
+        function getSelectedStudentSessionSlot() {
+            const code = document.getElementById('attCourseSelect').value;
+            const sessionVal = document.getElementById('attSessionSelect').value;
+            if (!code || !sessionVal) return null;
+            const courseObj = publicCoursesList.find(c => c.courseCode === code);
+            if (!courseObj || !courseObj.schedules) return null;
+            const [sType, idxStr] = sessionVal.split(':');
+            const idx = parseInt(idxStr, 10);
+            const list = sType === 'lecture' ? courseObj.schedules.lectures : (sType === 'lab' ? courseObj.schedules.labs : courseObj.schedules.tutorials);
+            return (list && list[idx]) ? list[idx] : null;
+        }
+
+        function handleStudentSessionPickChange() {
+            resetMismatchReasonBox();
+            stopStudentGeoWatch();
+
+            const slot = getSelectedStudentSessionSlot();
+            const geoBox = document.getElementById('studentGeoBox');
+            const radarMapDiv = document.getElementById('studentRadarMap');
+            const statusDiv = document.getElementById('studentRadarStatus');
+
+            if (slot && slot.geofence && slot.geofence.enabled) {
+                const rad = Math.min(250, Math.max(100, Number(slot.geofence.radius) || 150));
+                currentStudentGeoState = { status: "UNDECIDED", distanceM: null };
+                geoBox.style.display = 'block';
+                radarMapDiv.style.display = 'none';
+                document.getElementById('stuGeoTargetInfo').innerText =
+                    `Room: ${slot.room || 'Laucala Campus'} | Effective Radius: ${rad}m`;
+                statusDiv.className = 'radar-status-bar radar-denied';
+                statusDiv.innerText = 'Please choose "Agree & Track Live Location" or "Deny Location Sharing" above.';
+            } else {
+                currentStudentGeoState = { status: "NOT_REQUIRED", distanceM: null };
+                geoBox.style.display = 'none';
+            }
+        }
+
+        function startStudentLiveRadar() {
+            const slot = getSelectedStudentSessionSlot();
+            if (!slot || !slot.geofence || !slot.geofence.enabled) return;
+
+            const targetLat = Number(slot.geofence.lat) || LAUCALA_DEFAULT.lat;
+            const targetLng = Number(slot.geofence.lng) || LAUCALA_DEFAULT.lng;
+            const radius = Math.min(250, Math.max(100, Number(slot.geofence.radius) || 150));
+
+            const radarMapDiv = document.getElementById('studentRadarMap');
+            const statusDiv = document.getElementById('studentRadarStatus');
+            radarMapDiv.style.display = 'block';
+            statusDiv.className = 'radar-status-bar radar-denied';
+            statusDiv.innerText = '🛰️ Acquiring live GPS signal...';
+
+            setTimeout(() => {
+                if (!studentMap) {
+                    studentMap = L.map('studentRadarMap', { center: [targetLat, targetLng], zoom: 17 });
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        maxZoom: 19, attribution: 'Satellite &copy; Esri'
+                    }).addTo(studentMap);
+                } else {
+                    studentMap.invalidateSize();
+                    studentMap.setView([targetLat, targetLng], 17);
+                }
+
+                if (!studentTargetMarker) {
+                    studentTargetMarker = L.marker([targetLat, targetLng]).addTo(studentMap).bindPopup(`Session Room (${radius}m zone)`);
+                } else {
+                    studentTargetMarker.setLatLng([targetLat, targetLng]);
+                }
+
+                if (!studentTargetCircle) {
+                    studentTargetCircle = L.circle([targetLat, targetLng], {
+                        radius: radius, color: '#38bdf8', fillColor: '#38bdf8', fillOpacity: 0.22
+                    }).addTo(studentMap);
+                } else {
+                    studentTargetCircle.setLatLng([targetLat, targetLng]);
+                    studentTargetCircle.setRadius(radius);
+                }
+            }, 100);
+
+            if (!navigator.geolocation) {
+                denyStudentLocationSharing("Browser does not support GPS geolocation.");
+                return;
+            }
+
+            stopStudentGeoWatch();
+            geoWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const uLat = pos.coords.latitude;
+                    const uLng = pos.coords.longitude;
+                    const dist = computeHaversineMeters(uLat, uLng, targetLat, targetLng);
+                    const inside = dist <= radius;
+
+                    currentStudentGeoState = {
+                        status: inside ? "INSIDE" : "OUTSIDE",
+                        distanceM: dist
+                    };
+
+                    if (studentMap) {
+                        const pulseIcon = L.divIcon({ className: '', html: '<div class="student-gps-dot"></div>', iconSize: [16, 16] });
+                        if (!studentUserMarker) {
+                            studentUserMarker = L.marker([uLat, uLng], { icon: pulseIcon }).addTo(studentMap);
+                        } else {
+                            studentUserMarker.setLatLng([uLat, uLng]);
+                        }
+                        if (studentTargetCircle) {
+                            studentTargetCircle.setStyle({
+                                color: inside ? '#10b981' : '#ef4444',
+                                fillColor: inside ? '#10b981' : '#ef4444'
+                            });
+                        }
+                    }
+
+                    if (inside) {
+                        statusDiv.className = 'radar-status-bar radar-in';
+                        statusDiv.innerText = `✓ INSIDE EFFECTIVE RADIUS! Distance: ${dist}m (Allowed: ≤ ${radius}m) — Ready to Submit!`;
+                    } else {
+                        statusDiv.className = 'radar-status-bar radar-out';
+                        statusDiv.innerText = `⚠️ OUTSIDE GEOFENCE: You are ${dist}m away (Need ≤ ${radius}m). Walk ${dist - radius}m closer or Deny Location Sharing for Staff Approval.`;
+                    }
+                },
+                (err) => {
+                    denyStudentLocationSharing("Location permission denied by browser.");
+                },
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 }
+            );
+        }
+
+        function denyStudentLocationSharing(customNote) {
+            stopStudentGeoWatch();
+            currentStudentGeoState = { status: "DENIED", distanceM: null };
+            document.getElementById('studentRadarMap').style.display = 'none';
+            const statusDiv = document.getElementById('studentRadarStatus');
+            statusDiv.className = 'radar-status-bar radar-denied';
+            statusDiv.innerText = (customNote ? customNote + " " : "") +
+                "Location sharing denied: You can still submit attendance, and it will be queued (REQ) until Staff approves it.";
+            document.getElementById('mismatchReasonContainer').style.display = 'block';
+            document.getElementById('reasonBoxLabel').innerText = "Optional Note for Staff (Location Sharing Denied — Requires Staff Approval)";
+        }
+
         /* ================= ACCESS LEVEL PERMISSION HELPERS ================= */
 
-        function getMyAccessLevel() {
-            return (currentCourse && currentCourse.myAccessLevel) ? currentCourse.myAccessLevel : "owner";
-        }
-
-        function isCourseOwner() {
-            return getMyAccessLevel() === "owner";
-        }
-
-        // Can edit course code/title, dates, schedules, holidays, exempt weeks, and roster
-        function canEditCourseStructure() {
-            const lvl = getMyAccessLevel();
-            return lvl === "owner" || lvl === "full_edit";
-        }
-
-        // Can mark/edit attendance cells, change student Lab/Tutorial assignment, and approve/reject requests
-        function canEditAttendance() {
-            const lvl = getMyAccessLevel();
-            return lvl === "owner" || lvl === "full_edit" || lvl === "attendance_only";
-        }
+        function getMyAccessLevel() { return (currentCourse && currentCourse.myAccessLevel) ? currentCourse.myAccessLevel : "owner"; }
+        function isCourseOwner() { return getMyAccessLevel() === "owner"; }
+        function canEditCourseStructure() { const lvl = getMyAccessLevel(); return lvl === "owner" || lvl === "full_edit"; }
+        function canEditAttendance() { const lvl = getMyAccessLevel(); return lvl === "owner" || lvl === "full_edit" || lvl === "attendance_only"; }
 
         function formatRoleBadgeText(lvl) {
             if (lvl === "owner") return "Role: Course Owner (Full Control & Sharing)";
@@ -684,8 +979,7 @@
 
             const targetDayIdx = JS_DAY_NAMES.indexOf(slotDayName);
             if (targetDayIdx === -1) return "";
-            const startDayIdx = weekStart.getDay();
-            let dayOffset = targetDayIdx - startDayIdx;
+            let dayOffset = targetDayIdx - weekStart.getDay();
             if (dayOffset < 0) dayOffset += 7;
 
             const sessionDate = new Date(weekStart);
@@ -705,17 +999,9 @@
 
         function getActiveColumnsForCourse(course) {
             const mode = (course.schedules && course.schedules.attendanceMode) ? course.schedules.attendanceMode : "weekly";
-            if (mode === "daily") {
-                return generateDailyColumns(course.semStart, course.semEnd);
-            }
-            const weeks = course.weeks || [];
-            return weeks.map((wLabel, idx) => ({
-                mode: "weekly",
-                index0: idx,
-                weekNum: idx + 1,
-                keyPrefix: `W${idx + 1}`,
-                label: wLabel,
-                isoDate: ""
+            if (mode === "daily") return generateDailyColumns(course.semStart, course.semEnd);
+            return (course.weeks || []).map((wLabel, idx) => ({
+                mode: "weekly", index0: idx, weekNum: idx + 1, keyPrefix: `W${idx + 1}`, label: wLabel, isoDate: ""
             }));
         }
 
@@ -728,23 +1014,16 @@
             if (isNaN(start) || isNaN(end) || end < start) return [];
 
             const cols = [];
-            let curr = new Date(start);
-            let count = 0;
+            let curr = new Date(start), count = 0;
             while (curr <= end && count < 90) {
                 const dow = curr.getDay();
                 if (dow >= 1 && dow <= 5) {
                     const iso = toIsoDateStr(curr);
-                    const diffDays = Math.floor((curr - start) / 86400000);
-                    const wkNum = Math.floor(diffDays / 7) + 1;
-                    const shortLabel = curr.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+                    const wkNum = Math.floor(Math.floor((curr - start) / 86400000) / 7) + 1;
                     cols.push({
-                        mode: "daily",
-                        index0: count,
-                        weekNum: wkNum,
-                        keyPrefix: `D_${iso}`,
-                        label: shortLabel,
-                        isoDate: iso,
-                        dayName: JS_DAY_NAMES[dow]
+                        mode: "daily", index0: count, weekNum: wkNum, keyPrefix: `D_${iso}`,
+                        label: curr.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }),
+                        isoDate: iso, dayName: JS_DAY_NAMES[dow]
                     });
                     count++;
                 }
@@ -755,24 +1034,11 @@
 
         function getEffectiveSessionStatus(course, rawVal, colObj, slotObj, hasLoggedIn) {
             if (!course || !colObj) return rawVal || "";
-
-            const exemptWk = findExemptWeek(course, colObj.weekNum);
-            if (exemptWk) return "BRK";
-
-            const sessionIsoDate = colObj.mode === "daily"
-                ? colObj.isoDate
-                : getSessionDateInWeek(course.semStart, colObj.index0, slotObj ? slotObj.day : "");
-
+            if (findExemptWeek(course, colObj.weekNum)) return "BRK";
+            const sessionIsoDate = colObj.mode === "daily" ? colObj.isoDate : getSessionDateInWeek(course.semStart, colObj.index0, slotObj ? slotObj.day : "");
             if (rawVal === "P") return "P";
-
-            if (sessionIsoDate && findHolidayForDate(course, sessionIsoDate)) {
-                return "HOL";
-            }
-
-            if (rawVal === "A" || rawVal === "L" || rawVal === "REQ" || rawVal === "HOL" || rawVal === "BRK") {
-                return rawVal;
-            }
-
+            if (sessionIsoDate && findHolidayForDate(course, sessionIsoDate)) return "HOL";
+            if (rawVal === "A" || rawVal === "L" || rawVal === "REQ" || rawVal === "HOL" || rawVal === "BRK") return rawVal;
             if (!sessionIsoDate || !slotObj || !slotObj.endTime) return "";
 
             const dp = sessionIsoDate.split('-');
@@ -781,10 +1047,7 @@
             const [eh, em] = slotObj.endTime.split(':').map(Number);
             if (isNaN(eh) || isNaN(em)) return "";
             sessionEndDt.setHours(eh, em + 10, 0, 0);
-
-            if (new Date() > sessionEndDt) {
-                return hasLoggedIn ? "A" : "L";
-            }
+            if (new Date() > sessionEndDt) return hasLoggedIn ? "A" : "L";
             return "";
         }
 
@@ -805,6 +1068,7 @@
             document.getElementById('giveAttendanceStep').style.display = 'block';
             document.getElementById('giveAttStatusBox').className = 'status-msg';
             document.getElementById('giveAttStatusBox').innerText = '';
+            document.getElementById('studentGeoBox').style.display = 'none';
             resetMismatchReasonBox();
 
             if (loggedInUser && loggedInUser.userType === 'Student') {
@@ -823,7 +1087,7 @@
                 const { data, error } = await sb.rpc('get_courses_for_attendance_form');
                 if (error) throw error;
                 publicCoursesList = (data && data.courses) ? data.courses : [];
-                if (publicCoursesList.length === 0) {
+                if (!publicCoursesList.length) {
                     courseSel.innerHTML = `<option value="">-- No Course Units Available Yet --</option>`;
                     return;
                 }
@@ -857,6 +1121,9 @@
 
         function populateGiveAttendanceSessions() {
             resetMismatchReasonBox();
+            document.getElementById('studentGeoBox').style.display = 'none';
+            stopStudentGeoWatch();
+
             const code = document.getElementById('attCourseSelect').value;
             const sessionSel = document.getElementById('attSessionSelect');
             sessionSel.innerHTML = `<option value="">-- Select Lecture, Lab or Tutorial Session --</option>`;
@@ -865,24 +1132,18 @@
             if (!courseObj || !courseObj.schedules) return;
             const schedules = courseObj.schedules;
 
-            (schedules.lectures || []).forEach((s, idx) => {
-                const opt = document.createElement('option');
-                opt.value = `lecture:${idx}`;
-                opt.textContent = `Lecture ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
-                sessionSel.appendChild(opt);
-            });
-            (schedules.labs || []).forEach((s, idx) => {
-                const opt = document.createElement('option');
-                opt.value = `lab:${idx}`;
-                opt.textContent = `Lab ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
-                sessionSel.appendChild(opt);
-            });
-            (schedules.tutorials || []).forEach((s, idx) => {
-                const opt = document.createElement('option');
-                opt.value = `tutorial:${idx}`;
-                opt.textContent = `Tutorial ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
-                sessionSel.appendChild(opt);
-            });
+            const appendSlots = (arr, type, label) => {
+                (arr || []).forEach((s, idx) => {
+                    const geoTag = (s.geofence && s.geofence.enabled) ? ` [🛰️ Geofenced ${s.geofence.radius || 150}m]` : '';
+                    const opt = document.createElement('option');
+                    opt.value = `${type}:${idx}`;
+                    opt.textContent = `${label} ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'}-${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})${geoTag}`;
+                    sessionSel.appendChild(opt);
+                });
+            };
+            appendSlots(schedules.lectures, 'lecture', 'Lecture');
+            appendSlots(schedules.labs, 'lab', 'Lab');
+            appendSlots(schedules.tutorials, 'tutorial', 'Tutorial');
         }
 
         async function handleGiveAttendanceSubmit(e) {
@@ -900,6 +1161,13 @@
                 return;
             }
 
+            const slot = getSelectedStudentSessionSlot();
+            if (slot && slot.geofence && slot.geofence.enabled && currentStudentGeoState.status === "UNDECIDED") {
+                statusBox.className = 'status-msg status-warn';
+                statusBox.innerText = 'This room uses Geofencing. Please click "Agree & Track Live Location" or "Deny Location Sharing" above before submitting.';
+                return;
+            }
+
             const [sessionType, idxStr] = sessionVal.split(':');
             const sessionIdx = parseInt(idxStr, 10);
 
@@ -911,7 +1179,7 @@
 
             submitBtn.disabled = true;
             statusBox.className = 'status-msg status-loading';
-            statusBox.innerText = 'Verifying session schedule, holidays, and designated session...';
+            statusBox.innerText = 'Verifying session schedule, geofence status, and designated session...';
 
             try {
                 const { data: res, error } = await sb.rpc('submit_student_attendance', {
@@ -922,13 +1190,16 @@
                     p_client_date: clientDate,
                     p_client_day: clientDay,
                     p_client_time: clientTime,
-                    p_reason: reasonVal || null
+                    p_reason: reasonVal || null,
+                    p_location_status: currentStudentGeoState.status || 'NOT_REQUIRED',
+                    p_distance_m: currentStudentGeoState.distanceM
                 });
 
                 if (error) throw error;
 
                 if (res && res.needsReason) {
                     document.getElementById('mismatchReasonContainer').style.display = 'block';
+                    document.getElementById('reasonBoxLabel').innerText = "Reason for Attending Non-Designated Session (Required for Staff Approval)";
                     document.getElementById('attReasonInput').focus();
                     statusBox.className = 'status-msg status-warn';
                     statusBox.innerText = res.message;
@@ -956,11 +1227,7 @@
 
         /* ================= REGISTER & LOGIN AUTHENTICATION ================= */
 
-        function toggleMode() {
-            isLoginMode = !isLoginMode;
-            hideStatus();
-            updateFormView();
-        }
+        function toggleMode() { isLoginMode = !isLoginMode; hideStatus(); updateFormView(); }
 
         function updateFormView() {
             document.getElementById('formTitle').innerText = `${selectedUserType} ${isLoginMode ? 'Login' : 'Registration'}`;
@@ -976,22 +1243,11 @@
             emailInput.disabled = isLoginMode;
             if (isLoginMode) { fullNameInput.value = ""; emailInput.value = ""; }
 
-            document.getElementById('toggleText').innerText = isLoginMode
-                ? "First time user? Register here"
-                : "Already registered? Login here";
+            document.getElementById('toggleText').innerText = isLoginMode ? "First time user? Register here" : "Already registered? Login here";
         }
 
-        function showStatus(msg, type) {
-            const box = document.getElementById('statusBox');
-            box.className = 'status-msg ' + type;
-            box.innerText = msg;
-        }
-
-        function hideStatus() {
-            const box = document.getElementById('statusBox');
-            box.className = 'status-msg';
-            box.innerText = '';
-        }
+        function showStatus(msg, type) { const box = document.getElementById('statusBox'); box.className = 'status-msg ' + type; box.innerText = msg; }
+        function hideStatus() { const box = document.getElementById('statusBox'); box.className = 'status-msg'; box.innerText = ''; }
 
         async function handleAuthSubmit(e) {
             e.preventDefault();
@@ -1003,14 +1259,8 @@
             const email = document.getElementById('email').value.trim();
             const submitBtn = document.getElementById('submitBtnText');
 
-            if (!idNumber || !password) {
-                showStatus("Please enter both your ID Number and Password.", "status-error");
-                return;
-            }
-            if (!isLoginMode && (!fullName || !email.includes("@"))) {
-                showStatus("Please enter your Full Name and a valid Email Address.", "status-error");
-                return;
-            }
+            if (!idNumber || !password) { showStatus("Enter both ID Number and Password.", "status-error"); return; }
+            if (!isLoginMode && (!fullName || !email.includes("@"))) { showStatus("Enter Full Name and valid Email.", "status-error"); return; }
 
             submitBtn.disabled = true;
             showStatus(isLoginMode ? "Verifying ID & Password..." : "Registering account...", "status-loading");
@@ -1018,8 +1268,7 @@
             try {
                 if (!isLoginMode) {
                     const { data: rpcResult, error: rpcError } = await sb.rpc('register_portal_user', {
-                        p_user_type: selectedUserType, p_id_number: idNumber,
-                        p_full_name: fullName, p_email: email, p_password: password
+                        p_user_type: selectedUserType, p_id_number: idNumber, p_full_name: fullName, p_email: email, p_password: password
                     });
                     if (rpcError) { showStatus("Database error: " + rpcError.message, "status-error"); return; }
                     if (!rpcResult || !rpcResult.success) { showStatus((rpcResult && rpcResult.message) || "Registration failed.", "status-error"); return; }
@@ -1028,7 +1277,7 @@
                     updateFormView();
                     document.getElementById('idNumber').value = idNumber;
                     document.getElementById('password').value = "";
-                    showStatus("Registration complete! Please enter your ID and Password to log in.", "status-success");
+                    showStatus("Registration complete! Enter your ID and Password to log in.", "status-success");
                 } else {
                     const { data: loginRes, error: loginErr } = await sb.rpc('verify_portal_login', {
                         p_user_type: selectedUserType, p_id_number: idNumber, p_password: password
@@ -1061,15 +1310,13 @@
             document.getElementById('portalModal').style.display = 'none';
             document.getElementById('staffDashboard').style.display = 'none';
             document.getElementById('studentDashboard').style.display = 'block';
-
             document.getElementById('studentWelcomeMeta').innerText =
                 `Student Name: ${loggedInUser.fullName} | Student ID: ${loggedInUser.idNumber} (Private Attendance View)`;
 
             const sel = document.getElementById('studentCourseSelector');
             const codes = Object.keys(coursesStore);
             sel.innerHTML = "";
-
-            if (codes.length === 0) {
+            if (!codes.length) {
                 sel.innerHTML = `<option value="">-- Not Enrolled in Any Course Yet --</option>`;
                 clearStudentDashboardTables();
                 return;
@@ -1089,10 +1336,8 @@
             ['stuLecStat', 'stuLabStat', 'stuTutStat', 'stuOverallStat'].forEach(id => document.getElementById(id).innerText = "0%");
             document.getElementById('stuLectureHead').innerHTML = "";
             document.getElementById('stuLectureBody').innerHTML = `<tr><td style="padding:12px;">No course records found for your Student ID (${escapeHtml(loggedInUser.idNumber)}).</td></tr>`;
-            document.getElementById('stuLabHead').innerHTML = "";
-            document.getElementById('stuLabBody').innerHTML = "";
-            document.getElementById('stuTutorialHead').innerHTML = "";
-            document.getElementById('stuTutorialBody').innerHTML = "";
+            document.getElementById('stuLabHead').innerHTML = ""; document.getElementById('stuLabBody').innerHTML = "";
+            document.getElementById('stuTutorialHead').innerHTML = ""; document.getElementById('stuTutorialBody').innerHTML = "";
         }
 
         function renderStudentSessionPicker(course, st) {
@@ -1102,55 +1347,31 @@
 
             const currentWeek = calculateCurrentSemesterWeek(course.semStart);
             const canEditSessions = currentWeek <= 2;
-
             const badge = document.getElementById('stuWeekWindowBadge');
-            if (canEditSessions) {
-                badge.className = 'week-window-badge window-open';
-                badge.innerText = `✓ Week ${currentWeek} of Semester — Session Selection OPEN (Weeks 1 & 2)`;
-            } else {
-                badge.className = 'week-window-badge window-closed';
-                badge.innerText = `🔒 Week ${currentWeek} of Semester — Selection CLOSED (Only Staff Can Change)`;
-            }
+            badge.className = 'week-window-badge ' + (canEditSessions ? 'window-open' : 'window-closed');
+            badge.innerText = canEditSessions
+                ? `✓ Week ${currentWeek} — Session Selection OPEN (Weeks 1 & 2)`
+                : `🔒 Week ${currentWeek} — Selection CLOSED (Only Staff Can Change)`;
 
-            const labSlots = course.schedules.labs || [];
-            const tutSlots = course.schedules.tutorials || [];
+            const labSlots = course.schedules.labs || [], tutSlots = course.schedules.tutorials || [];
             const labCounts = (course.sessionCounts && course.sessionCounts.labCounts) ? course.sessionCounts.labCounts : {};
             const tutCounts = (course.sessionCounts && course.sessionCounts.tutCounts) ? course.sessionCounts.tutCounts : {};
 
-            const labSel = document.getElementById('stuPickLabSelect');
-            labSel.innerHTML = `<option value="-1">-- Select Designated Lab Session --</option>`;
-            labSlots.forEach((s, idx) => {
-                const maxCap = Number(s.capacity || 25);
-                const enrolled = Number(labCounts[idx] || 0);
-                const isMyCurrent = Number(st.assignedLabIdx) === idx;
-                const isFull = enrolled >= maxCap && !isMyCurrent;
-
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.selected = isMyCurrent;
-                opt.disabled = isFull;
-                opt.textContent = `${formatSlotSummary(s, 'Lab', idx)} — [${enrolled}/${maxCap} students${isFull ? ' - FULL, Find Alternative' : ''}]`;
-                labSel.appendChild(opt);
-            });
-
-            const tutSel = document.getElementById('stuPickTutSelect');
-            tutSel.innerHTML = `<option value="-1">-- Select Designated Tutorial Session --</option>`;
-            tutSlots.forEach((s, idx) => {
-                const maxCap = Number(s.capacity || 25);
-                const enrolled = Number(tutCounts[idx] || 0);
-                const isMyCurrent = Number(st.assignedTutIdx) === idx;
-                const isFull = enrolled >= maxCap && !isMyCurrent;
-
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.selected = isMyCurrent;
-                opt.disabled = isFull;
-                opt.textContent = `${formatSlotSummary(s, 'Tut', idx)} — [${enrolled}/${maxCap} students${isFull ? ' - FULL, Find Alternative' : ''}]`;
-                tutSel.appendChild(opt);
-            });
-
-            labSel.disabled = !canEditSessions;
-            tutSel.disabled = !canEditSessions;
+            const buildOptions = (selId, slots, counts, assignedIdx, prefix) => {
+                const sel = document.getElementById(selId);
+                sel.innerHTML = `<option value="-1">-- Select Designated ${prefix} Session --</option>`;
+                slots.forEach((s, idx) => {
+                    const maxCap = Number(s.capacity || 25), enrolled = Number(counts[idx] || 0);
+                    const isMine = Number(assignedIdx) === idx, isFull = enrolled >= maxCap && !isMine;
+                    const opt = document.createElement('option');
+                    opt.value = idx; opt.selected = isMine; opt.disabled = isFull;
+                    opt.textContent = `${formatSlotSummary(s, prefix, idx)} — [${enrolled}/${maxCap}${isFull ? ' - FULL' : ''}]`;
+                    sel.appendChild(opt);
+                });
+                sel.disabled = !canEditSessions;
+            };
+            buildOptions('stuPickLabSelect', labSlots, labCounts, st.assignedLabIdx, 'Lab');
+            buildOptions('stuPickTutSelect', tutSlots, tutCounts, st.assignedTutIdx, 'Tut');
             document.getElementById('stuSaveSessionsBtn').disabled = !canEditSessions;
         }
 
@@ -1169,16 +1390,14 @@
                 statusMsg.innerText = 'Please select both a Lab session and a Tutorial session.';
                 return;
             }
-
-            const clientDate = toIsoDateStr(new Date());
             btn.disabled = true;
             statusMsg.className = 'status-msg status-loading';
-            statusMsg.innerText = 'Checking session capacity and saving selection...';
+            statusMsg.innerText = 'Checking capacity and saving...';
 
             try {
                 const { data: res, error } = await sb.rpc('student_update_session_assignment', {
                     p_student_id: loggedInUser.idNumber, p_password: userSessionPassword,
-                    p_course_code: code, p_lab_idx: labIdx, p_tut_idx: tutIdx, p_client_date: clientDate
+                    p_course_code: code, p_lab_idx: labIdx, p_tut_idx: tutIdx, p_client_date: toIsoDateStr(new Date())
                 });
                 if (error) throw error;
                 if (res && res.success) {
@@ -1190,7 +1409,7 @@
                     statusMsg.innerText = res.message;
                 } else {
                     statusMsg.className = 'status-msg status-error';
-                    statusMsg.innerText = (res && res.message) || 'Could not update session selection.';
+                    statusMsg.innerText = (res && res.message) || 'Update failed.';
                 }
             } catch (err) {
                 statusMsg.className = 'status-msg status-error';
@@ -1203,40 +1422,25 @@
         function renderStudentDashboardCourse() {
             const code = document.getElementById('studentCourseSelector').value;
             const course = coursesStore[code];
-            if (!course || !course.students || course.students.length === 0) {
-                clearStudentDashboardTables();
-                return;
-            }
+            if (!course || !course.students || !course.students.length) { clearStudentDashboardTables(); return; }
             const st = course.students[0];
             renderStudentSessionPicker(course, st);
 
             const cols = getActiveColumnsForCourse(course);
-            const lecSlots = course.schedules.lectures || [];
-            const labSlots = course.schedules.labs || [];
-            const tutSlots = course.schedules.tutorials || [];
+            const lecSlots = course.schedules.lectures || [], labSlots = course.schedules.labs || [], tutSlots = course.schedules.tutorials || [];
             const numLecs = lecSlots.length;
             const myLabIdx = st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0;
             const myTutIdx = st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0;
+            const desLabLabel = st.assignedLabIdx >= 0 ? formatSlotSummary(labSlots[myLabIdx], 'Lab', myLabIdx) : 'Not Selected Yet';
+            const desTutLabel = st.assignedTutIdx >= 0 ? formatSlotSummary(tutSlots[myTutIdx], 'Tut', myTutIdx) : 'Not Selected Yet';
 
-            const desLabLabel = st.assignedLabIdx >= 0 ? formatSlotSummary(labSlots[myLabIdx], 'Lab', myLabIdx) : 'Not Selected Yet (Pick Above)';
-            const desTutLabel = st.assignedTutIdx >= 0 ? formatSlotSummary(tutSlots[myTutIdx], 'Tut', myTutIdx) : 'Not Selected Yet (Pick Above)';
-
-            const holidaysStr = (course.schedules.holidays || []).map(h => `${h.date} (${h.name})`).join(", ") || "None";
-            const breaksStr = (course.schedules.exemptWeeks || []).map(b => `Wk ${b.weekNum} (${b.reason})`).join(", ") || "None";
-
-            document.getElementById('stuLectureScheduleSummary').innerHTML =
-                `<strong>Mode:</strong> ${course.schedules.attendanceMode === 'daily' ? 'Daily' : 'Weekly'} | <strong>Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))} | <strong>Holidays:</strong> ${escapeHtml(holidaysStr)} | <strong>Study Breaks:</strong> ${escapeHtml(breaksStr)}`;
+            document.getElementById('stuLectureScheduleSummary').innerHTML = `<strong>Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))}`;
             document.getElementById('stuLabScheduleSummary').innerHTML = `<strong>My Designated Lab:</strong> ${escapeHtml(desLabLabel)}`;
             document.getElementById('stuTutorialScheduleSummary').innerHTML = `<strong>My Designated Tutorial:</strong> ${escapeHtml(desTutLabel)}`;
 
-            // 1. Student Lecture Table
             let lecHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th>`;
-            cols.forEach(c => {
-                const brk = findExemptWeek(course, c.weekNum);
-                const sub = brk ? `🚫 ${brk.reason}` : lecSlots.map((s, idx) => `L${idx + 1}`).join(' / ');
-                lecHead += `<th><div>${escapeHtml(c.label)}</div><div style="font-size:10px; font-weight:normal;">${escapeHtml(sub)}</div></th>`;
-            });
-            lecHead += `<th>Lectures Present</th><th>Lecture %</th></tr>`;
+            cols.forEach(c => { lecHead += `<th>${escapeHtml(c.label)}</th>`; });
+            lecHead += `<th>Present</th><th>Lecture %</th></tr>`;
             document.getElementById('stuLectureHead').innerHTML = lecHead;
 
             let lecPresent = 0, lecTotal = 0, lecCells = "";
@@ -1244,75 +1448,47 @@
                 let badges = "";
                 for (let lIdx = 0; lIdx < numLecs; lIdx++) {
                     const key = `${c.keyPrefix}_L${lIdx + 1}`;
-                    const rawVal = st.lectureAttendance[key] || "";
-                    const val = getEffectiveSessionStatus(course, rawVal, c, lecSlots[lIdx], true);
-                    if (val === "P") { lecPresent++; lecTotal++; }
-                    else if (val === "A" || val === "L") { lecTotal++; }
-                    badges += `<span class="legend-pill ${val ? 'att-' + val : ''}" style="border:1px solid #cbd5e1;">L${lIdx + 1}: ${val || '-'}</span>`;
+                    const val = getEffectiveSessionStatus(course, st.lectureAttendance[key] || "", c, lecSlots[lIdx], true);
+                    if (val === "P") { lecPresent++; lecTotal++; } else if (val === "A" || val === "L") lecTotal++;
+                    badges += `<span class="legend-pill ${val ? 'att-' + val : ''}" style="border:1px solid #cbd5e1;">L${lIdx + 1}:${val || '-'}</span>`;
                 }
                 lecCells += `<td><div class="lec-week-box">${badges}</div></td>`;
             });
             const lecPct = lecTotal > 0 ? Math.round((lecPresent / lecTotal) * 100) + "%" : "100%";
-            document.getElementById('stuLectureBody').innerHTML = `<tr>
-                <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
-                <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(st.course || code)}</td>
-                <td class="summary-cell">${escapeHtml(st.mode)}</td>${lecCells}
-                <td class="summary-cell">${lecPresent} / ${lecTotal}</td><td class="summary-cell">${lecPct}</td>
-            </tr>`;
+            document.getElementById('stuLectureBody').innerHTML = `<tr><td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td><td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(st.course || code)}</td><td class="summary-cell">${escapeHtml(st.mode)}</td>${lecCells}<td class="summary-cell">${lecPresent}/${lecTotal}</td><td class="summary-cell">${lecPct}</td></tr>`;
 
-            // 2. Student Lab Table
-            let labHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>My Designated Lab</th>`;
-            cols.forEach(c => { labHead += `<th>${escapeHtml(c.label)}</th>`; });
-            labHead += `<th>Labs Present</th><th>Lab %</th></tr>`;
-            document.getElementById('stuLabHead').innerHTML = labHead;
+            const renderSingleRow = (headId, bodyId, desLabel, slotObj, attMap) => {
+                let h = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Designated Session</th>`;
+                cols.forEach(c => { h += `<th>${escapeHtml(c.label)}</th>`; });
+                h += `<th>Present</th><th>%</th></tr>`;
+                document.getElementById(headId).innerHTML = h;
+                let pres = 0, tot = 0, cells = "";
+                cols.forEach(c => {
+                    const val = getEffectiveSessionStatus(course, attMap[c.keyPrefix] || "", c, slotObj, true);
+                    if (val === "P") { pres++; tot++; } else if (val === "A" || val === "L") tot++;
+                    cells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
+                });
+                const pct = tot > 0 ? Math.round((pres / tot) * 100) + "%" : "100%";
+                document.getElementById(bodyId).innerHTML = `<tr><td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td><td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(desLabel)}</td>${cells}<td class="summary-cell">${pres}/${tot}</td><td class="summary-cell">${pct}</td></tr>`;
+                return { pres, tot, pct };
+            };
 
-            let labPresent = 0, labTotal = 0, labCells = "";
-            const stuLabSlot = labSlots[myLabIdx] || labSlots[0];
-            cols.forEach(c => {
-                const rawVal = st.labAttendance[c.keyPrefix] || "";
-                const val = getEffectiveSessionStatus(course, rawVal, c, stuLabSlot, true);
-                if (val === "P") { labPresent++; labTotal++; }
-                else if (val === "A" || val === "L") { labTotal++; }
-                labCells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
-            });
-            const labPct = labTotal > 0 ? Math.round((labPresent / labTotal) * 100) + "%" : "100%";
-            document.getElementById('stuLabBody').innerHTML = `<tr>
-                <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
-                <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(desLabLabel)}</td>
-                ${labCells}<td class="summary-cell">${labPresent} / ${labTotal}</td><td class="summary-cell">${labPct}</td>
-            </tr>`;
+            const labRes = renderSingleRow('stuLabHead', 'stuLabBody', desLabLabel, labSlots[myLabIdx] || labSlots[0], st.labAttendance);
+            const tutRes = renderSingleRow('stuTutorialHead', 'stuTutorialBody', desTutLabel, tutSlots[myTutIdx] || tutSlots[0], st.tutorialAttendance);
 
-            // 3. Student Tutorial Table
-            let tutHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>My Designated Tutorial</th>`;
-            cols.forEach(c => { tutHead += `<th>${escapeHtml(c.label)}</th>`; });
-            tutHead += `<th>Tutorials Present</th><th>Tutorial %</th></tr>`;
-            document.getElementById('stuTutorialHead').innerHTML = tutHead;
-
-            let tutPresent = 0, tutTotal = 0, tutCells = "";
-            const stuTutSlot = tutSlots[myTutIdx] || tutSlots[0];
-            cols.forEach(c => {
-                const rawVal = st.tutorialAttendance[c.keyPrefix] || "";
-                const val = getEffectiveSessionStatus(course, rawVal, c, stuTutSlot, true);
-                if (val === "P") { tutPresent++; tutTotal++; }
-                else if (val === "A" || val === "L") { tutTotal++; }
-                tutCells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
-            });
-            const tutPct = tutTotal > 0 ? Math.round((tutPresent / tutTotal) * 100) + "%" : "100%";
-            document.getElementById('stuTutorialBody').innerHTML = `<tr>
-                <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
-                <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(desTutLabel)}</td>
-                ${tutCells}<td class="summary-cell">${tutPresent} / ${tutTotal}</td><td class="summary-cell">${tutPct}</td>
-            </tr>`;
-
-            const overallMark = lecTotal + labTotal + tutTotal;
-            const overallPres = lecPresent + labPresent + tutPresent;
+            const overallMark = lecTotal + labRes.tot + tutRes.tot;
+            const overallPres = lecPresent + labRes.pres + tutRes.pres;
             document.getElementById('stuLecStat').innerText = lecPct;
-            document.getElementById('stuLabStat').innerText = labPct;
-            document.getElementById('stuTutStat').innerText = tutPct;
+            document.getElementById('stuLabStat').innerText = labRes.pct;
+            document.getElementById('stuTutStat').innerText = tutRes.pct;
             document.getElementById('stuOverallStat').innerText = overallMark > 0 ? Math.round((overallPres / overallMark) * 100) + "%" : "100%";
         }
 
         /* ================= STAFF DASHBOARD & COURSE MANAGEMENT ================= */
+
+        function defaultGeoObj() {
+            return { enabled: false, lat: LAUCALA_DEFAULT.lat, lng: LAUCALA_DEFAULT.lng, radius: 150 };
+        }
 
         function createDefaultCourseObject() {
             const today = new Date().toISOString().split('T')[0];
@@ -1324,9 +1500,12 @@
                 sharedStaff: [],
                 schedules: {
                     attendanceMode: "weekly",
-                    lectures: [{ day: "Mon", startTime: "09:00", endTime: "10:00", room: "" }, { day: "Wed", startTime: "09:00", endTime: "10:00", room: "" }],
-                    labs: [{ day: "Tue", startTime: "14:00", endTime: "17:00", room: "", capacity: 25 }],
-                    tutorials: [{ day: "Thu", startTime: "11:00", endTime: "12:00", room: "", capacity: 25 }],
+                    lectures: [
+                        { day: "Mon", startTime: "09:00", endTime: "10:00", room: "", geofence: defaultGeoObj() },
+                        { day: "Wed", startTime: "09:00", endTime: "10:00", room: "", geofence: defaultGeoObj() }
+                    ],
+                    labs: [{ day: "Tue", startTime: "14:00", endTime: "17:00", room: "", capacity: 25, geofence: defaultGeoObj() }],
+                    tutorials: [{ day: "Thu", startTime: "11:00", endTime: "12:00", room: "", capacity: 25, geofence: defaultGeoObj() }],
                     holidays: [],
                     exemptWeeks: []
                 },
@@ -1364,8 +1543,7 @@
         }
 
         function logoutUser() {
-            loggedInUser = null;
-            userSessionPassword = "";
+            loggedInUser = null; userSessionPassword = "";
             document.getElementById('staffDashboard').style.display = 'none';
             document.getElementById('studentDashboard').style.display = 'none';
             document.getElementById('portalModal').style.display = 'flex';
@@ -1406,8 +1584,9 @@
             if (!Array.isArray(c.schedules.holidays)) c.schedules.holidays = [];
             if (!Array.isArray(c.schedules.exemptWeeks)) c.schedules.exemptWeeks = [];
 
-            c.schedules.labs = c.schedules.labs.map(s => Object.assign({ capacity: 25 }, s));
-            c.schedules.tutorials = c.schedules.tutorials.map(s => Object.assign({ capacity: 25 }, s));
+            c.schedules.lectures = c.schedules.lectures.map(s => Object.assign({ geofence: defaultGeoObj() }, s));
+            c.schedules.labs = c.schedules.labs.map(s => Object.assign({ capacity: 25, geofence: defaultGeoObj() }, s));
+            c.schedules.tutorials = c.schedules.tutorials.map(s => Object.assign({ capacity: 25, geofence: defaultGeoObj() }, s));
             if (!c.weeks || !c.weeks.length) c.weeks = generateWeeksList(c.semStart, c.semEnd);
 
             c.students = (c.students || []).map(st => ({
@@ -1436,16 +1615,12 @@
         }
 
         function toggleEditMode() {
-            if (!canEditAttendance()) {
-                alert("You have View-Only access to this course.");
-                return;
-            }
+            if (!canEditAttendance()) { alert("You have View-Only access to this course."); return; }
             setEditMode(!isEditMode);
         }
 
         function setEditMode(enabled) {
-            const canStruct = canEditCourseStructure();
-            const canAtt = canEditAttendance();
+            const canStruct = canEditCourseStructure(), canAtt = canEditAttendance();
             isEditMode = enabled && canAtt;
 
             const btn = document.getElementById('editModeBtn');
@@ -1456,15 +1631,12 @@
             document.getElementById('saveAllBtn').disabled = !canAtt;
             document.getElementById('deleteCourseBtn').disabled = !(isEditMode && isCourseOwner());
 
-            // Course structure fields are only unlocked if isEditMode AND user has owner or full_edit permission
             const structUnlocked = isEditMode && canStruct;
             [
                 'courseCode', 'courseTitle', 'semStart', 'semEnd', 'attendanceModeSelect',
                 'addRowBtn', 'clearRowsBtn', 'addLecSlotBtn', 'addLabSlotBtn', 'addTutSlotBtn',
                 'addHolidayBtn', 'addExemptWeekBtn'
-            ].forEach(id => {
-                document.getElementById(id).disabled = !structUnlocked;
-            });
+            ].forEach(id => { document.getElementById(id).disabled = !structUnlocked; });
 
             const dz = document.getElementById('classlistDropzone');
             if (structUnlocked) dz.classList.remove('disabled-zone');
@@ -1482,93 +1654,67 @@
             const ownerLabel = document.getElementById('courseOwnerLabel');
             const ownerId = currentCourse.ownerStaffId || (loggedInUser ? loggedInUser.idNumber : "");
             const ownerInfo = registeredStaffDirectory.find(s => s.staffId.toUpperCase() === ownerId.toUpperCase());
-            ownerLabel.innerText = `Course Owner: ${ownerInfo ? ownerInfo.fullName + ' (' + ownerId + ')' : ownerId}`;
-
+            ownerLabel.innerText = `Owner: ${ownerInfo ? ownerInfo.fullName + ' (' + ownerId + ')' : ownerId}`;
             document.getElementById('myCourseRoleBadge').innerText = formatRoleBadgeText(getMyAccessLevel());
 
             const canManageSharing = isEditMode && isCourseOwner();
             const staffSelect = document.getElementById('grantStaffSelect');
-            const levelSelect = document.getElementById('grantLevelSelect');
-            const grantBtn = document.getElementById('grantStaffBtn');
-
+            document.getElementById('grantLevelSelect').disabled = !canManageSharing;
+            document.getElementById('grantStaffBtn').disabled = !canManageSharing;
             staffSelect.disabled = !canManageSharing;
-            levelSelect.disabled = !canManageSharing;
-            grantBtn.disabled = !canManageSharing;
 
-            // Populate dropdown with registered Staff (excluding course owner and already-added staff)
             const sharedIds = new Set((currentCourse.sharedStaff || []).map(x => String(x.staffId).toUpperCase()));
-            staffSelect.innerHTML = `<option value="">-- Select Registered Staff to Grant Access --</option>`;
-
-            let availableCount = 0;
+            staffSelect.innerHTML = `<option value="">-- Select Registered Staff --</option>`;
+            let count = 0;
             registeredStaffDirectory.forEach(st => {
-                const sidUpper = String(st.staffId).toUpperCase();
-                if (sidUpper === String(ownerId).toUpperCase() || sharedIds.has(sidUpper)) return;
+                const sidUp = String(st.staffId).toUpperCase();
+                if (sidUp === String(ownerId).toUpperCase() || sharedIds.has(sidUp)) return;
                 const opt = document.createElement('option');
                 opt.value = st.staffId;
                 opt.textContent = `${st.fullName} (${st.staffId})`;
                 staffSelect.appendChild(opt);
-                availableCount++;
+                count++;
             });
-
-            if (availableCount === 0) {
-                const opt = document.createElement('option');
-                opt.value = "";
-                opt.disabled = true;
-                opt.textContent = "-- No other registered Staff found (New Staff must register first) --";
-                staffSelect.appendChild(opt);
+            if (!count) {
+                staffSelect.innerHTML += `<option value="" disabled>-- No other registered Staff (Must register first) --</option>`;
             }
 
-            // Render list of Staff currently granted access
             const listContainer = document.getElementById('sharedStaffListContainer');
             listContainer.innerHTML = "";
             const sharedList = currentCourse.sharedStaff || [];
-
-            if (sharedList.length === 0) {
-                listContainer.innerHTML = `<div style="font-size:12px; color:#64748b; padding:4px;">No other staff granted access yet. Only the Course Owner can view/edit this course.</div>`;
+            if (!sharedList.length) {
+                listContainer.innerHTML = `<div style="font-size:11.5px; color:#64748b; padding:4px;">Private to Course Owner.</div>`;
                 return;
             }
-
             sharedList.forEach((item, idx) => {
                 const row = document.createElement('div');
                 row.className = 'slot-row-access';
                 const dis = canManageSharing ? "" : "disabled";
                 row.innerHTML = `
-                    <div><strong>${escapeHtml(item.fullName || item.staffId)}</strong> <span style="color:#475569;">(${escapeHtml(item.staffId)})</span></div>
+                    <div><strong>${escapeHtml(item.fullName || item.staffId)}</strong> (${escapeHtml(item.staffId)})</div>
                     <select ${dis} onchange="updateSharedStaffLevel(${idx}, this.value)">
                         <option value="attendance_only" ${item.accessLevel === 'attendance_only' ? 'selected' : ''}>Attendance Editing Only</option>
                         <option value="full_edit" ${item.accessLevel === 'full_edit' ? 'selected' : ''}>Full Edit (Co-Editor)</option>
                         <option value="view_only" ${item.accessLevel === 'view_only' ? 'selected' : ''}>View & Export Only</option>
                     </select>
-                    ${canManageSharing
-                        ? `<button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="revokeStaffAccess(${idx})">Revoke ✕</button>`
-                        : `<span style="width:24px;"></span>`}
+                    ${canManageSharing ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="revokeStaffAccess(${idx})">✕</button>` : `<span></span>`}
                 `;
                 listContainer.appendChild(row);
             });
         }
 
         function grantStaffAccess() {
-            if (!isEditMode || !isCourseOwner()) {
-                alert("Only the Course Owner in Edit Mode can grant access to other staff.");
-                return;
-            }
+            if (!isEditMode || !isCourseOwner()) return;
             const staffId = document.getElementById('grantStaffSelect').value;
             const accessLevel = document.getElementById('grantLevelSelect').value;
-            if (!staffId) {
-                alert("Please select a registered Staff member from the dropdown. If their name is not listed, ask them to register on the Staff Registration page first.");
-                return;
-            }
+            if (!staffId) { alert("Select a registered Staff member first."); return; }
             const staffObj = registeredStaffDirectory.find(s => s.staffId.toUpperCase() === staffId.toUpperCase());
-            if (!Array.isArray(currentCourse.sharedStaff)) currentCourse.sharedStaff = [];
-
             currentCourse.sharedStaff.push({
                 staffId: staffObj ? staffObj.staffId : staffId,
                 fullName: staffObj ? staffObj.fullName : staffId,
-                accessLevel: accessLevel
+                accessLevel
             });
-
-            renderStaffAccessControls();
-            queueAutoSave();
+            renderStaffAccessControls(); queueAutoSave();
         }
 
         function updateSharedStaffLevel(idx, newLevel) {
@@ -1580,8 +1726,7 @@
         function revokeStaffAccess(idx) {
             if (!isEditMode || !isCourseOwner()) return;
             currentCourse.sharedStaff.splice(idx, 1);
-            renderStaffAccessControls();
-            queueAutoSave();
+            renderStaffAccessControls(); queueAutoSave();
         }
 
         /* ================= HOLIDAYS & EXEMPT STUDY BREAK WEEKS EDITORS ================= */
@@ -1589,45 +1734,36 @@
         function renderHolidaysAndExemptWeeks() {
             const holContainer = document.getElementById('holidaysListContainer');
             const exContainer = document.getElementById('exemptWeeksListContainer');
-            holContainer.innerHTML = "";
-            exContainer.innerHTML = "";
+            holContainer.innerHTML = ""; exContainer.innerHTML = "";
             const dis = (isEditMode && canEditCourseStructure()) ? "" : "disabled";
 
             const holidays = currentCourse.schedules.holidays || [];
-            if (holidays.length === 0) {
-                holContainer.innerHTML = `<div style="font-size:12px; color:#64748b; padding:4px;">No holidays added yet.</div>`;
-            } else {
-                holidays.forEach((h, idx) => {
-                    const row = document.createElement('div');
-                    row.className = 'slot-row-2col';
-                    row.innerHTML = `
-                        <input type="date" value="${escapeHtml(h.date || '')}" ${dis} onchange="updateHolidayField(${idx}, 'date', this.value)">
-                        <input type="text" value="${escapeHtml(h.name || '')}" placeholder="Holiday Name (e.g. Fiji Day)" ${dis} oninput="updateHolidayField(${idx}, 'name', this.value)">
-                        ${!dis ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeHolidayRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
-                    `;
-                    holContainer.appendChild(row);
-                });
-            }
+            if (!holidays.length) holContainer.innerHTML = `<div style="font-size:11.5px; color:#64748b; padding:4px;">No holidays added.</div>`;
+            holidays.forEach((h, idx) => {
+                const row = document.createElement('div');
+                row.className = 'slot-row-2col';
+                row.innerHTML = `
+                    <input type="date" value="${escapeHtml(h.date || '')}" ${dis} onchange="updateHolidayField(${idx}, 'date', this.value)">
+                    <input type="text" value="${escapeHtml(h.name || '')}" placeholder="Holiday Name" ${dis} oninput="updateHolidayField(${idx}, 'name', this.value)">
+                    ${!dis ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeHolidayRow(${idx})">✕</button>` : `<span></span>`}
+                `;
+                holContainer.appendChild(row);
+            });
 
             const exemptWeeks = currentCourse.schedules.exemptWeeks || [];
             const weeksList = currentCourse.weeks || [];
-            if (exemptWeeks.length === 0) {
-                exContainer.innerHTML = `<div style="font-size:12px; color:#64748b; padding:4px;">No exempt/study break weeks designated.</div>`;
-            } else {
-                exemptWeeks.forEach((ew, idx) => {
-                    const row = document.createElement('div');
-                    row.className = 'slot-row-2col';
-                    const wkOpts = weeksList.map((wLabel, wIdx) =>
-                        `<option value="${wIdx + 1}" ${Number(ew.weekNum) === (wIdx + 1) ? "selected" : ""}>${escapeHtml(wLabel)}</option>`
-                    ).join("");
-                    row.innerHTML = `
-                        <select ${dis} onchange="updateExemptWeekField(${idx}, 'weekNum', Number(this.value))">${wkOpts}</select>
-                        <input type="text" value="${escapeHtml(ew.reason || '')}" placeholder="Why no attendance? (e.g. Study Break)" ${dis} oninput="updateExemptWeekField(${idx}, 'reason', this.value)">
-                        ${!dis ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeExemptWeekRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
-                    `;
-                    exContainer.appendChild(row);
-                });
-            }
+            if (!exemptWeeks.length) exContainer.innerHTML = `<div style="font-size:11.5px; color:#64748b; padding:4px;">No study break weeks added.</div>`;
+            exemptWeeks.forEach((ew, idx) => {
+                const row = document.createElement('div');
+                row.className = 'slot-row-2col';
+                const wkOpts = weeksList.map((wLabel, wIdx) => `<option value="${wIdx + 1}" ${Number(ew.weekNum) === (wIdx + 1) ? "selected" : ""}>${escapeHtml(wLabel)}</option>`).join("");
+                row.innerHTML = `
+                    <select ${dis} onchange="updateExemptWeekField(${idx}, 'weekNum', Number(this.value))">${wkOpts}</select>
+                    <input type="text" value="${escapeHtml(ew.reason || '')}" placeholder="Reason (e.g. Study Break)" ${dis} oninput="updateExemptWeekField(${idx}, 'reason', this.value)">
+                    ${!dis ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeExemptWeekRow(${idx})">✕</button>` : `<span></span>`}
+                `;
+                exContainer.appendChild(row);
+            });
         }
 
         function addHolidayRow() {
@@ -1635,41 +1771,19 @@
             currentCourse.schedules.holidays.push({ date: currentCourse.semStart || toIsoDateStr(new Date()), name: "Public Holiday" });
             renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
-
-        function updateHolidayField(idx, field, val) {
-            currentCourse.schedules.holidays[idx][field] = val;
-            renderAllThreeTables(); queueAutoSave();
-        }
-
-        function removeHolidayRow(idx) {
-            if (!isEditMode || !canEditCourseStructure()) return;
-            currentCourse.schedules.holidays.splice(idx, 1);
-            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
-        }
+        function updateHolidayField(idx, field, val) { currentCourse.schedules.holidays[idx][field] = val; renderAllThreeTables(); queueAutoSave(); }
+        function removeHolidayRow(idx) { currentCourse.schedules.holidays.splice(idx, 1); renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave(); }
 
         function addExemptWeekRow() {
             if (!isEditMode || !canEditCourseStructure()) return;
-            currentCourse.schedules.exemptWeeks.push({ weekNum: 1, reason: "Mid-Semester Study Break" });
+            currentCourse.schedules.exemptWeeks.push({ weekNum: 1, reason: "Study Break" });
             renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
-
-        function updateExemptWeekField(idx, field, val) {
-            currentCourse.schedules.exemptWeeks[idx][field] = val;
-            renderAllThreeTables(); queueAutoSave();
-        }
-
-        function removeExemptWeekRow(idx) {
-            if (!isEditMode || !canEditCourseStructure()) return;
-            currentCourse.schedules.exemptWeeks.splice(idx, 1);
-            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
-        }
+        function updateExemptWeekField(idx, field, val) { currentCourse.schedules.exemptWeeks[idx][field] = val; renderAllThreeTables(); queueAutoSave(); }
+        function removeExemptWeekRow(idx) { currentCourse.schedules.exemptWeeks.splice(idx, 1); renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave(); }
 
         function handleAttendanceModeChange() {
-            const newMode = document.getElementById('attendanceModeSelect').value;
-            currentCourse.schedules.attendanceMode = newMode;
-            if (newMode === "daily") {
-                currentCourse.schedules.lectures.forEach(s => { if (!s.day) s.day = "Daily"; });
-            }
+            currentCourse.schedules.attendanceMode = document.getElementById('attendanceModeSelect').value;
             renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
         }
 
@@ -1685,12 +1799,13 @@
             document.getElementById('pendingReqCount').innerText = reqs.length;
             tbody.innerHTML = "";
 
+            const lecSlots = currentCourse.schedules.lectures || [];
             const labSlots = currentCourse.schedules.labs || [];
             const tutSlots = currentCourse.schedules.tutorials || [];
 
             reqs.forEach(r => {
-                const slots = r.sessionType === 'lab' ? labSlots : tutSlots;
-                const prefix = r.sessionType === 'lab' ? 'Lab' : 'Tut';
+                const slots = r.sessionType === 'lecture' ? lecSlots : (r.sessionType === 'lab' ? labSlots : tutSlots);
+                const prefix = r.sessionType === 'lecture' ? 'Lec' : (r.sessionType === 'lab' ? 'Lab' : 'Tut');
                 const desText = r.designatedIdx >= 0 && slots[r.designatedIdx] ? formatSlotSummary(slots[r.designatedIdx], prefix, r.designatedIdx) : 'Unassigned';
                 const attText = slots[r.attendedIdx] ? formatSlotSummary(slots[r.attendedIdx], prefix, r.attendedIdx) : `${prefix} ${r.attendedIdx + 1}`;
 
@@ -1703,8 +1818,8 @@
                     <td>${escapeHtml(r.reason)}</td>
                     <td>
                         <div style="display:flex; gap:6px;">
-                            <button type="button" class="btn btn-student" style="padding:5px 10px; font-size:11px;" onclick="resolveStaffRequest(${r.id}, 'APPROVE')">Approve (P)</button>
-                            <button type="button" class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="resolveStaffRequest(${r.id}, 'REJECT')">Reject (A)</button>
+                            <button type="button" class="btn btn-student" style="padding:5px 9px; font-size:11px;" onclick="resolveStaffRequest(${r.id}, 'APPROVE')">Approve (P)</button>
+                            <button type="button" class="btn btn-danger" style="padding:5px 9px; font-size:11px;" onclick="resolveStaffRequest(${r.id}, 'REJECT')">Reject (A)</button>
                         </div>
                     </td>
                 `;
@@ -1723,7 +1838,8 @@
 
                 const st = currentCourse.students.find(s => s.studentId.toUpperCase() === String(res.studentId).toUpperCase());
                 if (st) {
-                    if (res.sessionType === 'lab') st.labAttendance[res.weekKey] = res.mark;
+                    if (res.sessionType === 'lecture') st.lectureAttendance[res.weekKey] = res.mark;
+                    else if (res.sessionType === 'lab') st.labAttendance[res.weekKey] = res.mark;
                     else st.tutorialAttendance[res.weekKey] = res.mark;
                 }
                 currentCourse.pendingRequests = (currentCourse.pendingRequests || []).filter(r => r.id !== requestId);
@@ -1738,10 +1854,7 @@
         /* ================= DROPBOX & CSV PARSER ================= */
 
         function triggerFileSelect() {
-            if (!isEditMode || !canEditCourseStructure()) {
-                alert("Course classlist upload requires Course Owner or Full Edit permission in Edit Mode.");
-                return;
-            }
+            if (!isEditMode || !canEditCourseStructure()) { alert("Requires Owner/Co-Editor in Edit Mode."); return; }
             document.getElementById('classlistFileInput').click();
         }
 
@@ -1751,7 +1864,7 @@
             dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
             dz.addEventListener('drop', e => {
                 e.preventDefault(); dz.classList.remove('dragover');
-                if (!isEditMode || !canEditCourseStructure()) { alert("Classlist upload requires Owner or Full Edit permission in Edit Mode."); return; }
+                if (!isEditMode || !canEditCourseStructure()) return;
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) stageClasslistFile(e.dataTransfer.files[0]);
             });
         }
@@ -1801,7 +1914,7 @@
         }
 
         function extractStudentsFromRows(rows, fileName) {
-            if (!rows || !rows.length) { alert("File is empty."); return; }
+            if (!rows || !rows.length) return;
             let hIdx = 0;
             for (let i = 0; i < Math.min(rows.length, 15); i++) {
                 const norm = rows[i].map(c => String(c || "").trim().toLowerCase());
@@ -1817,12 +1930,10 @@
             const parsed = [];
             for (let r = hIdx + 1; r < rows.length; r++) {
                 const row = rows[r]; if (!row || !row.length) continue;
-                const sid = String(row[idCol] || "").trim();
-                const lname = String(row[lastCol] || "").trim();
+                const sid = String(row[idCol] || "").trim(), lname = String(row[lastCol] || "").trim();
                 if (!sid || !lname || sid.toLowerCase().includes("rows") || sid.toLowerCase() === "id") continue;
                 parsed.push({
-                    studentId: sid, lastName: lname,
-                    firstName: String(row[firstCol] || "").trim(),
+                    studentId: sid, lastName: lname, firstName: String(row[firstCol] || "").trim(),
                     course: courseCol !== -1 && row[courseCol] !== undefined ? String(row[courseCol]).trim() : "",
                     mode: modeCol !== -1 && row[modeCol] !== undefined ? String(row[modeCol]).trim().toUpperCase() || "F" : "F"
                 });
@@ -1831,17 +1942,14 @@
             stagedClasslist = parsed;
             const dz = document.getElementById('classlistDropzone');
             dz.classList.add('staged'); dz.focus();
-            document.getElementById('dropzoneMainText').innerHTML = `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students Detected)</strong>`;
-            document.getElementById('dropzoneSubText').innerHTML = `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill All 3 Tables & Save to Supabase ↵</span>`;
+            document.getElementById('dropzoneMainText').innerHTML = `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students)</strong>`;
+            document.getElementById('dropzoneSubText').innerHTML = `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill & Save ↵</span>`;
         }
 
         function applyStagedClasslistAndSync() {
             if (!stagedClasslist || !stagedClasslist.length) return;
             const detectedCourse = stagedClasslist[0].course ? stagedClasslist[0].course.toUpperCase() : "";
-            if (detectedCourse) {
-                currentCourse.courseCode = detectedCourse;
-                document.getElementById('courseCode').value = detectedCourse;
-            }
+            if (detectedCourse) { currentCourse.courseCode = detectedCourse; document.getElementById('courseCode').value = detectedCourse; }
             const existingMap = {};
             currentCourse.students.forEach(st => { if (st.studentId) existingMap[st.studentId.toUpperCase()] = st; });
 
@@ -1852,10 +1960,8 @@
                     course: st.course || currentCourse.courseCode || "", mode: st.mode || "F",
                     assignedLabIdx: prev.assignedLabIdx !== undefined ? prev.assignedLabIdx : -1,
                     assignedTutIdx: prev.assignedTutIdx !== undefined ? prev.assignedTutIdx : -1,
-                    lectureAttendance: prev.lectureAttendance || {},
-                    labAttendance: prev.labAttendance || {},
-                    tutorialAttendance: prev.tutorialAttendance || {},
-                    hasLoggedIn: Boolean(prev.hasLoggedIn)
+                    lectureAttendance: prev.lectureAttendance || {}, labAttendance: prev.labAttendance || {},
+                    tutorialAttendance: prev.tutorialAttendance || {}, hasLoggedIn: Boolean(prev.hasLoggedIn)
                 };
             });
 
@@ -1863,7 +1969,6 @@
             stagedClasslist = null;
             document.getElementById('classlistDropzone').classList.remove('staged');
             document.getElementById('dropzoneMainText').innerHTML = `<strong>Autofilled ${count} Students from ${escapeHtml(stagedFileName)}!</strong>`;
-            document.getElementById('dropzoneSubText').innerHTML = `Click or drag & drop another classlist file and press <strong>ENTER</strong>.`;
             renderAllThreeTables();
             saveCourseAndAttendance(false);
         }
@@ -1872,14 +1977,13 @@
 
         async function saveCourseAndAttendance(manualClick) {
             if (!canEditAttendance()) return;
-
             currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
             currentCourse.courseTitle = document.getElementById('courseTitle').value.trim();
             currentCourse.semStart = document.getElementById('semStart').value;
             currentCourse.semEnd = document.getElementById('semEnd').value;
 
             const code = currentCourse.courseCode;
-            if (!code) { if (manualClick) alert("Please enter a Course Unit Code before saving."); return; }
+            if (!code) { if (manualClick) alert("Enter a Course Unit Code before saving."); return; }
 
             const indicator = document.getElementById('syncIndicator');
             indicator.innerText = "Saving to Supabase...";
@@ -1902,35 +2006,26 @@
         }
 
         async function deleteCurrentCourse() {
-            if (!isEditMode || !isCourseOwner()) {
-                alert("Only the Course Owner in Edit Mode can delete this course.");
-                return;
-            }
+            if (!isEditMode || !isCourseOwner()) return;
             const code = (currentCourse.courseCode || document.getElementById('courseCode').value).trim().toUpperCase();
-            if (!code || !confirm(`Permanently DELETE course "${code}" and all its attendance records?`)) return;
+            if (!code || !confirm(`Permanently DELETE course "${code}"?`)) return;
 
-            const indicator = document.getElementById('syncIndicator');
-            indicator.innerText = `Deleting ${code}...`;
             try {
                 const { data: res, error } = await sb.rpc('delete_portal_course', {
                     p_staff_id: loggedInUser.idNumber, p_password: userSessionPassword, p_course_code: code
                 });
                 if (error) throw error;
-                if (!res || !res.success) throw new Error((res && res.message) || "Delete rejected.");
-
                 delete coursesStore[code];
                 populateCourseDropdown();
                 const rem = Object.keys(coursesStore);
                 if (rem.length) { document.getElementById('courseSelector').value = rem[0]; loadSelectedCourse(); }
                 else startNewCourse();
-                indicator.innerText = `Deleted ${code}`;
             } catch (err) {
-                indicator.innerText = "Delete failed";
                 alert("Could not delete course: " + err.message);
             }
         }
 
-        /* ================= SCHEDULE SLOTS & 3 ATTENDANCE TABLES ================= */
+        /* ================= SCHEDULE SLOTS (WITH SATELLITE GEOFENCE BUTTON) ================= */
 
         function renderScheduleCards() {
             renderSlotGroup('lectures', 'lecturesSlotList', 'Lec', false);
@@ -1962,13 +2057,18 @@
                 const capInput = hasCapacity
                     ? `<input type="number" min="1" max="500" value="${escapeHtml(slot.capacity || 25)}" ${dis} oninput="updateScheduleSlot('${groupKey}', ${idx}, 'capacity', Number(this.value))" title="Max Capacity">`
                     : "";
+                const geo = slot.geofence || {};
+                const geoBtnClass = geo.enabled ? 'btn geo-btn-on' : 'btn geo-btn-off';
+                const geoBtnLabel = geo.enabled ? `🛰️ ${geo.radius || 150}m` : `📍 Geofence`;
+
                 row.innerHTML = `
                     <select ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'day', this.value)">${dayOpts}</select>
                     <input type="time" value="${escapeHtml(slot.startTime || '')}" ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'startTime', this.value)">
                     <input type="time" value="${escapeHtml(slot.endTime || '')}" ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'endTime', this.value)">
                     <input type="text" value="${escapeHtml(slot.room || '')}" placeholder="Room #" ${dis} oninput="updateScheduleSlot('${groupKey}', ${idx}, 'room', this.value)">
                     ${capInput}
-                    ${!dis && slots.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>` : `<span style="width:24px;"></span>`}
+                    <button type="button" class="${geoBtnClass}" ${dis} onclick="openStaffGeofenceModal('${groupKey}', ${idx})" title="Select Room on Laucala Satellite Map & Set Radius (100m-250m)">${geoBtnLabel}</button>
+                    ${!dis && slots.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>` : `<span></span>`}
                 `;
                 container.appendChild(row);
             });
@@ -1977,7 +2077,7 @@
         function addScheduleSlot(groupKey) {
             if (!isEditMode || !canEditCourseStructure()) return;
             const defaultDay = currentCourse.schedules.attendanceMode === 'daily' ? 'Daily' : 'Mon';
-            const slot = { day: defaultDay, startTime: "10:00", endTime: "11:00", room: "" };
+            const slot = { day: defaultDay, startTime: "10:00", endTime: "11:00", room: "", geofence: defaultGeoObj() };
             if (groupKey !== 'lectures') slot.capacity = 25;
             currentCourse.schedules[groupKey].push(slot);
             renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
@@ -1997,7 +2097,8 @@
         function formatSlotSummary(slot, prefix, idx) {
             if (!slot) return `${prefix} ${idx + 1}`;
             const time = (slot.startTime && slot.endTime) ? `${slot.startTime}–${slot.endTime}` : "Time TBA";
-            return `${prefix} ${idx + 1} (${slot.day || 'Day'} ${time}, ${slot.room ? 'Room: ' + slot.room : 'Room TBA'})`;
+            const geoStr = (slot.geofence && slot.geofence.enabled) ? ` 🛰️${slot.geofence.radius || 150}m` : '';
+            return `${prefix} ${idx + 1} (${slot.day || 'Day'} ${time}, ${slot.room ? 'Room: ' + slot.room : 'Room TBA'}${geoStr})`;
         }
 
         function updateScheduleSummaryBars() {
@@ -2010,13 +2111,9 @@
             const lecs = currentCourse.schedules.lectures.map((s, i) => formatSlotSummary(s, 'Lec', i)).join("  |  ");
             const labs = currentCourse.schedules.labs.map((s, i) => `${formatSlotSummary(s, 'Lab', i)} [Cap: ${getEnrolledCountForStream('labs', i)}/${s.capacity || 25}]`).join("  |  ");
             const tuts = currentCourse.schedules.tutorials.map((s, i) => `${formatSlotSummary(s, 'Tut', i)} [Cap: ${getEnrolledCountForStream('tutorials', i)}/${s.capacity || 25}]`).join("  |  ");
-            const hols = (currentCourse.schedules.holidays || []).map(h => `${h.date} (${h.name})`).join(", ") || "None";
-            const brks = (currentCourse.schedules.exemptWeeks || []).map(b => `Wk ${b.weekNum}: ${b.reason}`).join(", ") || "None";
-
-            document.getElementById('lectureScheduleSummary').innerHTML =
-                `<strong>Lectures:</strong> ${escapeHtml(lecs)} &nbsp;|&nbsp; <strong>Holidays:</strong> ${escapeHtml(hols)} &nbsp;|&nbsp; <strong>Exempt Study Breaks:</strong> ${escapeHtml(brks)}`;
-            document.getElementById('labScheduleSummary').innerHTML = `<strong>Lab Streams (Capacity Tracked):</strong> ${escapeHtml(labs)}`;
-            document.getElementById('tutorialScheduleSummary').innerHTML = `<strong>Tutorial Streams (Capacity Tracked):</strong> ${escapeHtml(tuts)}`;
+            document.getElementById('lectureScheduleSummary').innerHTML = `<strong>Lectures:</strong> ${escapeHtml(lecs)}`;
+            document.getElementById('labScheduleSummary').innerHTML = `<strong>Lab Streams:</strong> ${escapeHtml(labs)}`;
+            document.getElementById('tutorialScheduleSummary').innerHTML = `<strong>Tutorial Streams:</strong> ${escapeHtml(tuts)}`;
         }
 
         function generateWeeksList(startStr, endStr) {
@@ -2042,9 +2139,7 @@
             currentCourse.semStart = document.getElementById('semStart').value;
             currentCourse.semEnd = document.getElementById('semEnd').value;
             currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
-            renderHolidaysAndExemptWeeks();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
 
         function renderCourseToUI() {
@@ -2092,7 +2187,7 @@
             let head = `<tr><th>#</th><th style="min-width:110px;">ID</th><th style="min-width:130px;">Last Name</th><th style="min-width:120px;">First Name</th><th>Course</th><th>Mode</th>`;
             cols.forEach(c => {
                 const brk = findExemptWeek(currentCourse, c.weekNum);
-                const sub = brk ? `🚫 ${brk.reason}` : lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
+                const sub = brk ? `🚫 ${brk.reason}` : lecSlots.map((s, lIdx) => `L${lIdx + 1}`).join(' / ');
                 head += `<th style="min-width:${Math.max(100, numLecs * 46)}px;"><div>${escapeHtml(c.label)}</div><div style="font-size:10px; font-weight:normal; color:${brk ? '#b91c1c' : '#475569'};">${escapeHtml(sub)}</div></th>`;
             });
             head += `<th>Present</th><th>Lecture %</th>${canDelRow ? `<th>Del</th>` : ""}</tr>`;
@@ -2111,13 +2206,13 @@
                     for (let lIdx = 0; lIdx < numLecs; lIdx++) {
                         const key = `${c.keyPrefix}_L${lIdx + 1}`;
                         const val = getEffectiveSessionStatus(currentCourse, st.lectureAttendance[key] || "", c, lecSlots[lIdx], st.hasLoggedIn);
-                        if (val === "P") { totPres++; totMark++; }
-                        else if (val === "A" || val === "L") { totMark++; }
+                        if (val === "P") { totPres++; totMark++; } else if (val === "A" || val === "L") totMark++;
                         sels += `<select class="lec-sub-select ${val ? 'att-' + val : ''}" ${attDis} onchange="updateLectureCell(${idx}, '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>L${lIdx + 1}:-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L${lIdx + 1}:L</option>
+                            <option value="REQ" ${val === "REQ" ? "selected" : ""}>L${lIdx + 1}:REQ</option>
                             <option value="HOL" ${val === "HOL" ? "selected" : ""}>L${lIdx + 1}:HOL</option>
                             <option value="BRK" ${val === "BRK" ? "selected" : ""}>L${lIdx + 1}:BRK</option>
                         </select>`;
@@ -2126,8 +2221,7 @@
                 });
                 const pct = totMark > 0 ? Math.round((totPres / totMark) * 100) + "%" : "100%";
                 tr.innerHTML = `${buildCommonStudentCells(st, idx, structDis)}${cells}
-                    <td class="summary-cell">${totPres}/${totMark}</td>
-                    <td class="summary-cell">${pct}</td>
+                    <td class="summary-cell">${totPres}/${totMark}</td><td class="summary-cell">${pct}</td>
                     ${canDelRow ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}`;
                 tbody.appendChild(tr);
             });
@@ -2135,11 +2229,8 @@
 
         function renderLabTable() {
             const cols = getActiveColumnsForCourse(currentCourse), labSlots = currentCourse.schedules.labs || [];
-            let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Lab (Staff Override)</th>`;
-            cols.forEach(c => {
-                const brk = findExemptWeek(currentCourse, c.weekNum);
-                head += `<th><div>${escapeHtml(c.label)}</div>${brk ? `<div style="font-size:9.5px; color:#b91c1c;">🚫 ${escapeHtml(brk.reason)}</div>` : ''}</th>`;
-            });
+            let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Lab</th>`;
+            cols.forEach(c => { head += `<th>${escapeHtml(c.label)}</th>`; });
             head += `<th>Labs Present</th><th>Lab %</th></tr>`;
             document.getElementById('labTableHead').innerHTML = head;
 
@@ -2158,8 +2249,7 @@
                 cols.forEach(c => {
                     const key = c.keyPrefix;
                     const val = getEffectiveSessionStatus(currentCourse, (st.labAttendance && st.labAttendance[key]) || "", c, slot, st.hasLoggedIn);
-                    if (val === "P") { pres++; mark++; }
-                    else if (val === "A" || val === "L") { mark++; }
+                    if (val === "P") { pres++; mark++; } else if (val === "A" || val === "L") mark++;
                     cells += `<td class="${val ? 'att-' + val : ''}">
                         <select class="att-select" ${attDis} onchange="updateSingleSessionCell(${idx}, 'labAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
@@ -2182,11 +2272,8 @@
 
         function renderTutorialTable() {
             const cols = getActiveColumnsForCourse(currentCourse), tutSlots = currentCourse.schedules.tutorials || [], numLecs = (currentCourse.schedules.lectures || []).length;
-            let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Tutorial (Staff Override)</th>`;
-            cols.forEach(c => {
-                const brk = findExemptWeek(currentCourse, c.weekNum);
-                head += `<th><div>${escapeHtml(c.label)}</div>${brk ? `<div style="font-size:9.5px; color:#b91c1c;">🚫 ${escapeHtml(brk.reason)}</div>` : ''}</th>`;
-            });
+            let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Tutorial</th>`;
+            cols.forEach(c => { head += `<th>${escapeHtml(c.label)}</th>`; });
             head += `<th>Tuts Present</th><th>Tutorial %</th><th>Overall %</th></tr>`;
             document.getElementById('tutorialTableHead').innerHTML = head;
 
@@ -2205,8 +2292,7 @@
                 cols.forEach(c => {
                     const key = c.keyPrefix;
                     const val = getEffectiveSessionStatus(currentCourse, (st.tutorialAttendance && st.tutorialAttendance[key]) || "", c, slot, st.hasLoggedIn);
-                    if (val === "P") { pres++; mark++; }
-                    else if (val === "A" || val === "L") { mark++; }
+                    if (val === "P") { pres++; mark++; } else if (val === "A" || val === "L") mark++;
                     cells += `<td class="${val ? 'att-' + val : ''}">
                         <select class="att-select" ${attDis} onchange="updateSingleSessionCell(${idx}, 'tutorialAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
@@ -2247,33 +2333,20 @@
             return mark > 0 ? Math.round((pres / mark) * 100) + "%" : "100%";
         }
 
-        function updateStudentField(rowIndex, field, value) {
-            currentCourse.students[rowIndex][field] = value;
-            renderAllThreeTables(); queueAutoSave();
-        }
-
-        function updateLectureCell(rowIndex, key, value) {
-            currentCourse.students[rowIndex].lectureAttendance[key] = value;
-            renderAllThreeTables(); queueAutoSave();
-        }
-
-        function updateSingleSessionCell(rowIndex, mapName, key, value) {
-            currentCourse.students[rowIndex][mapName][key] = value;
-            renderAllThreeTables(); queueAutoSave();
-        }
+        function updateStudentField(rowIndex, field, value) { currentCourse.students[rowIndex][field] = value; renderAllThreeTables(); queueAutoSave(); }
+        function updateLectureCell(rowIndex, key, value) { currentCourse.students[rowIndex].lectureAttendance[key] = value; renderAllThreeTables(); queueAutoSave(); }
+        function updateSingleSessionCell(rowIndex, mapName, key, value) { currentCourse.students[rowIndex][mapName][key] = value; renderAllThreeTables(); queueAutoSave(); }
 
         function addStudentRow() {
             if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
             renderAllThreeTables(); queueAutoSave();
         }
-
         function clearAllRows() {
             if (!isEditMode || !canEditCourseStructure() || !confirm("Clear all student rows?")) return;
             currentCourse.students = [createEmptyStudent(currentCourse.courseCode)];
             renderAllThreeTables(); queueAutoSave();
         }
-
         function deleteStudentRow(rowIndex) {
             if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.students.splice(rowIndex, 1);
