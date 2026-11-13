@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal - Staff & Student Login / Course Attendance</title>
+    <!-- Optional SheetJS fallback so both .CSV and .XLS/.XLSX files work -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #007BFF;
@@ -41,11 +43,11 @@
         .modal-box h2 { margin-top: 0; color: #333; }
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .btn {
-            padding: 10px 18px;
+            padding: 9px 15px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: white;
             transition: opacity 0.2s;
@@ -90,7 +92,7 @@
         #staffDashboard {
             display: none;
             padding: 20px 30px;
-            max-width: 1400px;
+            max-width: 1450px;
             margin: 0 auto;
         }
         .topbar {
@@ -146,9 +148,56 @@
             font-size: 14px;
             box-sizing: border-box;
         }
-        .field-group input:disabled {
+        .field-group input:disabled, .field-group select:disabled {
             background-color: #f8f9fa;
             color: #555;
+        }
+
+        /* Classlist Dropbox Styling */
+        .dropbox-container {
+            margin-top: 18px;
+        }
+        .file-dropzone {
+            border: 2px dashed #007BFF;
+            background: #eef6ff;
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #0056b3;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .file-dropzone:focus {
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.35);
+            border-color: #004085;
+        }
+        .file-dropzone.dragover {
+            background: #d0e7ff;
+            border-color: #004085;
+        }
+        .file-dropzone.staged {
+            border-color: #28A745;
+            background: #eafaf1;
+            color: #155724;
+        }
+        .file-dropzone.disabled-zone {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .enter-hint-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 14px;
+            background: #28A745;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
         }
 
         /* Spreadsheet Table Styling */
@@ -179,7 +228,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
-            min-width: 900px;
+            min-width: 980px;
         }
         table.spreadsheet th, table.spreadsheet td {
             border: 1px solid #cbd5e1;
@@ -201,22 +250,22 @@
             text-align: center;
             font-weight: bold;
             color: #64748b;
-            width: 40px;
+            width: 36px;
             padding: 6px;
         }
-        table.spreadsheet input.cell-input {
+        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select {
             width: 100%;
             border: none;
-            padding: 8px;
+            padding: 8px 6px;
             font-size: 13px;
             box-sizing: border-box;
             background: transparent;
         }
-        table.spreadsheet input.cell-input:focus {
+        table.spreadsheet input.cell-input:focus, table.spreadsheet select.cell-select:focus {
             outline: 2px solid var(--primary);
             background: #fff;
         }
-        table.spreadsheet input.cell-input:disabled {
+        table.spreadsheet input.cell-input:disabled, table.spreadsheet select.cell-select:disabled {
             color: #333;
             cursor: default;
         }
@@ -263,7 +312,6 @@
                 <h2 id="formTitle">Register</h2>
                 <form id="authForm" onsubmit="handleAuthSubmit(event)">
                     
-                    <!-- Only shown during Registration -->
                     <div id="registerOnlyFields">
                         <label>Full Name</label>
                         <input type="text" id="fullName" placeholder="Enter full name">
@@ -272,7 +320,6 @@
                         <input type="email" id="email" placeholder="Enter email address">
                     </div>
 
-                    <!-- Shown in BOTH Registration and Login -->
                     <label id="idLabel">Staff / Student ID Number</label>
                     <input type="text" id="idNumber" required placeholder="Enter ID number">
 
@@ -303,34 +350,34 @@
             </div>
         </div>
 
-        <!-- Course Configuration & Edit Toggle -->
+        <!-- Course Configuration & Classlist Dropbox -->
         <div class="course-panel">
             <div class="panel-header">
                 <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                    <strong>Select Existing Course:</strong>
+                    <strong>Select Saved Course:</strong>
                     <select id="courseSelector" onchange="loadSelectedCourse()" style="padding:8px; border-radius:4px; border:1px solid #ccc; min-width:220px;">
-                        <option value="">-- Create New Course Unit --</option>
+                        <option value="">-- Create / Select Course Unit --</option>
                     </select>
                     <button class="btn btn-staff" onclick="startNewCourse()">+ New Course Unit</button>
                 </div>
 
-                <div style="display:flex; gap:10px; align-items:center;">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                     <label style="font-size:13px; display:flex; align-items:center; gap:5px; cursor:pointer;">
                         <input type="checkbox" id="autoSaveToggle" checked> Auto-save on edit
                     </label>
                     <button class="btn btn-warning" id="editModeBtn" onclick="toggleEditMode()">Enable Edit Mode</button>
-                    <button class="btn btn-success" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Google Sheet</button>
+                    <button class="btn btn-student" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Google Sheet</button>
                 </div>
             </div>
 
             <div class="course-grid">
                 <div class="field-group">
                     <label>Course Unit Code</label>
-                    <input type="text" id="courseCode" placeholder="e.g. PH101" oninput="handleCourseMetaEdit()">
+                    <input type="text" id="courseCode" placeholder="e.g. PH103" oninput="handleCourseMetaEdit()">
                 </div>
                 <div class="field-group">
                     <label>Course Unit Title</label>
-                    <input type="text" id="courseTitle" placeholder="e.g. Quantum Mechanics" oninput="handleCourseMetaEdit()">
+                    <input type="text" id="courseTitle" placeholder="e.g. Physics I" oninput="handleCourseMetaEdit()">
                 </div>
                 <div class="field-group">
                     <label>Semester Start Date</label>
@@ -341,20 +388,36 @@
                     <input type="date" id="semEnd" onchange="handleDateRangeChange()">
                 </div>
             </div>
+
+            <!-- CLICK / DRAG-AND-DROP CLASSLIST BOX (PRESS ENTER TO AUTOFILL & SAVE) -->
+            <div class="dropbox-container">
+                <div class="file-dropzone" id="classlistDropzone" tabindex="0" onclick="triggerFileSelect()">
+                    <div id="dropzoneMainText">
+                        <strong>Click or Drag & Drop Course Classlist File Here (.csv, .xls, .xlsx)</strong>
+                    </div>
+                    <div id="dropzoneSubText" style="font-size:12px; margin-top:4px;">
+                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode into the interactive table and Google Sheets.
+                    </div>
+                    <input type="file" id="classlistFileInput" accept=".csv,.xls,.xlsx" style="display:none" onchange="handleClasslistFileSelect(event)">
+                </div>
+            </div>
+
             <div id="externalSheetLinkBox" style="margin-top:12px; font-size:13px; display:none;">
-                Dedicated Course Attendance Spreadsheet: <a id="externalSheetLink" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">Open Course Attendance Sheet ↗</a>
+                Dedicated Course Attendance Spreadsheet:
+                <a id="externalSheetLink" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">Open Course Attendance Sheet ↗</a>
             </div>
         </div>
 
-        <!-- Spreadsheet Table -->
+        <!-- Interactive Spreadsheet Table -->
         <div class="sheet-wrapper">
             <div class="sheet-toolbar">
                 <div>
                     <strong id="sheetHeading">Student Roster & Week-Wise Attendance</strong>
-                    <span style="font-size:12px; color:#666; margin-left:10px;">(P = Present, A = Absent, L = Late, E = Excused)</span>
+                    <span style="font-size:12px; color:#666; margin-left:10px;">(Mode: F = Face-to-Face, O = Online | Attendance: P = Present, A = Absent, L = Late, E = Excused)</span>
                 </div>
-                <div>
-                    <button class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Student Row</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Manual Student Row</button>
+                    <button class="btn btn-danger" id="clearRowsBtn" onclick="clearAllRows()">Clear Table</button>
                 </div>
             </div>
 
@@ -372,10 +435,13 @@
         let selectedUserType = "";
         let isLoginMode = false;
         let loggedInStaff = null;
-        let isEditMode = true;
+        let isEditMode = false; // Starts locked until Staff clicks "Enable Edit Mode"
         let autoSaveTimer = null;
 
-        // Stores all courses loaded from Google Sheet
+        // Holds parsed students from a dropped/selected CSV file waiting for Staff to press ENTER
+        let stagedClasslist = null;
+        let stagedFileName = "";
+
         let coursesStore = {};
         let currentCourse = {
             courseCode: "",
@@ -386,6 +452,255 @@
             weeks: [],
             students: []
         };
+
+        /* ================= INITIALIZE DROPBOX & ENTER KEY LISTENER ================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            setupFileDropzone();
+
+            // Listen for ENTER key when a classlist file is staged in the dropbox
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode) {
+                    e.preventDefault();
+                    applyStagedClasslistAndSync();
+                }
+            });
+        });
+
+        function triggerFileSelect() {
+            if (!isEditMode) {
+                alert("Please click 'Enable Edit Mode' first to upload or drop a classlist.");
+                return;
+            }
+            document.getElementById('classlistFileInput').click();
+        }
+
+        function setupFileDropzone() {
+            const dz = document.getElementById('classlistDropzone');
+
+            dz.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!isEditMode) return;
+                dz.classList.add('dragover');
+            });
+
+            dz.addEventListener('dragleave', () => {
+                dz.classList.remove('dragover');
+            });
+
+            dz.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dz.classList.remove('dragover');
+                if (!isEditMode) {
+                    alert("Please click 'Enable Edit Mode' first to drop a classlist.");
+                    return;
+                }
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    stageClasslistFile(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        function handleClasslistFileSelect(e) {
+            if (!isEditMode) return;
+            if (e.target.files && e.target.files[0]) {
+                stageClasslistFile(e.target.files[0]);
+                e.target.value = ""; // Reset input so same file can be re-selected if needed
+            }
+        }
+
+        /**
+         * Reads the dropped/selected CSV (or XLS/XLSX) file, extracts ID, Last Name,
+         * First Name, Course, and Mode, and stages it so pressing ENTER autofills & saves.
+         */
+        function stageClasslistFile(file) {
+            stagedFileName = file.name;
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            if (ext === 'csv') {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const csvText = evt.target.result;
+                    const rows = parseCSVToRows(csvText);
+                    extractStudentsFromRows(rows, file.name);
+                };
+                reader.readAsText(file);
+            } else {
+                // Fallback for .xls / .xlsx files using SheetJS
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const data = new Uint8Array(evt.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                        extractStudentsFromRows(rows, file.name);
+                    } catch (err) {
+                        alert("Error reading spreadsheet file: " + err.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // RFC-4180 compliant CSV parser supporting commas inside quoted strings
+        function parseCSVToRows(csvText) {
+            const rows = [];
+            let currentRow = [];
+            let currentVal = "";
+            let inQuotes = false;
+
+            for (let i = 0; i < csvText.length; i++) {
+                const ch = csvText[i];
+                const nextCh = csvText[i + 1];
+
+                if (inQuotes) {
+                    if (ch === '"' && nextCh === '"') {
+                        currentVal += '"';
+                        i++;
+                    } else if (ch === '"') {
+                        inQuotes = false;
+                    } else {
+                        currentVal += ch;
+                    }
+                } else {
+                    if (ch === '"') {
+                        inQuotes = true;
+                    } else if (ch === ',') {
+                        currentRow.push(currentVal.trim());
+                        currentVal = "";
+                    } else if (ch === '\r' && nextCh === '\n') {
+                        currentRow.push(currentVal.trim());
+                        rows.push(currentRow);
+                        currentRow = [];
+                        currentVal = "";
+                        i++;
+                    } else if (ch === '\n' || ch === '\r') {
+                        currentRow.push(currentVal.trim());
+                        rows.push(currentRow);
+                        currentRow = [];
+                        currentVal = "";
+                    } else {
+                        currentVal += ch;
+                    }
+                }
+            }
+            if (currentVal.length > 0 || currentRow.length > 0) {
+                currentRow.push(currentVal.trim());
+                rows.push(currentRow);
+            }
+            return rows;
+        }
+
+        function extractStudentsFromRows(rows, fileName) {
+            if (!rows || rows.length === 0) {
+                alert("The selected file is empty.");
+                return;
+            }
+
+            // Automatically find the header row containing "ID" and "Last Name" (or "Surname")
+            let headerRowIdx = -1;
+            for (let i = 0; i < Math.min(rows.length, 15); i++) {
+                const normalized = rows[i].map(c => String(c || "").trim().toLowerCase());
+                if (normalized.includes("id") && (normalized.includes("last name") || normalized.includes("surname") || normalized.includes("first name"))) {
+                    headerRowIdx = i;
+                    break;
+                }
+            }
+
+            // If no explicit header row was found, assume Row 0
+            if (headerRowIdx === -1) headerRowIdx = 0;
+
+            const headers = rows[headerRowIdx].map(h => String(h || "").trim().toLowerCase());
+            const idCol = headers.indexOf("id") !== -1 ? headers.indexOf("id") : 0;
+            const lastCol = headers.indexOf("last name") !== -1 ? headers.indexOf("last name") : (headers.indexOf("surname") !== -1 ? headers.indexOf("surname") : 1);
+            const firstCol = headers.indexOf("first name") !== -1 ? headers.indexOf("first name") : 2;
+            const courseCol = headers.indexOf("course") !== -1 ? headers.indexOf("course") : 3;
+            const modeCol = headers.indexOf("mode") !== -1 ? headers.indexOf("mode") : 5;
+
+            const parsed = [];
+            for (let r = headerRowIdx + 1; r < rows.length; r++) {
+                const row = rows[r];
+                if (!row || row.length === 0) continue;
+
+                const sid = String(row[idCol] || "").trim();
+                const lname = String(row[lastCol] || "").trim();
+                const fname = String(row[firstCol] || "").trim();
+                const course = courseCol !== -1 && row[courseCol] !== undefined ? String(row[courseCol]).trim() : "";
+                const mode = modeCol !== -1 && row[modeCol] !== undefined ? String(row[modeCol]).trim().toUpperCase() : "F";
+
+                // Ignore blank lines or footer summary lines like "73 Rows"
+                if (!sid || !lname || sid.toLowerCase().includes("rows") || sid.toLowerCase() === "id") continue;
+
+                parsed.push({
+                    studentId: sid,
+                    lastName: lname,
+                    firstName: fname,
+                    course: course,
+                    mode: (mode === "O" || mode === "F") ? mode : (mode || "F")
+                });
+            }
+
+            if (parsed.length === 0) {
+                alert("No valid student records (ID, Last Name, First Name) were found in this file.");
+                return;
+            }
+
+            stagedClasslist = parsed;
+
+            // Highlight dropbox and focus it so pressing ENTER immediately triggers autofill + Google Sheet sync
+            const dz = document.getElementById('classlistDropzone');
+            dz.classList.add('staged');
+            dz.focus();
+
+            const detectedCourse = parsed[0].course || "Course";
+            document.getElementById('dropzoneMainText').innerHTML =
+                `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students Detected for ${escapeHtml(detectedCourse)})</strong>`;
+            document.getElementById('dropzoneSubText').innerHTML =
+                `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill Spreadsheet & Save to Google Sheets ↵</span>`;
+        }
+
+        // Triggered when Staff presses ENTER after dropping/selecting the CSV file
+        function applyStagedClasslistAndSync() {
+            if (!stagedClasslist || stagedClasslist.length === 0) return;
+
+            const detectedCourse = stagedClasslist[0].course ? stagedClasslist[0].course.toUpperCase() : "";
+            if (detectedCourse) {
+                currentCourse.courseCode = detectedCourse;
+                document.getElementById('courseCode').value = detectedCourse;
+            }
+
+            // Preserve any existing attendance marks if updating the same course
+            const existingAttMap = {};
+            currentCourse.students.forEach(st => {
+                if (st.studentId) {
+                    existingAttMap[st.studentId.toUpperCase()] = st.attendance || {};
+                }
+            });
+
+            currentCourse.students = stagedClasslist.map(st => ({
+                studentId: st.studentId,
+                lastName: st.lastName,
+                firstName: st.firstName,
+                course: st.course || currentCourse.courseCode || "",
+                mode: st.mode || "F",
+                attendance: existingAttMap[st.studentId.toUpperCase()] || {}
+            }));
+
+            const importedCount = stagedClasslist.length;
+            const fileName = stagedFileName;
+            stagedClasslist = null;
+
+            const dz = document.getElementById('classlistDropzone');
+            dz.classList.remove('staged');
+            document.getElementById('dropzoneMainText').innerHTML =
+                `<strong>Autofilled ${importedCount} Students from ${escapeHtml(fileName)}!</strong>`;
+            document.getElementById('dropzoneSubText').innerHTML =
+                `Click or drag & drop another classlist file (.csv, .xls, .xlsx) and press <strong>ENTER</strong> to load another course.`;
+
+            renderSpreadsheetTable();
+            // Immediately save autofilled details to Google Spreadsheet
+            saveCourseAndAttendance(false);
+        }
 
         /* ================= AUTHENTICATION LOGIC ================= */
 
@@ -417,7 +732,6 @@
             document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login with ID & Password' : 'Register';
             document.getElementById('idLabel').innerText = `${selectedUserType} ID Number`;
 
-            // In Login Mode, only ID Number and Password are required
             document.getElementById('registerOnlyFields').style.display = isLoginMode ? 'none' : 'block';
             document.getElementById('fullName').required = !isLoginMode;
             document.getElementById('email').required = !isLoginMode;
@@ -459,7 +773,6 @@
             showStatus("Communicating with Google Sheets...", "status-loading");
 
             try {
-                // Using text/plain avoids CORS preflight while allowing JSON response reading
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -474,14 +787,12 @@
                 }
 
                 if (!isLoginMode) {
-                    // Registration succeeded -> Redirect user to Login screen with ID pre-filled
                     isLoginMode = true;
                     updateFormView();
                     document.getElementById('idNumber').value = idNumber;
                     document.getElementById('password').value = "";
                     showStatus("Registration saved! Please enter your ID and Password to log in.", "status-success");
                 } else {
-                    // Login verified!
                     showStatus("Login verified! Redirecting...", "status-success");
                     if (selectedUserType === "Staff") {
                         loggedInStaff = result.user;
@@ -493,7 +804,7 @@
                     }
                 }
             } catch (error) {
-                showStatus("Connection error: Make sure your Google Apps Script is deployed with 'Anyone' access.", "status-error");
+                showStatus("Connection error: Make sure your Google Apps Script Web App is deployed with 'Anyone' access.", "status-error");
                 console.error(error);
             }
         }
@@ -511,8 +822,10 @@
             if (courseCodes.length > 0) {
                 document.getElementById('courseSelector').value = courseCodes[0];
                 loadSelectedCourse();
+                setEditMode(false); // Start in View mode; Staff clicks "Enable Edit Mode" to edit/upload
             } else {
                 startNewCourse();
+                setEditMode(false);
             }
         }
 
@@ -525,7 +838,7 @@
 
         function populateCourseDropdown() {
             const sel = document.getElementById('courseSelector');
-            sel.innerHTML = `<option value="">-- Create New Course Unit --</option>`;
+            sel.innerHTML = `<option value="">-- Create / Select Course Unit --</option>`;
             Object.keys(coursesStore).forEach(code => {
                 const c = coursesStore[code];
                 const opt = document.createElement('option');
@@ -548,11 +861,10 @@
                 sheetUrl: "",
                 weeks: generateWeeksList(today, future),
                 students: [
-                    { studentId: "", surname: "", firstName: "", idUnit: "", attendance: {} }
+                    { studentId: "", lastName: "", firstName: "", course: "", mode: "F", attendance: {} }
                 ]
             };
 
-            setEditMode(true);
             renderCourseToUI();
         }
 
@@ -562,8 +874,15 @@
                 startNewCourse();
                 return;
             }
-            // Deep clone selected course
             currentCourse = JSON.parse(JSON.stringify(coursesStore[code]));
+            currentCourse.students = (currentCourse.students || []).map(st => ({
+                studentId: st.studentId || "",
+                lastName: st.lastName !== undefined ? st.lastName : (st.surname || ""),
+                firstName: st.firstName || "",
+                course: st.course !== undefined ? st.course : (st.idUnit || currentCourse.courseCode || ""),
+                mode: st.mode || "F",
+                attendance: st.attendance || {}
+            }));
             if (!currentCourse.weeks || currentCourse.weeks.length === 0) {
                 currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
             }
@@ -585,6 +904,16 @@
             document.getElementById('semStart').disabled = !isEditMode;
             document.getElementById('semEnd').disabled = !isEditMode;
             document.getElementById('addRowBtn').disabled = !isEditMode;
+            document.getElementById('clearRowsBtn').disabled = !isEditMode;
+
+            const dz = document.getElementById('classlistDropzone');
+            if (isEditMode) {
+                dz.classList.remove('disabled-zone');
+            } else {
+                dz.classList.add('disabled-zone');
+                dz.classList.remove('staged');
+                stagedClasslist = null;
+            }
 
             renderSpreadsheetTable();
         }
@@ -611,9 +940,8 @@
             currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
             currentCourse.courseTitle = document.getElementById('courseTitle').value;
 
-            // Keep student ID Unit column synced with Course Unit Code if empty or matching
             currentCourse.students.forEach(st => {
-                if (!st.idUnit) st.idUnit = currentCourse.courseCode;
+                if (!st.course) st.course = currentCourse.courseCode;
             });
             queueAutoSave();
         }
@@ -649,24 +977,23 @@
             const tbody = document.getElementById('tableBody');
             const weeks = currentCourse.weeks || [];
 
-            // Build Header Row
             let headHTML = `<tr>
                 <th>#</th>
-                <th style="min-width:120px;">Student ID</th>
-                <th style="min-width:140px;">Surname</th>
+                <th style="min-width:125px;">ID</th>
+                <th style="min-width:150px;">Last Name</th>
                 <th style="min-width:140px;">First Name</th>
-                <th style="min-width:100px;">ID Unit</th>`;
+                <th style="min-width:95px;">Course</th>
+                <th style="min-width:85px;">Mode</th>`;
 
             weeks.forEach(w => {
                 headHTML += `<th style="min-width:95px;">${w}</th>`;
             });
 
             headHTML += `<th style="min-width:90px;">Attendance %</th>`;
-            if (isEditMode) headHTML += `<th style="width:60px;">Del</th>`;
+            if (isEditMode) headHTML += `<th style="width:55px;">Del</th>`;
             headHTML += `</tr>`;
             thead.innerHTML = headHTML;
 
-            // Build Student Rows
             tbody.innerHTML = "";
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
@@ -695,13 +1022,36 @@
                 });
 
                 const pct = markedCount > 0 ? Math.round((presentCount / markedCount) * 100) + "%" : "0%";
+                const modeVal = st.mode || "F";
 
                 tr.innerHTML = `
                     <td class="row-num">${idx + 1}</td>
-                    <td><input class="cell-input" type="text" value="${escapeHtml(st.studentId)}" placeholder="S11..." ${disabledAttr} oninput="updateStudentField(${idx}, 'studentId', this.value)"></td>
-                    <td><input class="cell-input" type="text" value="${escapeHtml(st.surname)}" placeholder="Surname" ${disabledAttr} oninput="updateStudentField(${idx}, 'surname', this.value)"></td>
-                    <td><input class="cell-input" type="text" value="${escapeHtml(st.firstName)}" placeholder="First Name" ${disabledAttr} oninput="updateStudentField(${idx}, 'firstName', this.value)"></td>
-                    <td><input class="cell-input" type="text" value="${escapeHtml(st.idUnit || currentCourse.courseCode)}" placeholder="Unit Code" ${disabledAttr} oninput="updateStudentField(${idx}, 'idUnit', this.value)"></td>
+                    <td>
+                        <input class="cell-input" type="text" value="${escapeHtml(st.studentId)}"
+                            placeholder="Enter ID" ${disabledAttr}
+                            oninput="updateStudentField(${idx}, 'studentId', this.value)">
+                    </td>
+                    <td>
+                        <input class="cell-input" type="text" value="${escapeHtml(st.lastName)}"
+                            placeholder="Last Name" ${disabledAttr}
+                            oninput="updateStudentField(${idx}, 'lastName', this.value)">
+                    </td>
+                    <td>
+                        <input class="cell-input" type="text" value="${escapeHtml(st.firstName)}"
+                            placeholder="First Name" ${disabledAttr}
+                            oninput="updateStudentField(${idx}, 'firstName', this.value)">
+                    </td>
+                    <td>
+                        <input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}"
+                            placeholder="Course" ${disabledAttr}
+                            oninput="updateStudentField(${idx}, 'course', this.value)">
+                    </td>
+                    <td>
+                        <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'mode', this.value)">
+                            <option value="F" ${modeVal === "F" ? "selected" : ""}>F</option>
+                            <option value="O" ${modeVal === "O" ? "selected" : ""}>O</option>
+                        </select>
+                    </td>
                     ${weekCellsHTML}
                     <td class="summary-cell" id="pct-${idx}">${pct}</td>
                     ${isEditMode ? `<td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
@@ -725,18 +1075,36 @@
         }
 
         function addStudentRow() {
+            if (!isEditMode) return;
             currentCourse.students.push({
                 studentId: "",
-                surname: "",
+                lastName: "",
                 firstName: "",
-                idUnit: currentCourse.courseCode || "",
+                course: currentCourse.courseCode || "",
+                mode: "F",
                 attendance: {}
             });
             renderSpreadsheetTable();
             queueAutoSave();
         }
 
+        function clearAllRows() {
+            if (!isEditMode) return;
+            if (!confirm("Clear all student rows from the current table?")) return;
+            currentCourse.students = [{
+                studentId: "",
+                lastName: "",
+                firstName: "",
+                course: currentCourse.courseCode || "",
+                mode: "F",
+                attendance: {}
+            }];
+            renderSpreadsheetTable();
+            queueAutoSave();
+        }
+
         function deleteStudentRow(rowIndex) {
+            if (!isEditMode) return;
             currentCourse.students.splice(rowIndex, 1);
             if (currentCourse.students.length === 0) {
                 addStudentRow();
@@ -764,7 +1132,7 @@
             currentCourse.semEnd = document.getElementById('semEnd').value;
 
             if (!currentCourse.courseCode) {
-                if (manualClick) alert("Please enter a Course Unit Code (e.g. PH101) before saving.");
+                if (manualClick) alert("Please enter a Course Unit Code (or drop a classlist CSV with a Course column) before saving.");
                 return;
             }
 
