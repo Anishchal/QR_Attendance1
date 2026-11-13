@@ -41,12 +41,13 @@
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            width: 380px;
+            width: 410px;
+            max-width: 92vw;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             text-align: center;
         }
         .modal-box h2 { margin-top: 0; color: #333; }
-        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
         .btn {
             padding: 9px 14px;
             border: none;
@@ -70,13 +71,14 @@
 
         /* Form Container */
         .form-container { display: none; text-align: left; }
-        .form-container input {
+        .form-container input, .form-container select {
             width: 100%;
             padding: 10px;
             margin: 6px 0 14px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 13.5px;
         }
         .form-container label { font-size: 13px; font-weight: bold; color: #555; }
         .submit-btn {
@@ -88,11 +90,12 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 14px;
         }
         .submit-btn:disabled { opacity: 0.6; cursor: wait; }
         .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: var(--primary); cursor: pointer; }
-        .back-link { font-size: 12px; color: #666; cursor: pointer; margin-top: 10px; display: block; text-align: center; }
-        .status-msg { display: none; font-size: 13px; margin-top: 12px; padding: 8px; border-radius: 4px; text-align: center; }
+        .back-link { font-size: 12px; color: #666; cursor: pointer; margin-top: 12px; display: block; text-align: center; }
+        .status-msg { display: none; font-size: 13px; margin-top: 12px; padding: 9px; border-radius: 4px; text-align: center; line-height: 1.4; }
         .status-loading { display: block; background: #e7f3ff; color: #0056b3; }
         .status-error { display: block; background: #fdecea; color: #b71c1c; }
         .status-success { display: block; background: #eafaf1; color: #1e8449; }
@@ -108,8 +111,19 @@
         .conn-ok { background: #eafaf1; color: #1e8449; border: 1px solid #a3e4d7; }
         .conn-missing { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 
-        /* Staff Course & Attendance Dashboard */
-        #staffDashboard {
+        .clock-banner {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: #1e293b;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        /* Dashboards (Staff & Student) */
+        #staffDashboard, #studentDashboard {
             display: none;
             padding: 20px 28px;
             max-width: 1550px;
@@ -124,9 +138,48 @@
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .topbar h1 { margin: 0; font-size: 20px; color: var(--dark); }
         .topbar-meta { font-size: 13px; color: #666; margin-top: 4px; }
+
+        /* Legend Banner */
+        .legend-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            font-size: 13px;
+            align-items: center;
+        }
+        .legend-pill {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Student Summary Cards */
+        .student-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            border-left: 5px solid var(--primary);
+        }
+        .stat-card h4 { margin: 0 0 6px 0; font-size: 12px; color: #64748b; text-transform: uppercase; }
+        .stat-card .stat-val { font-size: 24px; font-weight: bold; color: #1e293b; }
 
         /* Course Controls Panel */
         .course-panel {
@@ -308,6 +361,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .rule-pill {
             font-size: 12px;
@@ -338,7 +392,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 12.5px;
-            min-width: 980px;
+            min-width: 900px;
         }
         table.spreadsheet th, table.spreadsheet td {
             border: 1px solid #cbd5e1;
@@ -390,16 +444,16 @@
         .lec-week-box {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 2px;
-            padding: 2px 4px;
+            justify-content: center;
+            gap: 3px;
+            padding: 3px 4px;
         }
         .lec-sub-select {
             border: 1px solid #cbd5e1;
             border-radius: 3px;
             font-size: 11px;
             font-weight: bold;
-            padding: 3px 1px;
+            padding: 3px 2px;
             cursor: pointer;
             background: #fff;
         }
@@ -414,10 +468,11 @@
         .chip-partial { background: #fef9c3; color: #854d0e; }
         .chip-none { background: #fee2e2; color: #991b1b; }
 
-        .att-P { background-color: #d4edda !important; color: #155724; }
-        .att-A { background-color: #f8d7da !important; color: #721c24; }
-        .att-L { background-color: #fff3cd !important; color: #856404; }
-        .att-E { background-color: #d1ecf1 !important; color: #0c5460; }
+        /* Status Colors: P = Present, A = Absent (No Attendance), L = Absent (Did Not Log In) */
+        .att-P { background-color: #d4edda !important; color: #155724 !important; }
+        .att-A { background-color: #f8d7da !important; color: #721c24 !important; }
+        .att-L { background-color: #fdebd0 !important; color: #9c640c !important; }
+
         .summary-cell {
             text-align: center !important;
             font-weight: bold;
@@ -429,11 +484,11 @@
 </head>
 <body>
 
-    <!-- AUTHENTICATION & CONNECTION MODAL -->
+    <!-- AUTHENTICATION & STUDENT OPTIONS MODAL -->
     <div class="modal-overlay" id="portalModal">
         <div class="modal-box">
             
-            <!-- Step 1: Selection Prompt -->
+            <!-- Step 1: User Category Selection -->
             <div id="selectionStep">
                 <h2>Welcome</h2>
                 <p>Please select your user category to proceed:</p>
@@ -448,7 +503,52 @@
                 </div>
             </div>
 
-            <!-- Step 1B: Optional Custom Database Override -->
+            <!-- Step 1B: Student Choice (Give Attendance vs Check Attendance) -->
+            <div id="studentChoiceStep" style="display:none;">
+                <h2>Student Portal</h2>
+                <p style="font-size:13.5px; color:#555;">Please choose an option below:</p>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-top:18px;">
+                    <button type="button" class="btn btn-student" style="padding:13px; font-size:15px;" onclick="openGiveAttendanceStep()">
+                        ✓ Give Attendance (Live Session)
+                    </button>
+                    <button type="button" class="btn btn-staff" style="padding:13px; font-size:15px;" onclick="openStudentCheckAttendanceAuth()">
+                        📊 Check My Attendance (Login / Register)
+                    </button>
+                </div>
+                <span class="back-link" onclick="resetModal()">« Back to User Category</span>
+            </div>
+
+            <!-- Step 1C: Student "Give Attendance" Form -->
+            <div id="giveAttendanceStep" class="form-container">
+                <h2 style="text-align:center; margin-bottom:10px;">Give Session Attendance</h2>
+                <div class="clock-banner" id="liveClockBanner">
+                    Loading current time...
+                </div>
+
+                <form id="giveAttForm" onsubmit="handleGiveAttendanceSubmit(event)">
+                    <label>Student ID Number</label>
+                    <input type="text" id="attStudentId" required placeholder="e.g. S11255443">
+
+                    <label>Select Course Unit</label>
+                    <select id="attCourseSelect" required onchange="populateGiveAttendanceSessions()">
+                        <option value="">-- Loading Course Units... --</option>
+                    </select>
+
+                    <label>Select Lecture, Lab or Tutorial Session</label>
+                    <select id="attSessionSelect" required>
+                        <option value="">-- Select Course Unit First --</option>
+                    </select>
+
+                    <button type="submit" class="submit-btn" id="giveAttSubmitBtn" style="background:var(--success);">
+                        Submit Attendance
+                    </button>
+                    <div class="status-msg" id="giveAttStatusBox"></div>
+                </form>
+
+                <span class="back-link" onclick="backToStudentChoice()">« Back to Student Options</span>
+            </div>
+
+            <!-- Step 1D: Optional Custom Database Override -->
             <div id="configStep" class="form-container">
                 <h2>Database Connection</h2>
                 <p style="font-size:12px; color:#555; margin-top:0;">
@@ -467,9 +567,9 @@
                 <span class="back-link" onclick="closeConfigStep()">« Back to Welcome</span>
             </div>
 
-            <!-- Step 2: Register / Login Form -->
+            <!-- Step 2: Register / Login Form (Used for Staff AND Student "Check Attendance") -->
             <div id="formStep" class="form-container">
-                <h2 id="formTitle">Register</h2>
+                <h2 id="formTitle" style="text-align:center;">Register</h2>
                 <form id="authForm" novalidate onsubmit="handleAuthSubmit(event)">
                     
                     <div id="registerOnlyFields">
@@ -491,13 +591,104 @@
                 </form>
 
                 <div class="toggle-link" id="toggleText" onclick="toggleMode()">Already registered? Login here</div>
-                <span class="back-link" onclick="resetModal()">« Change User Type</span>
+                <span class="back-link" onclick="handleAuthBack()">« Back</span>
             </div>
 
         </div>
     </div>
 
-    <!-- STAFF COURSE UNIT & 3-TABLE ATTENDANCE DASHBOARD -->
+    <!-- ====================================================================== -->
+    <!-- STUDENT CHECK ATTENDANCE DASHBOARD (Shows ONLY Logged-In Student Data) -->
+    <!-- ====================================================================== -->
+    <div id="studentDashboard">
+        <div class="topbar">
+            <div>
+                <h1>My Course Attendance Portal</h1>
+                <div class="topbar-meta" id="studentWelcomeMeta">Logged in as Student</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <strong>Enrolled Course Unit:</strong>
+                <select id="studentCourseSelector" onchange="renderStudentDashboardCourse()" style="padding:8px; border-radius:4px; border:1px solid #ccc; min-width:190px;"></select>
+                <button type="button" class="btn btn-student" onclick="openGiveAttendanceFromStudentDash()">✓ Give Attendance Now</button>
+                <button type="button" class="btn btn-danger" onclick="logoutUser()">Logout</button>
+            </div>
+        </div>
+
+        <div class="legend-bar">
+            <strong>Attendance Key:</strong>
+            <span class="legend-pill att-P">P = Present (Gave Attendance in Session Window)</span>
+            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance During Designed Session)</span>
+            <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
+        </div>
+
+        <div class="student-stats-grid">
+            <div class="stat-card" style="border-left-color:var(--lec-color);">
+                <h4>My Lecture Attendance (Attend ALL/Wk)</h4>
+                <div class="stat-val" id="stuLecStat">0%</div>
+            </div>
+            <div class="stat-card" style="border-left-color:var(--lab-color);">
+                <h4>My Lab Attendance (Attend 1/Wk)</h4>
+                <div class="stat-val" id="stuLabStat">0%</div>
+            </div>
+            <div class="stat-card" style="border-left-color:var(--tut-color);">
+                <h4>My Tutorial Attendance (Attend 1/Wk)</h4>
+                <div class="stat-val" id="stuTutStat">0%</div>
+            </div>
+            <div class="stat-card" style="border-left-color:var(--dark);">
+                <h4>Overall Combined Attendance</h4>
+                <div class="stat-val" id="stuOverallStat">0%</div>
+            </div>
+        </div>
+
+        <!-- Student Lecture Table -->
+        <div class="sheet-wrapper lec-sheet">
+            <div class="sheet-toolbar">
+                <div class="sheet-title-badge" style="color:var(--lec-color);">
+                    <span>1. MY LECTURE WEEK-WISE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Attend <strong>ALL scheduled lectures</strong> each week</span>
+                </div>
+            </div>
+            <div class="schedule-summary-bar" id="stuLectureScheduleSummary"></div>
+            <table class="spreadsheet">
+                <thead id="stuLectureHead"></thead>
+                <tbody id="stuLectureBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Student Lab Table -->
+        <div class="sheet-wrapper lab-sheet">
+            <div class="sheet-toolbar">
+                <div class="sheet-title-badge" style="color:var(--lab-color);">
+                    <span>2. MY LAB WEEK-WISE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Attend <strong>1 Lab session</strong> each week</span>
+                </div>
+            </div>
+            <div class="schedule-summary-bar" id="stuLabScheduleSummary"></div>
+            <table class="spreadsheet">
+                <thead id="stuLabHead"></thead>
+                <tbody id="stuLabBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Student Tutorial Table -->
+        <div class="sheet-wrapper tut-sheet">
+            <div class="sheet-toolbar">
+                <div class="sheet-title-badge" style="color:var(--tut-color);">
+                    <span>3. MY TUTORIAL WEEK-WISE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Attend <strong>1 Tutorial session</strong> each week</span>
+                </div>
+            </div>
+            <div class="schedule-summary-bar" id="stuTutorialScheduleSummary"></div>
+            <table class="spreadsheet">
+                <thead id="stuTutorialHead"></thead>
+                <tbody id="stuTutorialBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- STAFF COURSE UNIT & 3-TABLE ATTENDANCE DASHBOARD                       -->
+    <!-- ====================================================================== -->
     <div id="staffDashboard">
         <div class="topbar">
             <div>
@@ -507,8 +698,15 @@
             <div style="display:flex; gap:10px; align-items:center;">
                 <span class="sync-badge" id="syncIndicator">Connected to Supabase</span>
                 <button type="button" class="btn btn-dark" onclick="exportCourseToExcel()">Export Excel (.xlsx)</button>
-                <button type="button" class="btn btn-danger" onclick="logoutStaff()">Logout</button>
+                <button type="button" class="btn btn-danger" onclick="logoutUser()">Logout</button>
             </div>
+        </div>
+
+        <div class="legend-bar">
+            <strong>Attendance Status Codes:</strong>
+            <span class="legend-pill att-P">P = Present</span>
+            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance During Designed Session)</span>
+            <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
         </div>
 
         <!-- Course Configuration, Session Schedules & Classlist Dropbox -->
@@ -669,7 +867,6 @@
     <script>
         // ============================================================================
         // AUTOMATIC CONNECTION (Split & encoded so GitHub Secret Scanning never flags)
-        // Connects automatically on every computer without manual setup.
         // ============================================================================
         const DEFAULT_CONN_PARTS = [
             "eyJ1IjoiaHR0cHM6Ly9lY2RxYXBiYmJh",
@@ -681,17 +878,20 @@
 
         let sb = null;
         const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const JS_DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         let selectedUserType = "";
         let isLoginMode = false;
-        let loggedInStaff = null;
+        let loggedInUser = null;
         let staffSessionPassword = "";
         let isEditMode = false;
         let autoSaveTimer = null;
+        let clockInterval = null;
 
         let stagedClasslist = null;
         let stagedFileName = "";
 
+        let publicCoursesList = [];
         let coursesStore = {};
         let currentCourse = createDefaultCourseObject();
 
@@ -711,15 +911,14 @@
         function cleanSupabaseUrl(rawUrl) {
             return (rawUrl || "")
                 .trim()
-                .replace(/\/rest\/v1\/?$/i, "") // Automatically strips /rest/v1/ if pasted
-                .replace(/\/+$/, "");           // Removes trailing slash
+                .replace(/\/rest\/v1\/?$/i, "")
+                .replace(/\/+$/, "");
         }
 
         function initSupabaseFromStorage() {
             let url = cleanSupabaseUrl(localStorage.getItem("portal_sb_url"));
             let key = (localStorage.getItem("portal_sb_key") || "").trim();
 
-            // Automatically decode built-in project credentials if localStorage is empty
             if (!url || !key) {
                 try {
                     const fallback = JSON.parse(atob(DEFAULT_CONN_PARTS.join("")));
@@ -744,14 +943,14 @@
         }
 
         function openConfigStep() {
-            document.getElementById('selectionStep').style.display = 'none';
+            hideAllModalSteps();
             document.getElementById('configStep').style.display = 'block';
             document.getElementById('cfgUrl').value = localStorage.getItem("portal_sb_url") || "";
             document.getElementById('cfgKey').value = localStorage.getItem("portal_sb_key") || "";
         }
 
         function closeConfigStep() {
-            document.getElementById('configStep').style.display = 'none';
+            hideAllModalSteps();
             document.getElementById('selectionStep').style.display = 'block';
         }
 
@@ -774,6 +973,580 @@
             initSupabaseFromStorage();
             closeConfigStep();
         }
+
+        function hideAllModalSteps() {
+            document.getElementById('selectionStep').style.display = 'none';
+            document.getElementById('studentChoiceStep').style.display = 'none';
+            document.getElementById('giveAttendanceStep').style.display = 'none';
+            document.getElementById('configStep').style.display = 'none';
+            document.getElementById('formStep').style.display = 'none';
+            if (clockInterval) {
+                clearInterval(clockInterval);
+                clockInterval = null;
+            }
+        }
+
+        /* ================= USER TYPE & STUDENT PORTAL FLOW ================= */
+
+        function selectUserType(type) {
+            if (!sb) initSupabaseFromStorage();
+            selectedUserType = type;
+            hideAllModalSteps();
+
+            if (type === 'Student') {
+                // Present Student with "Give Attendance" or "Check Attendance"
+                document.getElementById('studentChoiceStep').style.display = 'block';
+            } else {
+                // Staff goes directly to Staff Register / Login
+                isLoginMode = false;
+                hideStatus();
+                document.getElementById('formStep').style.display = 'block';
+                updateFormView();
+            }
+        }
+
+        function backToStudentChoice() {
+            hideAllModalSteps();
+            document.getElementById('studentChoiceStep').style.display = 'block';
+        }
+
+        function openStudentCheckAttendanceAuth() {
+            selectedUserType = 'Student';
+            hideAllModalSteps();
+            isLoginMode = false;
+            hideStatus();
+            document.getElementById('formStep').style.display = 'block';
+            updateFormView();
+        }
+
+        function handleAuthBack() {
+            if (selectedUserType === 'Student') {
+                backToStudentChoice();
+            } else {
+                resetModal();
+            }
+        }
+
+        function resetModal() {
+            hideAllModalSteps();
+            document.getElementById('selectionStep').style.display = 'block';
+            document.getElementById('authForm').reset();
+            hideStatus();
+            isLoginMode = false;
+        }
+
+        /* ================= STUDENT "GIVE ATTENDANCE" WORKFLOW ================= */
+
+        async function openGiveAttendanceStep() {
+            hideAllModalSteps();
+            document.getElementById('giveAttendanceStep').style.display = 'block';
+            document.getElementById('giveAttStatusBox').className = 'status-msg';
+            document.getElementById('giveAttStatusBox').innerText = '';
+
+            if (loggedInUser && loggedInUser.userType === 'Student') {
+                document.getElementById('attStudentId').value = loggedInUser.idNumber;
+            }
+
+            updateLiveClockBanner();
+            clockInterval = setInterval(updateLiveClockBanner, 1000);
+
+            const courseSel = document.getElementById('attCourseSelect');
+            const sessionSel = document.getElementById('attSessionSelect');
+            courseSel.innerHTML = `<option value="">-- Loading Course Units... --</option>`;
+            sessionSel.innerHTML = `<option value="">-- Select Course Unit First --</option>`;
+
+            try {
+                const { data, error } = await sb.rpc('get_courses_for_attendance_form');
+                if (error) throw error;
+                publicCoursesList = (data && data.courses) ? data.courses : [];
+
+                if (publicCoursesList.length === 0) {
+                    courseSel.innerHTML = `<option value="">-- No Course Units Available Yet --</option>`;
+                    return;
+                }
+
+                courseSel.innerHTML = `<option value="">-- Select Course Unit --</option>`;
+                publicCoursesList.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.courseCode;
+                    opt.textContent = `${c.courseCode} — ${c.courseTitle || 'Course Unit'}`;
+                    courseSel.appendChild(opt);
+                });
+            } catch (err) {
+                courseSel.innerHTML = `<option value="">-- Error loading courses --</option>`;
+                console.error(err);
+            }
+        }
+
+        function updateLiveClockBanner() {
+            const now = new Date();
+            const dayName = JS_DAY_NAMES[now.getDay()];
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            document.getElementById('liveClockBanner').innerHTML =
+                `<strong>Current Time:</strong> ${dayName}, ${dateStr} — <strong>${timeStr}</strong><br>` +
+                `<span style="font-size:11px; color:#475569;">Window: 10 mins before session start to 10 mins after session end</span>`;
+        }
+
+        function populateGiveAttendanceSessions() {
+            const code = document.getElementById('attCourseSelect').value;
+            const sessionSel = document.getElementById('attSessionSelect');
+            sessionSel.innerHTML = `<option value="">-- Select Lecture, Lab or Tutorial Session --</option>`;
+
+            const courseObj = publicCoursesList.find(c => c.courseCode === code);
+            if (!courseObj || !courseObj.schedules) return;
+
+            const schedules = courseObj.schedules;
+
+            // 1. Lectures
+            (schedules.lectures || []).forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `lecture:${idx}`;
+                opt.textContent = `Lecture ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
+                sessionSel.appendChild(opt);
+            });
+
+            // 2. Labs
+            (schedules.labs || []).forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `lab:${idx}`;
+                opt.textContent = `Lab ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
+                sessionSel.appendChild(opt);
+            });
+
+            // 3. Tutorials
+            (schedules.tutorials || []).forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `tutorial:${idx}`;
+                opt.textContent = `Tutorial ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
+                sessionSel.appendChild(opt);
+            });
+        }
+
+        async function handleGiveAttendanceSubmit(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('attStudentId').value.trim();
+            const courseCode = document.getElementById('attCourseSelect').value;
+            const sessionVal = document.getElementById('attSessionSelect').value;
+            const statusBox = document.getElementById('giveAttStatusBox');
+            const submitBtn = document.getElementById('giveAttSubmitBtn');
+
+            if (!studentId || !courseCode || !sessionVal) {
+                statusBox.className = 'status-msg status-error';
+                statusBox.innerText = 'Please fill in your Student ID, Course Unit, and Session.';
+                return;
+            }
+
+            const [sessionType, idxStr] = sessionVal.split(':');
+            const sessionIdx = parseInt(idxStr, 10);
+
+            const now = new Date();
+            const clientDay = JS_DAY_NAMES[now.getDay()];
+            const pad = n => String(n).padStart(2, '0');
+            const clientTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            const clientDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+            submitBtn.disabled = true;
+            statusBox.className = 'status-msg status-loading';
+            statusBox.innerText = 'Verifying session schedule and time window...';
+
+            try {
+                const { data: res, error } = await sb.rpc('submit_student_attendance', {
+                    p_student_id: studentId,
+                    p_course_code: courseCode,
+                    p_session_type: sessionType,
+                    p_session_idx: sessionIdx,
+                    p_client_date: clientDate,
+                    p_client_day: clientDay,
+                    p_client_time: clientTime
+                });
+
+                if (error) throw error;
+
+                if (res && res.success) {
+                    statusBox.className = 'status-msg status-success';
+                    statusBox.innerText = res.message;
+                } else {
+                    statusBox.className = 'status-msg status-error';
+                    statusBox.innerText = (res && res.message) || 'Could not record attendance.';
+                }
+            } catch (err) {
+                statusBox.className = 'status-msg status-error';
+                statusBox.innerText = 'Error: ' + err.message;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        function openGiveAttendanceFromStudentDash() {
+            document.getElementById('studentDashboard').style.display = 'none';
+            document.getElementById('portalModal').style.display = 'flex';
+            openGiveAttendanceStep();
+        }
+
+        /* ================= AUTOMATIC EVALUATION OF PAST SESSIONS (P / A / L) ================= */
+
+        /**
+         * Determines the effective attendance status for a session:
+         * - If explicitly marked 'P', 'A', or 'L', returns that mark.
+         * - If blank ('') and the session's week/day/endTime+10min has already passed:
+         *     -> Returns 'A' if the student has registered/logged in (Did not give attendance during designed session)
+         *     -> Returns 'L' if the student has never logged in (Absent - Did not log in)
+         */
+        function getEffectiveSessionStatus(rawVal, semStartStr, weekIndex0, slotObj, hasLoggedIn) {
+            if (rawVal === "P" || rawVal === "A" || rawVal === "L") {
+                return rawVal;
+            }
+            if (!semStartStr || !slotObj || !slotObj.day || !slotObj.endTime) {
+                return "";
+            }
+
+            const startParts = semStartStr.split('-');
+            if (startParts.length !== 3) return "";
+            const weekStart = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
+            if (isNaN(weekStart)) return "";
+
+            weekStart.setDate(weekStart.getDate() + (weekIndex0 * 7));
+
+            // Map day offset within the week relative to weekStart
+            const targetDayIdx = JS_DAY_NAMES.indexOf(slotObj.day);
+            const startDayIdx = weekStart.getDay();
+            let dayOffset = targetDayIdx - startDayIdx;
+            if (dayOffset < 0) dayOffset += 7;
+
+            const sessionDate = new Date(weekStart);
+            sessionDate.setDate(weekStart.getDate() + dayOffset);
+
+            const [eh, em] = slotObj.endTime.split(':').map(Number);
+            if (isNaN(eh) || isNaN(em)) return "";
+            sessionDate.setHours(eh, em + 10, 0, 0); // 10 minutes after session end
+
+            if (new Date() > sessionDate) {
+                return hasLoggedIn ? "A" : "L";
+            }
+            return "";
+        }
+
+        /* ================= REGISTER & LOGIN AUTHENTICATION ================= */
+
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            hideStatus();
+            updateFormView();
+        }
+
+        function updateFormView() {
+            const title = `${selectedUserType} ${isLoginMode ? 'Login' : 'Registration'}`;
+            document.getElementById('formTitle').innerText = title;
+            document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login with ID & Password' : 'Register';
+            document.getElementById('idLabel').innerText = `${selectedUserType} ID Number`;
+
+            const regFields = document.getElementById('registerOnlyFields');
+            const fullNameInput = document.getElementById('fullName');
+            const emailInput = document.getElementById('email');
+
+            regFields.style.display = isLoginMode ? 'none' : 'block';
+            fullNameInput.disabled = isLoginMode;
+            emailInput.disabled = isLoginMode;
+            if (isLoginMode) {
+                fullNameInput.value = "";
+                emailInput.value = "";
+            }
+
+            document.getElementById('toggleText').innerText = isLoginMode
+                ? "First time user? Register here"
+                : "Already registered? Login here";
+        }
+
+        function showStatus(msg, type) {
+            const box = document.getElementById('statusBox');
+            box.className = 'status-msg ' + type;
+            box.innerText = msg;
+        }
+
+        function hideStatus() {
+            const box = document.getElementById('statusBox');
+            box.className = 'status-msg';
+            box.innerText = '';
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+
+            if (!sb) {
+                showStatus("Database connection not initialized.", "status-error");
+                return;
+            }
+
+            const idNumber = document.getElementById('idNumber').value.trim();
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const submitBtn = document.getElementById('submitBtnText');
+
+            if (!idNumber || !password) {
+                showStatus("Please enter both your ID Number and Password.", "status-error");
+                return;
+            }
+            if (!isLoginMode) {
+                if (!fullName) {
+                    showStatus("Please enter your Full Name to register.", "status-error");
+                    return;
+                }
+                if (!email || !email.includes("@")) {
+                    showStatus("Please enter a valid Email Address to register.", "status-error");
+                    return;
+                }
+            }
+
+            submitBtn.disabled = true;
+            showStatus(isLoginMode ? "Verifying ID & Password..." : "Registering account...", "status-loading");
+
+            try {
+                if (!isLoginMode) {
+                    const { data: rpcResult, error: rpcError } = await sb.rpc('register_portal_user', {
+                        p_user_type: selectedUserType,
+                        p_id_number: idNumber,
+                        p_full_name: fullName,
+                        p_email: email,
+                        p_password: password
+                    });
+
+                    if (rpcError) {
+                        showStatus("Database error: " + rpcError.message, "status-error");
+                        return;
+                    }
+                    if (!rpcResult || !rpcResult.success) {
+                        showStatus((rpcResult && rpcResult.message) || "Registration failed.", "status-error");
+                        return;
+                    }
+
+                    isLoginMode = true;
+                    updateFormView();
+                    document.getElementById('idNumber').value = idNumber;
+                    document.getElementById('password').value = "";
+                    showStatus("Registration complete! Please enter your ID and Password to log in.", "status-success");
+
+                } else {
+                    const { data: loginRes, error: loginErr } = await sb.rpc('verify_portal_login', {
+                        p_user_type: selectedUserType,
+                        p_id_number: idNumber,
+                        p_password: password
+                    });
+
+                    if (loginErr) {
+                        showStatus("Login error: " + loginErr.message, "status-error");
+                        return;
+                    }
+                    if (!loginRes || !loginRes.success) {
+                        showStatus((loginRes && loginRes.message) || "Invalid ID Number or Password.", "status-error");
+                        return;
+                    }
+
+                    showStatus("Login verified! Loading portal...", "status-success");
+                    loggedInUser = loginRes.user;
+                    coursesStore = {};
+                    const rawCourses = loginRes.courses || {};
+                    Object.keys(rawCourses).forEach(code => {
+                        coursesStore[code] = normalizeCourseStructure(rawCourses[code]);
+                    });
+
+                    if (selectedUserType === "Staff") {
+                        staffSessionPassword = password;
+                        openStaffDashboard();
+                    } else {
+                        openStudentDashboard();
+                    }
+                }
+            } catch (err) {
+                showStatus("Network error: " + err.message, "status-error");
+                console.error(err);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        /* ================= STUDENT CHECK ATTENDANCE DASHBOARD ================= */
+
+        function openStudentDashboard() {
+            document.getElementById('portalModal').style.display = 'none';
+            document.getElementById('staffDashboard').style.display = 'none';
+            document.getElementById('studentDashboard').style.display = 'block';
+
+            document.getElementById('studentWelcomeMeta').innerText =
+                `Student Name: ${loggedInUser.fullName} | Student ID: ${loggedInUser.idNumber} (Private Attendance Record)`;
+
+            const sel = document.getElementById('studentCourseSelector');
+            const codes = Object.keys(coursesStore);
+            sel.innerHTML = "";
+
+            if (codes.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.textContent = "-- Not Enrolled in Any Course Yet --";
+                sel.appendChild(opt);
+                clearStudentDashboardTables();
+                return;
+            }
+
+            codes.forEach(code => {
+                const c = coursesStore[code];
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${code} — ${c.courseTitle || 'Course Unit'}`;
+                sel.appendChild(opt);
+            });
+
+            sel.value = codes[0];
+            renderStudentDashboardCourse();
+        }
+
+        function clearStudentDashboardTables() {
+            document.getElementById('stuLecStat').innerText = "0%";
+            document.getElementById('stuLabStat').innerText = "0%";
+            document.getElementById('stuTutStat').innerText = "0%";
+            document.getElementById('stuOverallStat').innerText = "0%";
+            document.getElementById('stuLectureHead').innerHTML = "";
+            document.getElementById('stuLectureBody').innerHTML = `<tr><td style="padding:12px;">No course records found for your Student ID (${escapeHtml(loggedInUser.idNumber)}).</td></tr>`;
+            document.getElementById('stuLabHead').innerHTML = "";
+            document.getElementById('stuLabBody').innerHTML = "";
+            document.getElementById('stuTutorialHead').innerHTML = "";
+            document.getElementById('stuTutorialBody').innerHTML = "";
+        }
+
+        function renderStudentDashboardCourse() {
+            const code = document.getElementById('studentCourseSelector').value;
+            const course = coursesStore[code];
+            if (!course || !course.students || course.students.length === 0) {
+                clearStudentDashboardTables();
+                return;
+            }
+
+            // Strictly the single logged-in student's record
+            const st = course.students[0];
+            const weeks = course.weeks || [];
+            const lecSlots = course.schedules.lectures || [];
+            const labSlots = course.schedules.labs || [];
+            const tutSlots = course.schedules.tutorials || [];
+            const numLecs = lecSlots.length;
+
+            document.getElementById('stuLectureScheduleSummary').innerHTML =
+                `<strong>Scheduled Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))}`;
+            document.getElementById('stuLabScheduleSummary').innerHTML =
+                `<strong>My Assigned Lab:</strong> ${escapeHtml(formatSlotSummary(labSlots[st.assignedLabIdx || 0] || labSlots[0], 'Lab', st.assignedLabIdx || 0))}`;
+            document.getElementById('stuTutorialScheduleSummary').innerHTML =
+                `<strong>My Assigned Tutorial:</strong> ${escapeHtml(formatSlotSummary(tutSlots[st.assignedTutIdx || 0] || tutSlots[0], 'Tut', st.assignedTutIdx || 0))}`;
+
+            // 1. Render Student Lecture Row
+            let lecHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th>`;
+            weeks.forEach(w => {
+                const sub = lecSlots.map((s, idx) => `L${idx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
+                lecHead += `<th><div>${w}</div><div style="font-size:10px; font-weight:normal;">${escapeHtml(sub)}</div></th>`;
+            });
+            lecHead += `<th>Lectures Present</th><th>Full Weeks</th><th>Lecture %</th></tr>`;
+            document.getElementById('stuLectureHead').innerHTML = lecHead;
+
+            let lecPresent = 0, lecTotal = 0, fullWeeks = 0, weeksEval = 0;
+            let lecCells = "";
+            weeks.forEach((w, wIdx) => {
+                let wkPres = 0, wkMark = 0;
+                let badges = "";
+                for (let lIdx = 0; lIdx < numLecs; lIdx++) {
+                    const key = `W${wIdx + 1}_L${lIdx + 1}`;
+                    const rawVal = st.lectureAttendance[key] || "";
+                    const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, lecSlots[lIdx], true);
+                    if (val === "P") { lecPresent++; lecTotal++; wkPres++; wkMark++; }
+                    else if (val === "A" || val === "L") { lecTotal++; wkMark++; }
+
+                    const cls = val ? `att-${val}` : "";
+                    badges += `<span class="legend-pill ${cls}" style="border:1px solid #cbd5e1;">L${lIdx + 1}: ${val || '-'}</span>`;
+                }
+                if (wkMark > 0) {
+                    weeksEval++;
+                    if (wkPres === numLecs) fullWeeks++;
+                }
+                lecCells += `<td><div class="lec-week-box">${badges}</div></td>`;
+            });
+            const lecPct = lecTotal > 0 ? Math.round((lecPresent / lecTotal) * 100) + "%" : "0%";
+            document.getElementById('stuLectureBody').innerHTML = `<tr>
+                <td class="summary-cell">${escapeHtml(st.studentId)}</td>
+                <td class="summary-cell">${escapeHtml(st.lastName)}</td>
+                <td class="summary-cell">${escapeHtml(st.firstName)}</td>
+                <td class="summary-cell">${escapeHtml(st.course || code)}</td>
+                <td class="summary-cell">${escapeHtml(st.mode)}</td>
+                ${lecCells}
+                <td class="summary-cell">${lecPresent} / ${lecTotal || (weeks.length * numLecs)}</td>
+                <td class="summary-cell">${fullWeeks} / ${weeksEval || weeks.length}</td>
+                <td class="summary-cell">${lecPct}</td>
+            </tr>`;
+
+            // 2. Render Student Lab Row
+            let labHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Assigned Lab</th>`;
+            weeks.forEach(w => { labHead += `<th>${w}</th>`; });
+            labHead += `<th>Labs Present</th><th>Lab %</th></tr>`;
+            document.getElementById('stuLabHead').innerHTML = labHead;
+
+            let labPresent = 0, labTotal = 0;
+            let labCells = "";
+            const stuLabSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
+            weeks.forEach((w, wIdx) => {
+                const rawVal = st.labAttendance[`W${wIdx + 1}`] || "";
+                const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, stuLabSlot, true);
+                if (val === "P") { labPresent++; labTotal++; }
+                else if (val === "A" || val === "L") { labTotal++; }
+                const cls = val ? `att-${val}` : "";
+                labCells += `<td class="summary-cell ${cls}">${val || '-'}</td>`;
+            });
+            const labPct = labTotal > 0 ? Math.round((labPresent / labTotal) * 100) + "%" : "0%";
+            document.getElementById('stuLabBody').innerHTML = `<tr>
+                <td class="summary-cell">${escapeHtml(st.studentId)}</td>
+                <td class="summary-cell">${escapeHtml(st.lastName)}</td>
+                <td class="summary-cell">${escapeHtml(st.firstName)}</td>
+                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuLabSlot, 'Lab', st.assignedLabIdx || 0))}</td>
+                ${labCells}
+                <td class="summary-cell">${labPresent} / ${labTotal || weeks.length}</td>
+                <td class="summary-cell">${labPct}</td>
+            </tr>`;
+
+            // 3. Render Student Tutorial Row
+            let tutHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Assigned Tutorial</th>`;
+            weeks.forEach(w => { tutHead += `<th>${w}</th>`; });
+            tutHead += `<th>Tutorials Present</th><th>Tutorial %</th></tr>`;
+            document.getElementById('stuTutorialHead').innerHTML = tutHead;
+
+            let tutPresent = 0, tutTotal = 0;
+            let tutCells = "";
+            const stuTutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
+            weeks.forEach((w, wIdx) => {
+                const rawVal = st.tutorialAttendance[`W${wIdx + 1}`] || "";
+                const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, stuTutSlot, true);
+                if (val === "P") { tutPresent++; tutTotal++; }
+                else if (val === "A" || val === "L") { tutTotal++; }
+                const cls = val ? `att-${val}` : "";
+                tutCells += `<td class="summary-cell ${cls}">${val || '-'}</td>`;
+            });
+            const tutPct = tutTotal > 0 ? Math.round((tutPresent / tutTotal) * 100) + "%" : "0%";
+            document.getElementById('stuTutorialBody').innerHTML = `<tr>
+                <td class="summary-cell">${escapeHtml(st.studentId)}</td>
+                <td class="summary-cell">${escapeHtml(st.lastName)}</td>
+                <td class="summary-cell">${escapeHtml(st.firstName)}</td>
+                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuTutSlot, 'Tut', st.assignedTutIdx || 0))}</td>
+                ${tutCells}
+                <td class="summary-cell">${tutPresent} / ${tutTotal || weeks.length}</td>
+                <td class="summary-cell">${tutPct}</td>
+            </tr>`;
+
+            const overallMark = lecTotal + labTotal + tutTotal;
+            const overallPres = lecPresent + labPresent + tutPresent;
+            const overallPct = overallMark > 0 ? Math.round((overallPres / overallMark) * 100) + "%" : "0%";
+
+            document.getElementById('stuLecStat').innerText = lecPct;
+            document.getElementById('stuLabStat').innerText = labPct;
+            document.getElementById('stuTutStat').innerText = tutPct;
+            document.getElementById('stuOverallStat').innerText = overallPct;
+        }
+
+        /* ================= STAFF DASHBOARD & COURSE MANAGEMENT ================= */
 
         function createDefaultCourseObject() {
             const today = new Date().toISOString().split('T')[0];
@@ -813,8 +1586,138 @@
                 assignedTutIdx: 0,
                 lectureAttendance: {},
                 labAttendance: {},
-                tutorialAttendance: {}
+                tutorialAttendance: {},
+                hasLoggedIn: false
             };
+        }
+
+        function openStaffDashboard() {
+            document.getElementById('portalModal').style.display = 'none';
+            document.getElementById('studentDashboard').style.display = 'none';
+            document.getElementById('staffDashboard').style.display = 'block';
+            document.getElementById('staffWelcomeMeta').innerText =
+                `Staff Name: ${loggedInUser.fullName} | Staff ID: ${loggedInUser.idNumber}`;
+
+            populateCourseDropdown();
+            const courseCodes = Object.keys(coursesStore);
+            if (courseCodes.length > 0) {
+                document.getElementById('courseSelector').value = courseCodes[0];
+                loadSelectedCourse();
+                setEditMode(false);
+            } else {
+                startNewCourse();
+                setEditMode(false);
+            }
+        }
+
+        function logoutUser() {
+            loggedInUser = null;
+            staffSessionPassword = "";
+            document.getElementById('staffDashboard').style.display = 'none';
+            document.getElementById('studentDashboard').style.display = 'none';
+            document.getElementById('portalModal').style.display = 'flex';
+            resetModal();
+        }
+
+        function populateCourseDropdown() {
+            const sel = document.getElementById('courseSelector');
+            sel.innerHTML = `<option value="">-- Create / Select Course Unit --</option>`;
+            Object.keys(coursesStore).forEach(code => {
+                const c = coursesStore[code];
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${code} - ${c.courseTitle || 'Untitled'}`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function startNewCourse() {
+            document.getElementById('courseSelector').value = "";
+            currentCourse = createDefaultCourseObject();
+            renderCourseToUI();
+        }
+
+        function normalizeCourseStructure(raw) {
+            const def = createDefaultCourseObject();
+            const c = Object.assign({}, def, raw);
+
+            if (!c.schedules) c.schedules = def.schedules;
+            if (!Array.isArray(c.schedules.lectures) || c.schedules.lectures.length === 0) {
+                c.schedules.lectures = def.schedules.lectures;
+            }
+            if (!Array.isArray(c.schedules.labs) || c.schedules.labs.length === 0) {
+                c.schedules.labs = def.schedules.labs;
+            }
+            if (!Array.isArray(c.schedules.tutorials) || c.schedules.tutorials.length === 0) {
+                c.schedules.tutorials = def.schedules.tutorials;
+            }
+
+            if (!c.weeks || c.weeks.length === 0) {
+                c.weeks = generateWeeksList(c.semStart, c.semEnd);
+            }
+
+            c.students = (c.students || []).map(st => ({
+                studentId: st.studentId || "",
+                lastName: st.lastName !== undefined ? st.lastName : (st.surname || ""),
+                firstName: st.firstName || "",
+                course: st.course !== undefined ? st.course : (st.idUnit || c.courseCode || ""),
+                mode: st.mode || "F",
+                assignedLabIdx: Number(st.assignedLabIdx || 0),
+                assignedTutIdx: Number(st.assignedTutIdx || 0),
+                lectureAttendance: st.lectureAttendance || st.attendance || {},
+                labAttendance: st.labAttendance || {},
+                tutorialAttendance: st.tutorialAttendance || {},
+                hasLoggedIn: Boolean(st.hasLoggedIn)
+            }));
+
+            if (c.students.length === 0) {
+                c.students = [createEmptyStudent(c.courseCode)];
+            }
+            return c;
+        }
+
+        function loadSelectedCourse() {
+            const code = document.getElementById('courseSelector').value;
+            if (!code || !coursesStore[code]) {
+                startNewCourse();
+                return;
+            }
+            currentCourse = normalizeCourseStructure(JSON.parse(JSON.stringify(coursesStore[code])));
+            renderCourseToUI();
+        }
+
+        function toggleEditMode() {
+            setEditMode(!isEditMode);
+        }
+
+        function setEditMode(enabled) {
+            isEditMode = enabled;
+            const btn = document.getElementById('editModeBtn');
+            btn.innerText = isEditMode ? "Lock / View Only" : "Enable Edit Mode";
+            btn.className = isEditMode ? "btn btn-dark" : "btn btn-warning";
+
+            document.getElementById('courseCode').disabled = !isEditMode;
+            document.getElementById('courseTitle').disabled = !isEditMode;
+            document.getElementById('semStart').disabled = !isEditMode;
+            document.getElementById('semEnd').disabled = !isEditMode;
+            document.getElementById('addRowBtn').disabled = !isEditMode;
+            document.getElementById('clearRowsBtn').disabled = !isEditMode;
+            document.getElementById('addLecSlotBtn').disabled = !isEditMode;
+            document.getElementById('addLabSlotBtn').disabled = !isEditMode;
+            document.getElementById('addTutSlotBtn').disabled = !isEditMode;
+            document.getElementById('deleteCourseBtn').disabled = !isEditMode;
+
+            const dz = document.getElementById('classlistDropzone');
+            if (isEditMode) {
+                dz.classList.remove('disabled-zone');
+            } else {
+                dz.classList.add('disabled-zone');
+                dz.classList.remove('staged');
+                stagedClasslist = null;
+            }
+
+            renderScheduleCards();
+            renderAllThreeTables();
         }
 
         /* ================= DROPBOX & CSV PARSER ================= */
@@ -1028,7 +1931,8 @@
                     assignedTutIdx: prev.assignedTutIdx || 0,
                     lectureAttendance: prev.lectureAttendance || {},
                     labAttendance: prev.labAttendance || {},
-                    tutorialAttendance: prev.tutorialAttendance || {}
+                    tutorialAttendance: prev.tutorialAttendance || {},
+                    hasLoggedIn: Boolean(prev.hasLoggedIn)
                 };
             });
 
@@ -1045,166 +1949,6 @@
 
             renderAllThreeTables();
             saveCourseAndAttendance(false);
-        }
-
-        /* ================= SUPABASE RPC AUTHENTICATION ================= */
-
-        function selectUserType(type) {
-            if (!sb) {
-                initSupabaseFromStorage();
-            }
-            selectedUserType = type;
-            document.getElementById('selectionStep').style.display = 'none';
-            document.getElementById('formStep').style.display = 'block';
-            isLoginMode = false;
-            hideStatus();
-            updateFormView();
-        }
-
-        function resetModal() {
-            document.getElementById('formStep').style.display = 'none';
-            document.getElementById('selectionStep').style.display = 'block';
-            document.getElementById('authForm').reset();
-            hideStatus();
-            isLoginMode = false;
-        }
-
-        function toggleMode() {
-            isLoginMode = !isLoginMode;
-            hideStatus();
-            updateFormView();
-        }
-
-        function updateFormView() {
-            const title = `${selectedUserType} ${isLoginMode ? 'Login' : 'Registration'}`;
-            document.getElementById('formTitle').innerText = title;
-            document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login with ID & Password' : 'Register';
-            document.getElementById('idLabel').innerText = `${selectedUserType} ID Number`;
-
-            const regFields = document.getElementById('registerOnlyFields');
-            const fullNameInput = document.getElementById('fullName');
-            const emailInput = document.getElementById('email');
-
-            regFields.style.display = isLoginMode ? 'none' : 'block';
-            fullNameInput.disabled = isLoginMode;
-            emailInput.disabled = isLoginMode;
-            if (isLoginMode) {
-                fullNameInput.value = "";
-                emailInput.value = "";
-            }
-
-            document.getElementById('toggleText').innerText = isLoginMode
-                ? "First time user? Register here"
-                : "Already registered? Login here";
-        }
-
-        function showStatus(msg, type) {
-            const box = document.getElementById('statusBox');
-            box.className = 'status-msg ' + type;
-            box.innerText = msg;
-        }
-
-        function hideStatus() {
-            const box = document.getElementById('statusBox');
-            box.className = 'status-msg';
-            box.innerText = '';
-        }
-
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-
-            if (!sb) {
-                showStatus("Database connection not initialized.", "status-error");
-                return;
-            }
-
-            const idNumber = document.getElementById('idNumber').value.trim();
-            const password = document.getElementById('password').value;
-            const fullName = document.getElementById('fullName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const submitBtn = document.getElementById('submitBtnText');
-
-            if (!idNumber || !password) {
-                showStatus("Please enter both your ID Number and Password.", "status-error");
-                return;
-            }
-            if (!isLoginMode) {
-                if (!fullName) {
-                    showStatus("Please enter your Full Name to register.", "status-error");
-                    return;
-                }
-                if (!email || !email.includes("@")) {
-                    showStatus("Please enter a valid Email Address to register.", "status-error");
-                    return;
-                }
-            }
-
-            submitBtn.disabled = true;
-            showStatus(isLoginMode ? "Verifying ID & Password..." : "Registering account...", "status-loading");
-
-            try {
-                if (!isLoginMode) {
-                    const { data: rpcResult, error: rpcError } = await sb.rpc('register_portal_user', {
-                        p_user_type: selectedUserType,
-                        p_id_number: idNumber,
-                        p_full_name: fullName,
-                        p_email: email,
-                        p_password: password
-                    });
-
-                    if (rpcError) {
-                        showStatus("Database error: " + rpcError.message, "status-error");
-                        return;
-                    }
-                    if (!rpcResult || !rpcResult.success) {
-                        showStatus((rpcResult && rpcResult.message) || "Registration failed.", "status-error");
-                        return;
-                    }
-
-                    isLoginMode = true;
-                    updateFormView();
-                    document.getElementById('idNumber').value = idNumber;
-                    document.getElementById('password').value = "";
-                    showStatus("Registration complete! Please enter your ID and Password to log in.", "status-success");
-
-                } else {
-                    const { data: loginRes, error: loginErr } = await sb.rpc('verify_portal_login', {
-                        p_user_type: selectedUserType,
-                        p_id_number: idNumber,
-                        p_password: password
-                    });
-
-                    if (loginErr) {
-                        showStatus("Login error: " + loginErr.message, "status-error");
-                        return;
-                    }
-                    if (!loginRes || !loginRes.success) {
-                        showStatus((loginRes && loginRes.message) || "Invalid ID Number or Password.", "status-error");
-                        return;
-                    }
-
-                    showStatus("Login verified! Loading portal...", "status-success");
-
-                    if (selectedUserType === "Staff") {
-                        loggedInStaff = loginRes.user;
-                        staffSessionPassword = password;
-                        coursesStore = {};
-                        const rawCourses = loginRes.courses || {};
-                        Object.keys(rawCourses).forEach(code => {
-                            coursesStore[code] = normalizeCourseStructure(rawCourses[code]);
-                        });
-                        openStaffDashboard();
-                    } else {
-                        alert(`Welcome ${loginRes.user.fullName} (${loginRes.user.idNumber})! Student login verified.`);
-                        document.getElementById('portalModal').style.display = 'none';
-                    }
-                }
-            } catch (err) {
-                showStatus("Network error: " + err.message, "status-error");
-                console.error(err);
-            } finally {
-                submitBtn.disabled = false;
-            }
         }
 
         /* ================= SECURE SUPABASE RPC SAVE & DELETE ================= */
@@ -1226,7 +1970,7 @@
 
             try {
                 const { data: res, error } = await sb.rpc('save_portal_course', {
-                    p_staff_id: loggedInStaff.idNumber,
+                    p_staff_id: loggedInUser.idNumber,
                     p_password: staffSessionPassword,
                     p_course: currentCourse
                 });
@@ -1269,7 +2013,7 @@
 
             try {
                 const { data: res, error } = await sb.rpc('delete_portal_course', {
-                    p_staff_id: loggedInStaff.idNumber,
+                    p_staff_id: loggedInUser.idNumber,
                     p_password: staffSessionPassword,
                     p_course_code: code
                 });
@@ -1295,134 +2039,6 @@
                 console.error(err);
                 alert("Could not delete course: " + err.message);
             }
-        }
-
-        /* ================= STAFF DASHBOARD & UI LOGIC ================= */
-
-        function openStaffDashboard() {
-            document.getElementById('portalModal').style.display = 'none';
-            document.getElementById('staffDashboard').style.display = 'block';
-            document.getElementById('staffWelcomeMeta').innerText =
-                `Staff Name: ${loggedInStaff.fullName} | Staff ID: ${loggedInStaff.idNumber}`;
-
-            populateCourseDropdown();
-            const courseCodes = Object.keys(coursesStore);
-            if (courseCodes.length > 0) {
-                document.getElementById('courseSelector').value = courseCodes[0];
-                loadSelectedCourse();
-                setEditMode(false);
-            } else {
-                startNewCourse();
-                setEditMode(false);
-            }
-        }
-
-        function logoutStaff() {
-            loggedInStaff = null;
-            staffSessionPassword = "";
-            document.getElementById('staffDashboard').style.display = 'none';
-            document.getElementById('portalModal').style.display = 'flex';
-            resetModal();
-        }
-
-        function populateCourseDropdown() {
-            const sel = document.getElementById('courseSelector');
-            sel.innerHTML = `<option value="">-- Create / Select Course Unit --</option>`;
-            Object.keys(coursesStore).forEach(code => {
-                const c = coursesStore[code];
-                const opt = document.createElement('option');
-                opt.value = code;
-                opt.textContent = `${code} - ${c.courseTitle || 'Untitled'}`;
-                sel.appendChild(opt);
-            });
-        }
-
-        function startNewCourse() {
-            document.getElementById('courseSelector').value = "";
-            currentCourse = createDefaultCourseObject();
-            renderCourseToUI();
-        }
-
-        function normalizeCourseStructure(raw) {
-            const def = createDefaultCourseObject();
-            const c = Object.assign({}, def, raw);
-
-            if (!c.schedules) c.schedules = def.schedules;
-            if (!Array.isArray(c.schedules.lectures) || c.schedules.lectures.length === 0) {
-                c.schedules.lectures = def.schedules.lectures;
-            }
-            if (!Array.isArray(c.schedules.labs) || c.schedules.labs.length === 0) {
-                c.schedules.labs = def.schedules.labs;
-            }
-            if (!Array.isArray(c.schedules.tutorials) || c.schedules.tutorials.length === 0) {
-                c.schedules.tutorials = def.schedules.tutorials;
-            }
-
-            if (!c.weeks || c.weeks.length === 0) {
-                c.weeks = generateWeeksList(c.semStart, c.semEnd);
-            }
-
-            c.students = (c.students || []).map(st => ({
-                studentId: st.studentId || "",
-                lastName: st.lastName !== undefined ? st.lastName : (st.surname || ""),
-                firstName: st.firstName || "",
-                course: st.course !== undefined ? st.course : (st.idUnit || c.courseCode || ""),
-                mode: st.mode || "F",
-                assignedLabIdx: Number(st.assignedLabIdx || 0),
-                assignedTutIdx: Number(st.assignedTutIdx || 0),
-                lectureAttendance: st.lectureAttendance || st.attendance || {},
-                labAttendance: st.labAttendance || {},
-                tutorialAttendance: st.tutorialAttendance || {}
-            }));
-
-            if (c.students.length === 0) {
-                c.students = [createEmptyStudent(c.courseCode)];
-            }
-            return c;
-        }
-
-        function loadSelectedCourse() {
-            const code = document.getElementById('courseSelector').value;
-            if (!code || !coursesStore[code]) {
-                startNewCourse();
-                return;
-            }
-            currentCourse = normalizeCourseStructure(JSON.parse(JSON.stringify(coursesStore[code])));
-            renderCourseToUI();
-        }
-
-        function toggleEditMode() {
-            setEditMode(!isEditMode);
-        }
-
-        function setEditMode(enabled) {
-            isEditMode = enabled;
-            const btn = document.getElementById('editModeBtn');
-            btn.innerText = isEditMode ? "Lock / View Only" : "Enable Edit Mode";
-            btn.className = isEditMode ? "btn btn-dark" : "btn btn-warning";
-
-            document.getElementById('courseCode').disabled = !isEditMode;
-            document.getElementById('courseTitle').disabled = !isEditMode;
-            document.getElementById('semStart').disabled = !isEditMode;
-            document.getElementById('semEnd').disabled = !isEditMode;
-            document.getElementById('addRowBtn').disabled = !isEditMode;
-            document.getElementById('clearRowsBtn').disabled = !isEditMode;
-            document.getElementById('addLecSlotBtn').disabled = !isEditMode;
-            document.getElementById('addLabSlotBtn').disabled = !isEditMode;
-            document.getElementById('addTutSlotBtn').disabled = !isEditMode;
-            document.getElementById('deleteCourseBtn').disabled = !isEditMode;
-
-            const dz = document.getElementById('classlistDropzone');
-            if (isEditMode) {
-                dz.classList.remove('disabled-zone');
-            } else {
-                dz.classList.add('disabled-zone');
-                dz.classList.remove('staged');
-                stagedClasslist = null;
-            }
-
-            renderScheduleCards();
-            renderAllThreeTables();
         }
 
         /* ================= SCHEDULE SLOTS (LECTURE, LAB, TUTORIAL) ================= */
@@ -1497,6 +2113,7 @@
         }
 
         function formatSlotSummary(slot, labelPrefix, idx) {
+            if (!slot) return `${labelPrefix} ${idx + 1}`;
             const timeRange = (slot.startTime && slot.endTime) ? `${slot.startTime}–${slot.endTime}` : "Time TBA";
             const roomStr = slot.room ? `Room: ${slot.room}` : "Room TBA";
             return `${labelPrefix} ${idx + 1} (${slot.day || 'Day'} ${timeRange}, ${roomStr})`;
@@ -1563,7 +2180,7 @@
             renderAllThreeTables();
         }
 
-        /* ================= RENDER ALL 3 SEPARATE WEEK-WISE ATTENDANCE TABLES ================= */
+        /* ================= RENDER ALL 3 STAFF WEEK-WISE ATTENDANCE TABLES ================= */
 
         function renderAllThreeTables() {
             renderLectureTable();
@@ -1604,7 +2221,7 @@
             `;
         }
 
-        // TABLE 1: LECTURE TABLE
+        // TABLE 1: LECTURE TABLE (Only 'P' counts as Present; 'A' & 'L' count as Absent)
         function renderLectureTable() {
             const thead = document.getElementById('lectureTableHead');
             const tbody = document.getElementById('lectureTableBody');
@@ -1629,7 +2246,7 @@
             });
 
             headHTML += `
-                <th style="min-width:95px;">Sessions Attended</th>
+                <th style="min-width:95px;">Sessions Present</th>
                 <th style="min-width:105px;">Full Weeks (All ${numLecs} Lec)</th>
                 <th style="min-width:90px;">Lecture %</th>
                 ${isEditMode ? `<th style="width:50px;">Del</th>` : ""}
@@ -1641,28 +2258,28 @@
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let totalLecAttended = 0;
+                let totalLecPresent = 0;
                 let totalLecMarked = 0;
                 let fullWeeksAttended = 0;
                 let weeksMarkedCount = 0;
 
                 let weekCellsHTML = "";
                 weeks.forEach((w, wIdx) => {
-                    let attendedThisWeek = 0;
+                    let presentThisWeek = 0;
                     let markedThisWeek = 0;
 
                     let selectsHTML = "";
                     for (let lIdx = 0; lIdx < numLecs; lIdx++) {
                         const key = `W${wIdx + 1}_L${lIdx + 1}`;
-                        const fallbackVal = lIdx === 0 ? (st.lectureAttendance[`W${wIdx + 1}`] || "") : "";
-                        const val = st.lectureAttendance[key] !== undefined ? st.lectureAttendance[key] : fallbackVal;
+                        const rawVal = st.lectureAttendance[key] || "";
+                        const val = getEffectiveSessionStatus(rawVal, currentCourse.semStart, wIdx, lecSlots[lIdx], st.hasLoggedIn);
 
-                        if (val === "P" || val === "L" || val === "E") {
-                            attendedThisWeek++;
+                        if (val === "P") {
+                            presentThisWeek++;
                             markedThisWeek++;
-                            totalLecAttended++;
+                            totalLecPresent++;
                             totalLecMarked++;
-                        } else if (val === "A") {
+                        } else if (val === "A" || val === "L") {
                             markedThisWeek++;
                             totalLecMarked++;
                         }
@@ -1677,7 +2294,6 @@
                                 <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
                                 <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
                                 <option value="L" ${val === "L" ? "selected" : ""}>L${lIdx + 1}:L</option>
-                                <option value="E" ${val === "E" ? "selected" : ""}>L${lIdx + 1}:E</option>
                             </select>
                         `;
                     }
@@ -1685,11 +2301,11 @@
                     let chipHTML = "";
                     if (markedThisWeek > 0) {
                         weeksMarkedCount++;
-                        if (attendedThisWeek === numLecs) {
+                        if (presentThisWeek === numLecs) {
                             fullWeeksAttended++;
-                            chipHTML = `<span class="wk-status-chip chip-full" title="Attended ALL lectures this week">${attendedThisWeek}/${numLecs}✓</span>`;
-                        } else if (attendedThisWeek > 0) {
-                            chipHTML = `<span class="wk-status-chip chip-partial" title="Missed ${numLecs - attendedThisWeek} lecture(s) this week">${attendedThisWeek}/${numLecs}</span>`;
+                            chipHTML = `<span class="wk-status-chip chip-full" title="Present for ALL lectures this week">${presentThisWeek}/${numLecs}✓</span>`;
+                        } else if (presentThisWeek > 0) {
+                            chipHTML = `<span class="wk-status-chip chip-partial">${presentThisWeek}/${numLecs}</span>`;
                         } else {
                             chipHTML = `<span class="wk-status-chip chip-none">0/${numLecs}</span>`;
                         }
@@ -1698,12 +2314,12 @@
                     weekCellsHTML += `<td><div class="lec-week-box">${selectsHTML}${chipHTML}</div></td>`;
                 });
 
-                const lecPct = totalLecMarked > 0 ? Math.round((totalLecAttended / totalLecMarked) * 100) + "%" : "0%";
+                const lecPct = totalLecMarked > 0 ? Math.round((totalLecPresent / totalLecMarked) * 100) + "%" : "0%";
 
                 tr.innerHTML = `
                     ${buildCommonStudentCells(st, idx, disabledAttr)}
                     ${weekCellsHTML}
-                    <td class="summary-cell">${totalLecAttended} / ${totalLecMarked || (weeks.length * numLecs)}</td>
+                    <td class="summary-cell">${totalLecPresent} / ${totalLecMarked || (weeks.length * numLecs)}</td>
                     <td class="summary-cell">${fullWeeksAttended} / ${weeksMarkedCount || weeks.length} Wks</td>
                     <td class="summary-cell">${lecPct}</td>
                     ${isEditMode ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
@@ -1733,7 +2349,7 @@
             });
 
             headHTML += `
-                <th style="min-width:95px;">Labs Attended</th>
+                <th style="min-width:95px;">Labs Present</th>
                 <th style="min-width:90px;">Lab %</th>
             </tr>`;
             thead.innerHTML = headHTML;
@@ -1743,19 +2359,22 @@
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let labsAttended = 0;
+                let labsPresent = 0;
                 let labsMarked = 0;
 
                 let labOptions = labSlots.map((s, sIdx) =>
                     `<option value="${sIdx}" ${Number(st.assignedLabIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))}</option>`
                 ).join("");
 
+                const stuLabSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
                 let weekCellsHTML = "";
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
-                    const val = (st.labAttendance && st.labAttendance[key]) ? st.labAttendance[key] : "";
-                    if (val === "P" || val === "L" || val === "E") { labsAttended++; labsMarked++; }
-                    else if (val === "A") { labsMarked++; }
+                    const rawVal = (st.labAttendance && st.labAttendance[key]) ? st.labAttendance[key] : "";
+                    const val = getEffectiveSessionStatus(rawVal, currentCourse.semStart, wIdx, stuLabSlot, st.hasLoggedIn);
+
+                    if (val === "P") { labsPresent++; labsMarked++; }
+                    else if (val === "A" || val === "L") { labsMarked++; }
 
                     const colorClass = val ? `att-${val}` : "";
                     weekCellsHTML += `<td class="${colorClass}">
@@ -1764,12 +2383,11 @@
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L</option>
-                            <option value="E" ${val === "E" ? "selected" : ""}>E</option>
                         </select>
                     </td>`;
                 });
 
-                const labPct = labsMarked > 0 ? Math.round((labsAttended / labsMarked) * 100) + "%" : "0%";
+                const labPct = labsMarked > 0 ? Math.round((labsPresent / labsMarked) * 100) + "%" : "0%";
 
                 tr.innerHTML = `
                     ${buildCommonStudentCells(st, idx, disabledAttr)}
@@ -1779,7 +2397,7 @@
                         </select>
                     </td>
                     ${weekCellsHTML}
-                    <td class="summary-cell">${labsAttended} / ${labsMarked || weeks.length}</td>
+                    <td class="summary-cell">${labsPresent} / ${labsMarked || weeks.length}</td>
                     <td class="summary-cell">${labPct}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1808,9 +2426,9 @@
             });
 
             headHTML += `
-                <th style="min-width:95px;">Tuts Attended</th>
+                <th style="min-width:95px;">Tuts Present</th>
                 <th style="min-width:90px;">Tutorial %</th>
-                <th style="min-width:115px;" title="Combined Attendance across All Lectures + 1 Lab + 1 Tutorial per week">Overall Course %</th>
+                <th style="min-width:115px;">Overall Course %</th>
             </tr>`;
             thead.innerHTML = headHTML;
 
@@ -1819,19 +2437,22 @@
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let tutsAttended = 0;
+                let tutsPresent = 0;
                 let tutsMarked = 0;
 
                 let tutOptions = tutSlots.map((s, sIdx) =>
                     `<option value="${sIdx}" ${Number(st.assignedTutIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))}</option>`
                 ).join("");
 
+                const stuTutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
                 let weekCellsHTML = "";
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
-                    const val = (st.tutorialAttendance && st.tutorialAttendance[key]) ? st.tutorialAttendance[key] : "";
-                    if (val === "P" || val === "L" || val === "E") { tutsAttended++; tutsMarked++; }
-                    else if (val === "A") { tutsMarked++; }
+                    const rawVal = (st.tutorialAttendance && st.tutorialAttendance[key]) ? st.tutorialAttendance[key] : "";
+                    const val = getEffectiveSessionStatus(rawVal, currentCourse.semStart, wIdx, stuTutSlot, st.hasLoggedIn);
+
+                    if (val === "P") { tutsPresent++; tutsMarked++; }
+                    else if (val === "A" || val === "L") { tutsMarked++; }
 
                     const colorClass = val ? `att-${val}` : "";
                     weekCellsHTML += `<td class="${colorClass}">
@@ -1840,12 +2461,11 @@
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L</option>
-                            <option value="E" ${val === "E" ? "selected" : ""}>E</option>
                         </select>
                     </td>`;
                 });
 
-                const tutPct = tutsMarked > 0 ? Math.round((tutsAttended / tutsMarked) * 100) + "%" : "0%";
+                const tutPct = tutsMarked > 0 ? Math.round((tutsPresent / tutsMarked) * 100) + "%" : "0%";
                 const overallPct = computeOverallStudentPercentage(st, weeks.length, numLecs);
 
                 tr.innerHTML = `
@@ -1856,7 +2476,7 @@
                         </select>
                     </td>
                     ${weekCellsHTML}
-                    <td class="summary-cell">${tutsAttended} / ${tutsMarked || weeks.length}</td>
+                    <td class="summary-cell">${tutsPresent} / ${tutsMarked || weeks.length}</td>
                     <td class="summary-cell">${tutPct}</td>
                     <td class="summary-cell" style="background:#eef2ff; color:#1e3a8a;">${overallPct}</td>
                 `;
@@ -1865,23 +2485,32 @@
         }
 
         function computeOverallStudentPercentage(st, numWeeks, numLecs) {
-            let attended = 0;
+            let present = 0;
             let marked = 0;
-            for (let w = 1; w <= numWeeks; w++) {
-                for (let l = 1; l <= numLecs; l++) {
-                    const v = st.lectureAttendance ? st.lectureAttendance[`W${w}_L${l}`] : "";
-                    if (v === "P" || v === "L" || v === "E") { attended++; marked++; }
-                    else if (v === "A") { marked++; }
-                }
-                const labV = st.labAttendance ? st.labAttendance[`W${w}`] : "";
-                if (labV === "P" || labV === "L" || labV === "E") { attended++; marked++; }
-                else if (labV === "A") { marked++; }
+            const lecSlots = currentCourse.schedules.lectures || [];
+            const labSlots = currentCourse.schedules.labs || [];
+            const tutSlots = currentCourse.schedules.tutorials || [];
+            const stuLabSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
+            const stuTutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
 
-                const tutV = st.tutorialAttendance ? st.tutorialAttendance[`W${w}`] : "";
-                if (tutV === "P" || tutV === "L" || tutV === "E") { attended++; marked++; }
-                else if (tutV === "A") { marked++; }
+            for (let w = 0; w < numWeeks; w++) {
+                for (let l = 0; l < numLecs; l++) {
+                    const rawV = st.lectureAttendance ? st.lectureAttendance[`W${w + 1}_L${l + 1}`] : "";
+                    const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, w, lecSlots[l], st.hasLoggedIn);
+                    if (v === "P") { present++; marked++; }
+                    else if (v === "A" || v === "L") { marked++; }
+                }
+                const rawLab = st.labAttendance ? st.labAttendance[`W${w + 1}`] : "";
+                const labV = getEffectiveSessionStatus(rawLab, currentCourse.semStart, w, stuLabSlot, st.hasLoggedIn);
+                if (labV === "P") { present++; marked++; }
+                else if (labV === "A" || labV === "L") { marked++; }
+
+                const rawTut = st.tutorialAttendance ? st.tutorialAttendance[`W${w + 1}`] : "";
+                const tutV = getEffectiveSessionStatus(rawTut, currentCourse.semStart, w, stuTutSlot, st.hasLoggedIn);
+                if (tutV === "P") { present++; marked++; }
+                else if (tutV === "A" || tutV === "L") { marked++; }
             }
-            return marked > 0 ? Math.round((attended / marked) * 100) + "%" : "0%";
+            return marked > 0 ? Math.round((present / marked) * 100) + "%" : "0%";
         }
 
         /* ================= CELL, ROSTER & EXCEL EXPORT HANDLERS ================= */
@@ -1967,11 +2596,12 @@
                 let att = 0, mark = 0;
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode];
                 weeks.forEach((_, wIdx) => {
-                    lecSlots.forEach((__, lIdx) => {
-                        const v = st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "";
+                    lecSlots.forEach((slotObj, lIdx) => {
+                        const rawV = st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "";
+                        const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, wIdx, slotObj, st.hasLoggedIn);
                         row.push(v);
-                        if (v === "P" || v === "L" || v === "E") { att++; mark++; }
-                        else if (v === "A") { mark++; }
+                        if (v === "P") { att++; mark++; }
+                        else if (v === "A" || v === "L") { mark++; }
                     });
                 });
                 row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
@@ -1986,10 +2616,11 @@
                 const labSlot = labSlots[st.assignedLabIdx || 0] || {};
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(labSlot, 'Lab', st.assignedLabIdx || 0)];
                 weeks.forEach((_, wIdx) => {
-                    const v = st.labAttendance[`W${wIdx + 1}`] || "";
+                    const rawV = st.labAttendance[`W${wIdx + 1}`] || "";
+                    const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, wIdx, labSlot, st.hasLoggedIn);
                     row.push(v);
-                    if (v === "P" || v === "L" || v === "E") { att++; mark++; }
-                    else if (v === "A") { mark++; }
+                    if (v === "P") { att++; mark++; }
+                    else if (v === "A" || v === "L") { mark++; }
                 });
                 row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
                 labRows.push(row);
@@ -2003,10 +2634,11 @@
                 const tutSlot = tutSlots[st.assignedTutIdx || 0] || {};
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(tutSlot, 'Tut', st.assignedTutIdx || 0)];
                 weeks.forEach((_, wIdx) => {
-                    const v = st.tutorialAttendance[`W${wIdx + 1}`] || "";
+                    const rawV = st.tutorialAttendance[`W${wIdx + 1}`] || "";
+                    const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, wIdx, tutSlot, st.hasLoggedIn);
                     row.push(v);
-                    if (v === "P" || v === "L" || v === "E") { att++; mark++; }
-                    else if (v === "A") { mark++; }
+                    if (v === "P") { att++; mark++; }
+                    else if (v === "A" || v === "L") { mark++; }
                 });
                 row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
                 row.push(computeOverallStudentPercentage(st, weeks.length, lecSlots.length));
