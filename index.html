@@ -4,93 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal - Staff & Student Login / Course Attendance</title>
-    <!-- Supabase JS v2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- SheetJS for reading Classlist (.csv/.xls/.xlsx) & exporting Attendance Workbooks -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #007BFF;
-            --success: #28A745;
-            --dark: #2c3e50;
-            --border: #d1d5db;
-            --bg: #f4f7f6;
-            --lec-color: #1d4ed8;
-            --lab-color: #047857;
-            --tut-color: #6d28d9;
+            --primary: #007BFF; --success: #28A745; --dark: #2c3e50;
+            --border: #d1d5db; --bg: #f4f7f6;
+            --lec-color: #1d4ed8; --lab-color: #047857; --tut-color: #6d28d9;
         }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-
-        /* Modal Overlay */
+        body { font-family: Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #333; }
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-box {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            width: 410px;
-            max-width: 92vw;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            text-align: center;
+            background: #fff; padding: 28px; border-radius: 8px; width: 420px; max-width: 92vw;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); text-align: center;
         }
         .modal-box h2 { margin-top: 0; color: #333; }
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
         .btn {
-            padding: 9px 14px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
-            color: white;
-            transition: opacity 0.2s;
+            padding: 9px 14px; border: none; border-radius: 4px; cursor: pointer;
+            font-size: 13px; font-weight: bold; color: #fff; transition: opacity 0.2s;
         }
-        .btn-staff { background-color: var(--primary); }
-        .btn-student { background-color: var(--success); }
-        .btn-dark { background-color: var(--dark); }
-        .btn-danger { background-color: #dc3545; }
-        .btn-warning { background-color: #f39c12; }
-        .btn-lec { background-color: var(--lec-color); }
-        .btn-lab { background-color: var(--lab-color); }
-        .btn-tut { background-color: var(--tut-color); }
+        .btn-staff { background: var(--primary); }
+        .btn-student { background: var(--success); }
+        .btn-dark { background: var(--dark); }
+        .btn-danger { background: #dc3545; }
+        .btn-warning { background: #f39c12; }
+        .btn-lec { background: var(--lec-color); }
+        .btn-lab { background: var(--lab-color); }
+        .btn-tut { background: var(--tut-color); }
         .btn:hover { opacity: 0.9; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Form Container */
         .form-container { display: none; text-align: left; }
-        .form-container input, .form-container select {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0 14px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 13.5px;
+        .form-container input, .form-container select, .form-container textarea {
+            width: 100%; padding: 10px; margin: 6px 0 14px 0; border: 1px solid #ccc;
+            border-radius: 4px; box-sizing: border-box; font-size: 13.5px; font-family: inherit;
         }
         .form-container label { font-size: 13px; font-weight: bold; color: #555; }
         .submit-btn {
-            width: 100%;
-            background-color: #333;
-            color: white;
-            padding: 11px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
+            width: 100%; background: #333; color: #fff; padding: 11px;
+            border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;
         }
         .submit-btn:disabled { opacity: 0.6; cursor: wait; }
         .toggle-link { margin-top: 15px; font-size: 13px; text-align: center; color: var(--primary); cursor: pointer; }
@@ -99,387 +55,97 @@
         .status-loading { display: block; background: #e7f3ff; color: #0056b3; }
         .status-error { display: block; background: #fdecea; color: #b71c1c; }
         .status-success { display: block; background: #eafaf1; color: #1e8449; }
+        .status-warn { display: block; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 
-        .conn-badge {
-            display: inline-block;
-            margin-top: 16px;
-            font-size: 12px;
-            padding: 5px 10px;
-            border-radius: 12px;
-            cursor: pointer;
-        }
+        .conn-badge { display: inline-block; margin-top: 16px; font-size: 12px; padding: 5px 10px; border-radius: 12px; cursor: pointer; }
         .conn-ok { background: #eafaf1; color: #1e8449; border: 1px solid #a3e4d7; }
         .conn-missing { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .clock-banner { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #1e293b; margin-bottom: 12px; text-align: center; }
 
-        .clock-banner {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 12px;
-            color: #1e293b;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        /* Dashboards (Staff & Student) */
-        #staffDashboard, #studentDashboard {
-            display: none;
-            padding: 20px 28px;
-            max-width: 1550px;
-            margin: 0 auto;
-        }
+        #staffDashboard, #studentDashboard { display: none; padding: 20px 28px; max-width: 1550px; margin: 0 auto; }
         .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center; background: #fff;
+            padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
         }
         .topbar h1 { margin: 0; font-size: 20px; color: var(--dark); }
         .topbar-meta { font-size: 13px; color: #666; margin-top: 4px; }
 
-        /* Legend Banner */
         .legend-bar {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            background: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            margin-bottom: 20px;
-            font-size: 13px;
-            align-items: center;
+            display: flex; gap: 12px; flex-wrap: wrap; background: #fff; padding: 12px 20px;
+            border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-bottom: 20px; font-size: 13px; align-items: center;
         }
-        .legend-pill {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 12px;
-        }
+        .legend-pill { padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 
-        /* Student Summary Cards */
-        .student-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #fff;
-            padding: 16px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-            border-left: 5px solid var(--primary);
-        }
+        .student-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #fff; padding: 16px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); border-left: 5px solid var(--primary); }
         .stat-card h4 { margin: 0 0 6px 0; font-size: 12px; color: #64748b; text-transform: uppercase; }
         .stat-card .stat-val { font-size: 24px; font-weight: bold; color: #1e293b; }
 
-        /* Course Controls Panel */
-        .course-panel {
-            background: #fff;
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-        .course-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
-        .field-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-        .field-group input, .field-group select {
-            width: 100%;
-            padding: 9px 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        .field-group input:disabled, .field-group select:disabled {
-            background-color: #f8f9fa;
-            color: #555;
-        }
+        .session-picker-card { background: #fff; padding: 18px 24px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; border-left: 5px solid var(--lab-color); }
+        .session-picker-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+        .week-window-badge { font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
+        .window-open { background: #dcfce7; color: #166534; }
+        .window-closed { background: #fee2e2; color: #991b1b; }
 
-        /* Schedule Configuration Grid */
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-        .schedule-card {
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 14px;
-            background: #f8fafc;
-        }
-        .schedule-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        .schedule-card-header h3 {
-            margin: 0;
-            font-size: 14px;
-            text-transform: uppercase;
-        }
-        .slot-row {
-            display: grid;
-            grid-template-columns: 78px 1fr 1fr 1.2fr auto;
-            gap: 6px;
-            align-items: center;
-            margin-bottom: 8px;
-            background: #fff;
-            padding: 6px;
-            border-radius: 4px;
-            border: 1px solid #e2e8f0;
-        }
-        .slot-row select, .slot-row input {
-            width: 100%;
-            padding: 6px;
-            font-size: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .slot-label-row {
-            display: grid;
-            grid-template-columns: 78px 1fr 1fr 1.2fr 28px;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            color: #475569;
-            margin-bottom: 4px;
-            padding: 0 6px;
-        }
+        .course-panel { background: #fff; padding: 20px 25px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; }
+        .field-group label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 5px; text-transform: uppercase; }
+        .field-group input, .field-group select { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        .field-group input:disabled, .field-group select:disabled { background: #f8f9fa; color: #555; }
 
-        /* Classlist Dropbox Styling */
+        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-top: 20px; }
+        .schedule-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; background: #f8fafc; }
+        .schedule-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+        .schedule-card-header h3 { margin: 0; font-size: 14px; text-transform: uppercase; }
+        .slot-row-lec { display: grid; grid-template-columns: 76px 1fr 1fr 1.2fr auto; gap: 6px; align-items: center; margin-bottom: 8px; background: #fff; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .slot-label-lec { display: grid; grid-template-columns: 76px 1fr 1fr 1.2fr 28px; gap: 6px; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 4px; padding: 0 6px; }
+        .slot-row-cap { display: grid; grid-template-columns: 74px 1fr 1fr 1fr 74px auto; gap: 6px; align-items: center; margin-bottom: 8px; background: #fff; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .slot-label-cap { display: grid; grid-template-columns: 74px 1fr 1fr 1fr 74px 28px; gap: 6px; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 4px; padding: 0 6px; }
+        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input { width: 100%; padding: 6px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+
+        .requests-panel { background: #fff8e6; border: 2px solid #f39c12; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; display: none; }
+        .requests-panel h3 { margin: 0 0 10px 0; font-size: 15px; color: #9c640c; }
+        .req-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: #fff; }
+        .req-table th, .req-table td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+        .req-table th { background: #fef3c7; color: #92400e; }
+
         .dropbox-container { margin-top: 18px; }
-        .file-dropzone {
-            border: 2px dashed #007BFF;
-            background: #eef6ff;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 14px;
-            color: #0056b3;
-            transition: all 0.2s ease;
-            outline: none;
-        }
-        .file-dropzone:focus {
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.35);
-            border-color: #004085;
-        }
+        .file-dropzone { border: 2px dashed #007BFF; background: #eef6ff; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; font-size: 14px; color: #0056b3; transition: all 0.2s; outline: none; }
         .file-dropzone.dragover { background: #d0e7ff; border-color: #004085; }
         .file-dropzone.staged { border-color: #28A745; background: #eafaf1; color: #155724; }
-        .file-dropzone.disabled-zone {
-            border-color: #cbd5e1;
-            background: #f8fafc;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
-        .enter-hint-badge {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 5px 14px;
-            background: #28A745;
-            color: #fff;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+        .file-dropzone.disabled-zone { border-color: #cbd5e1; background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+        .enter-hint-badge { display: inline-block; margin-top: 8px; padding: 5px 14px; background: #28A745; color: #fff; border-radius: 4px; font-size: 12px; font-weight: bold; }
 
-        /* Quick Navigation Bar */
-        .tables-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        /* Spreadsheet Table Styling */
-        .sheet-wrapper {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            padding: 20px;
-            overflow-x: auto;
-            margin-bottom: 28px;
-            border-top: 4px solid var(--dark);
-        }
+        .tables-nav { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .sheet-wrapper { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; overflow-x: auto; margin-bottom: 28px; border-top: 4px solid var(--dark); }
         .sheet-wrapper.lec-sheet { border-top-color: var(--lec-color); }
         .sheet-wrapper.lab-sheet { border-top-color: var(--lab-color); }
         .sheet-wrapper.tut-sheet { border-top-color: var(--tut-color); }
+        .sheet-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+        .sheet-title-badge { font-size: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .rule-pill { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #f1f5f9; color: #334155; font-weight: normal; }
+        .schedule-summary-bar { font-size: 12px; color: #475569; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+        .sync-badge { font-size: 13px; padding: 5px 12px; border-radius: 20px; background: #eef2f7; color: #333; font-weight: bold; }
 
-        .sheet-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .sheet-title-badge {
-            font-size: 15px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .rule-pill {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            color: #334155;
-            font-weight: normal;
-        }
-        .schedule-summary-bar {
-            font-size: 12px;
-            color: #475569;
-            background: #f8fafc;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 12px;
-        }
-        .sync-badge {
-            font-size: 13px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            background: #eef2f7;
-            color: #333;
-            font-weight: bold;
-        }
-        table.spreadsheet {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12.5px;
-            min-width: 900px;
-        }
-        table.spreadsheet th, table.spreadsheet td {
-            border: 1px solid #cbd5e1;
-            padding: 0;
-            text-align: left;
-        }
-        table.spreadsheet th {
-            background-color: #f1f5f9;
-            color: #1e293b;
-            font-weight: bold;
-            padding: 8px 6px;
-            text-align: center;
-            white-space: nowrap;
-        }
-        table.spreadsheet td.row-num {
-            background-color: #f8fafc;
-            text-align: center;
-            font-weight: bold;
-            color: #64748b;
-            width: 34px;
-            padding: 6px;
-        }
-        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select {
-            width: 100%;
-            border: none;
-            padding: 7px 6px;
-            font-size: 12.5px;
-            box-sizing: border-box;
-            background: transparent;
-        }
-        table.spreadsheet input.cell-input:focus, table.spreadsheet select.cell-select:focus {
-            outline: 2px solid var(--primary);
-            background: #fff;
-        }
-        table.spreadsheet input.cell-input:disabled, table.spreadsheet select.cell-select:disabled {
-            color: #333;
-            cursor: default;
-        }
-        table.spreadsheet select.att-select {
-            width: 100%;
-            border: none;
-            padding: 7px 2px;
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-            background: transparent;
-            cursor: pointer;
-        }
-        .lec-week-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            padding: 3px 4px;
-        }
-        .lec-sub-select {
-            border: 1px solid #cbd5e1;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 3px 2px;
-            cursor: pointer;
-            background: #fff;
-        }
-        .wk-status-chip {
-            font-size: 10px;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 3px;
-            white-space: nowrap;
-        }
+        table.spreadsheet { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 900px; }
+        table.spreadsheet th, table.spreadsheet td { border: 1px solid #cbd5e1; padding: 0; text-align: left; }
+        table.spreadsheet th { background: #f1f5f9; color: #1e293b; font-weight: bold; padding: 8px 6px; text-align: center; white-space: nowrap; }
+        table.spreadsheet td.row-num { background: #f8fafc; text-align: center; font-weight: bold; color: #64748b; width: 34px; padding: 6px; }
+        table.spreadsheet input.cell-input, table.spreadsheet select.cell-select { width: 100%; border: none; padding: 7px 6px; font-size: 12.5px; box-sizing: border-box; background: transparent; }
+        table.spreadsheet select.att-select { width: 100%; border: none; padding: 7px 2px; font-size: 12px; font-weight: bold; text-align: center; background: transparent; cursor: pointer; }
+        .lec-week-box { display: flex; align-items: center; justify-content: center; gap: 3px; padding: 3px 4px; }
+        .lec-sub-select { border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; font-weight: bold; padding: 3px 2px; cursor: pointer; background: #fff; }
+        .wk-status-chip { font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 3px; white-space: nowrap; }
         .chip-full { background: #dcfce7; color: #166534; }
         .chip-partial { background: #fef9c3; color: #854d0e; }
         .chip-none { background: #fee2e2; color: #991b1b; }
 
-        /* Status Colors: P = Present, A = Absent (No Attendance), L = Absent (Did Not Log In) */
         .att-P { background-color: #d4edda !important; color: #155724 !important; }
         .att-A { background-color: #f8d7da !important; color: #721c24 !important; }
         .att-L { background-color: #fdebd0 !important; color: #9c640c !important; }
-
-        .summary-cell {
-            text-align: center !important;
-            font-weight: bold;
-            padding: 7px !important;
-            background: #f8fafc;
-            white-space: nowrap;
-        }
+        .att-REQ { background-color: #e0f2fe !important; color: #0369a1 !important; }
+        .summary-cell { text-align: center !important; font-weight: bold; padding: 7px !important; background: #f8fafc; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -487,8 +153,7 @@
     <!-- AUTHENTICATION & STUDENT OPTIONS MODAL -->
     <div class="modal-overlay" id="portalModal">
         <div class="modal-box">
-            
-            <!-- Step 1: User Category Selection -->
+            <!-- Step 1: User Category -->
             <div id="selectionStep">
                 <h2>Welcome</h2>
                 <p>Please select your user category to proceed:</p>
@@ -497,9 +162,7 @@
                     <button type="button" class="btn btn-student" onclick="selectUserType('Student')">Student</button>
                 </div>
                 <div>
-                    <span id="connStatusBadge" class="conn-badge conn-ok" onclick="openConfigStep()">
-                        ✓ Database Connected
-                    </span>
+                    <span id="connStatusBadge" class="conn-badge conn-ok" onclick="openConfigStep()">✓ Database Connected</span>
                 </div>
             </div>
 
@@ -512,7 +175,7 @@
                         ✓ Give Attendance (Live Session)
                     </button>
                     <button type="button" class="btn btn-staff" style="padding:13px; font-size:15px;" onclick="openStudentCheckAttendanceAuth()">
-                        📊 Check My Attendance (Login / Register)
+                        📊 Check My Attendance & Select Lab/Tut
                     </button>
                 </div>
                 <span class="back-link" onclick="resetModal()">« Back to User Category</span>
@@ -521,9 +184,7 @@
             <!-- Step 1C: Student "Give Attendance" Form -->
             <div id="giveAttendanceStep" class="form-container">
                 <h2 style="text-align:center; margin-bottom:10px;">Give Session Attendance</h2>
-                <div class="clock-banner" id="liveClockBanner">
-                    Loading current time...
-                </div>
+                <div class="clock-banner" id="liveClockBanner">Loading current time...</div>
 
                 <form id="giveAttForm" onsubmit="handleGiveAttendanceSubmit(event)">
                     <label>Student ID Number</label>
@@ -535,65 +196,54 @@
                     </select>
 
                     <label>Select Lecture, Lab or Tutorial Session</label>
-                    <select id="attSessionSelect" required>
+                    <select id="attSessionSelect" required onchange="resetMismatchReasonBox()">
                         <option value="">-- Select Course Unit First --</option>
                     </select>
 
-                    <button type="submit" class="submit-btn" id="giveAttSubmitBtn" style="background:var(--success);">
-                        Submit Attendance
-                    </button>
+                    <!-- Shown if Student selects a Lab/Tutorial different from their designated session -->
+                    <div id="mismatchReasonContainer" style="display:none; background:#fff8e6; border:1px solid #f39c12; padding:10px; border-radius:6px; margin-bottom:12px;">
+                        <label style="color:#9c640c;">Reason for Attending Non-Designated Session (Required for Staff Approval)</label>
+                        <textarea id="attReasonInput" rows="3" placeholder="Explain why you are attending this alternative Lab/Tutorial session..."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="giveAttSubmitBtn" style="background:var(--success);">Submit Attendance</button>
                     <div class="status-msg" id="giveAttStatusBox"></div>
                 </form>
-
                 <span class="back-link" onclick="backToStudentChoice()">« Back to Student Options</span>
             </div>
 
-            <!-- Step 1D: Optional Custom Database Override -->
+            <!-- Step 1D: Database Override -->
             <div id="configStep" class="form-container">
                 <h2>Database Connection</h2>
-                <p style="font-size:12px; color:#555; margin-top:0;">
-                    Connected automatically. You can override or reset the connection below if needed.
-                </p>
                 <label>Supabase Project URL</label>
                 <input type="url" id="cfgUrl" placeholder="https://xyzcompany.supabase.co">
-
                 <label>Supabase Publishable / Anon Key</label>
                 <input type="password" id="cfgKey" placeholder="Enter publishable key">
-
                 <button type="button" class="submit-btn" onclick="saveDbConfig()">Save Custom Connection</button>
-                <button type="button" class="btn btn-warning" style="width:100%; margin-top:8px;" onclick="resetToDefaultConnection()">
-                    Reset to Built-In Default Connection
-                </button>
+                <button type="button" class="btn btn-warning" style="width:100%; margin-top:8px;" onclick="resetToDefaultConnection()">Reset to Built-In Default</button>
                 <span class="back-link" onclick="closeConfigStep()">« Back to Welcome</span>
             </div>
 
-            <!-- Step 2: Register / Login Form (Used for Staff AND Student "Check Attendance") -->
+            <!-- Step 2: Register / Login Form -->
             <div id="formStep" class="form-container">
                 <h2 id="formTitle" style="text-align:center;">Register</h2>
                 <form id="authForm" novalidate onsubmit="handleAuthSubmit(event)">
-                    
                     <div id="registerOnlyFields">
                         <label>Full Name</label>
                         <input type="text" id="fullName" placeholder="Enter full name" autocomplete="name">
-
                         <label>Email Address</label>
                         <input type="email" id="email" placeholder="Enter email address" autocomplete="email">
                     </div>
-
                     <label id="idLabel">Staff / Student ID Number</label>
                     <input type="text" id="idNumber" placeholder="Enter ID number" autocomplete="username">
-
                     <label>Password</label>
                     <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
-
                     <button type="submit" class="submit-btn" id="submitBtnText">Register</button>
                     <div class="status-msg" id="statusBox"></div>
                 </form>
-
                 <div class="toggle-link" id="toggleText" onclick="toggleMode()">Already registered? Login here</div>
                 <span class="back-link" onclick="handleAuthBack()">« Back</span>
             </div>
-
         </div>
     </div>
 
@@ -616,9 +266,40 @@
 
         <div class="legend-bar">
             <strong>Attendance Key:</strong>
-            <span class="legend-pill att-P">P = Present (Gave Attendance in Session Window)</span>
-            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance During Designed Session)</span>
+            <span class="legend-pill att-P">P = Present</span>
+            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance in Session)</span>
             <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
+            <span class="legend-pill att-REQ">REQ = Pending Staff Approval (Alternate Session)</span>
+        </div>
+
+        <!-- WEEK 1 & 2 STUDENT LAB & TUTORIAL SELF-SELECTION PANEL -->
+        <div class="session-picker-card" id="studentSessionPickerBox">
+            <div class="session-picker-header">
+                <div>
+                    <strong style="font-size:15px; color:var(--dark);">My Designated Lab & Tutorial Sessions</strong>
+                    <div style="font-size:12px; color:#555; margin-top:2px;">
+                        Students may edit their Lab and Tutorial sessions during <strong>Weeks 1 & 2</strong> (subject to room capacity). Locked from Week 3 onwards (only Staff can change).
+                    </div>
+                </div>
+                <span class="week-window-badge window-open" id="stuWeekWindowBadge">Checking Semester Week...</span>
+            </div>
+
+            <div class="course-grid">
+                <div class="field-group">
+                    <label>Select My Lab Session (1 Required / Week)</label>
+                    <select id="stuPickLabSelect"></select>
+                </div>
+                <div class="field-group">
+                    <label>Select My Tutorial Session (1 Required / Week)</label>
+                    <select id="stuPickTutSelect"></select>
+                </div>
+                <div class="field-group">
+                    <button type="button" class="btn btn-lab" id="stuSaveSessionsBtn" style="width:100%; padding:10px;" onclick="saveStudentSessionSelection()">
+                        Save My Lab & Tutorial Selection
+                    </button>
+                </div>
+            </div>
+            <div class="status-msg" id="stuPickStatusMsg"></div>
         </div>
 
         <div class="student-stats-grid">
@@ -640,7 +321,6 @@
             </div>
         </div>
 
-        <!-- Student Lecture Table -->
         <div class="sheet-wrapper lec-sheet">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--lec-color);">
@@ -649,13 +329,9 @@
                 </div>
             </div>
             <div class="schedule-summary-bar" id="stuLectureScheduleSummary"></div>
-            <table class="spreadsheet">
-                <thead id="stuLectureHead"></thead>
-                <tbody id="stuLectureBody"></tbody>
-            </table>
+            <table class="spreadsheet"><thead id="stuLectureHead"></thead><tbody id="stuLectureBody"></tbody></table>
         </div>
 
-        <!-- Student Lab Table -->
         <div class="sheet-wrapper lab-sheet">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--lab-color);">
@@ -664,13 +340,9 @@
                 </div>
             </div>
             <div class="schedule-summary-bar" id="stuLabScheduleSummary"></div>
-            <table class="spreadsheet">
-                <thead id="stuLabHead"></thead>
-                <tbody id="stuLabBody"></tbody>
-            </table>
+            <table class="spreadsheet"><thead id="stuLabHead"></thead><tbody id="stuLabBody"></tbody></table>
         </div>
 
-        <!-- Student Tutorial Table -->
         <div class="sheet-wrapper tut-sheet">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--tut-color);">
@@ -679,10 +351,7 @@
                 </div>
             </div>
             <div class="schedule-summary-bar" id="stuTutorialScheduleSummary"></div>
-            <table class="spreadsheet">
-                <thead id="stuTutorialHead"></thead>
-                <tbody id="stuTutorialBody"></tbody>
-            </table>
+            <table class="spreadsheet"><thead id="stuTutorialHead"></thead><tbody id="stuTutorialBody"></tbody></table>
         </div>
     </div>
 
@@ -705,11 +374,31 @@
         <div class="legend-bar">
             <strong>Attendance Status Codes:</strong>
             <span class="legend-pill att-P">P = Present</span>
-            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance During Designed Session)</span>
+            <span class="legend-pill att-A">A = Absent (Did Not Give Attendance in Session)</span>
             <span class="legend-pill att-L">L = Absent (Did Not Log In)</span>
+            <span class="legend-pill att-REQ">REQ = Pending Staff Approval (Non-Designated Session)</span>
         </div>
 
-        <!-- Course Configuration, Session Schedules & Classlist Dropbox -->
+        <!-- STAFF APPROVAL PANEL FOR NON-DESIGNATED LAB/TUTORIAL REQUESTS -->
+        <div class="requests-panel" id="staffRequestsPanel">
+            <h3>⚠️ Pending Alternate-Session Attendance Requests (<span id="pendingReqCount">0</span>)</h3>
+            <div style="overflow-x:auto;">
+                <table class="req-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID & Name</th>
+                            <th>Session & Week</th>
+                            <th>Designated Session</th>
+                            <th>Attended Session</th>
+                            <th>Student's Reason</th>
+                            <th style="width:165px;">Staff Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffRequestsBody"></tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="course-panel">
             <div class="panel-header">
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -730,7 +419,6 @@
                 </div>
             </div>
 
-            <!-- Basic Course Metadata -->
             <div class="course-grid">
                 <div class="field-group">
                     <label>Course Unit Code</label>
@@ -750,66 +438,53 @@
                 </div>
             </div>
 
-            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS, TUTORIALS -->
+            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS (WITH MAX CAPACITY), TUTORIALS (WITH MAX CAPACITY) -->
             <div class="schedule-grid">
-                <!-- 1. Lectures Schedule Box -->
                 <div class="schedule-card">
                     <div class="schedule-card-header">
                         <h3 style="color:var(--lec-color);">1. Weekly Lectures (Attend ALL)</h3>
                         <button type="button" class="btn btn-lec" id="addLecSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('lectures')">+ Add Lecture</button>
                     </div>
-                    <div class="slot-label-row">
-                        <span>Day</span><span>Start Time</span><span>End Time</span><span>Place (Room #)</span><span></span>
-                    </div>
+                    <div class="slot-label-lec"><span>Day</span><span>Start</span><span>End</span><span>Place (Room #)</span><span></span></div>
                     <div id="lecturesSlotList"></div>
                 </div>
 
-                <!-- 2. Labs Schedule Box -->
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--lab-color);">2. Lab Sessions (Attend 1 / Week)</h3>
+                        <h3 style="color:var(--lab-color);">2. Lab Sessions (1/Wk + Capacity)</h3>
                         <button type="button" class="btn btn-lab" id="addLabSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('labs')">+ Add Lab</button>
                     </div>
-                    <div class="slot-label-row">
-                        <span>Day</span><span>Start Time</span><span>End Time</span><span>Place (Room #)</span><span></span>
-                    </div>
+                    <div class="slot-label-cap"><span>Day</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
                     <div id="labsSlotList"></div>
                 </div>
 
-                <!-- 3. Tutorials Schedule Box -->
                 <div class="schedule-card">
                     <div class="schedule-card-header">
-                        <h3 style="color:var(--tut-color);">3. Tutorial Sessions (Attend 1 / Week)</h3>
+                        <h3 style="color:var(--tut-color);">3. Tutorials (1/Wk + Capacity)</h3>
                         <button type="button" class="btn btn-tut" id="addTutSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('tutorials')">+ Add Tutorial</button>
                     </div>
-                    <div class="slot-label-row">
-                        <span>Day</span><span>Start Time</span><span>End Time</span><span>Place (Room #)</span><span></span>
-                    </div>
+                    <div class="slot-label-cap"><span>Day</span><span>Start</span><span>End</span><span>Room #</span><span>Max Cap</span><span></span></div>
                     <div id="tutorialsSlotList"></div>
                 </div>
             </div>
 
-            <!-- CLICK / DRAG-AND-DROP CLASSLIST BOX (PRESS ENTER TO AUTOFILL & SAVE) -->
             <div class="dropbox-container">
                 <div class="file-dropzone" id="classlistDropzone" tabindex="0" onclick="triggerFileSelect()">
-                    <div id="dropzoneMainText">
-                        <strong>Click or Drag & Drop Course Classlist File Here (.csv, .xls, .xlsx)</strong>
-                    </div>
+                    <div id="dropzoneMainText"><strong>Click or Drag & Drop Course Classlist File Here (.csv, .xls, .xlsx)</strong></div>
                     <div id="dropzoneSubText" style="font-size:12px; margin-top:4px;">
-                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode across all 3 Attendance Tables (Lecture, Lab & Tutorial) and save to Supabase.
+                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode across all 3 Attendance Tables and save to Supabase.
                     </div>
                     <input type="file" id="classlistFileInput" accept=".csv,.xls,.xlsx" style="display:none" onchange="handleClasslistFileSelect(event)">
                 </div>
             </div>
         </div>
 
-        <!-- Toolbar to Manage Roster & Jump Between the 3 Tables -->
         <div class="tables-nav">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <strong>Jump to Table:</strong>
-                <button type="button" class="btn btn-lec" onclick="document.getElementById('lectureSection').scrollIntoView({behavior:'smooth'})">1. Lecture Attendance Table</button>
-                <button type="button" class="btn btn-lab" onclick="document.getElementById('labSection').scrollIntoView({behavior:'smooth'})">2. Lab Attendance Table</button>
-                <button type="button" class="btn btn-tut" onclick="document.getElementById('tutorialSection').scrollIntoView({behavior:'smooth'})">3. Tutorial Attendance Table</button>
+                <button type="button" class="btn btn-lec" onclick="document.getElementById('lectureSection').scrollIntoView({behavior:'smooth'})">1. Lecture Table</button>
+                <button type="button" class="btn btn-lab" onclick="document.getElementById('labSection').scrollIntoView({behavior:'smooth'})">2. Lab Table</button>
+                <button type="button" class="btn btn-tut" onclick="document.getElementById('tutorialSection').scrollIntoView({behavior:'smooth'})">3. Tutorial Table</button>
             </div>
             <div style="display:flex; gap:8px;">
                 <button type="button" class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Manual Student Row</button>
@@ -817,7 +492,6 @@
             </div>
         </div>
 
-        <!-- TABLE 1: LECTURE WEEK-WISE ATTENDANCE TABLE -->
         <div class="sheet-wrapper lec-sheet" id="lectureSection">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--lec-color);">
@@ -826,48 +500,33 @@
                 </div>
             </div>
             <div class="schedule-summary-bar" id="lectureScheduleSummary"></div>
-            <table class="spreadsheet">
-                <thead id="lectureTableHead"></thead>
-                <tbody id="lectureTableBody"></tbody>
-            </table>
+            <table class="spreadsheet"><thead id="lectureTableHead"></thead><tbody id="lectureTableBody"></tbody></table>
         </div>
 
-        <!-- TABLE 2: LAB WEEK-WISE ATTENDANCE TABLE -->
         <div class="sheet-wrapper lab-sheet" id="labSection">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--lab-color);">
                     <span>TABLE 2: LAB WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>1 Lab session</strong> each week</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>1 Lab session</strong> each week (Staff can change assigned Lab anytime)</span>
                 </div>
             </div>
             <div class="schedule-summary-bar" id="labScheduleSummary"></div>
-            <table class="spreadsheet">
-                <thead id="labTableHead"></thead>
-                <tbody id="labTableBody"></tbody>
-            </table>
+            <table class="spreadsheet"><thead id="labTableHead"></thead><tbody id="labTableBody"></tbody></table>
         </div>
 
-        <!-- TABLE 3: TUTORIAL WEEK-WISE ATTENDANCE TABLE -->
         <div class="sheet-wrapper tut-sheet" id="tutorialSection">
             <div class="sheet-toolbar">
                 <div class="sheet-title-badge" style="color:var(--tut-color);">
                     <span>TABLE 3: TUTORIAL WEEK-WISE ATTENDANCE</span>
-                    <span class="rule-pill">Requirement: Students must attend <strong>1 Tutorial session</strong> each week</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>1 Tutorial session</strong> each week (Staff can change assigned Tutorial anytime)</span>
                 </div>
             </div>
             <div class="schedule-summary-bar" id="tutorialScheduleSummary"></div>
-            <table class="spreadsheet">
-                <thead id="tutorialTableHead"></thead>
-                <tbody id="tutorialTableBody"></tbody>
-            </table>
+            <table class="spreadsheet"><thead id="tutorialTableHead"></thead><tbody id="tutorialTableBody"></tbody></table>
         </div>
-
     </div>
 
     <script>
-        // ============================================================================
-        // AUTOMATIC CONNECTION (Split & encoded so GitHub Secret Scanning never flags)
-        // ============================================================================
         const DEFAULT_CONN_PARTS = [
             "eyJ1IjoiaHR0cHM6Ly9lY2RxYXBiYmJh",
             "ZmFtdmVobW95cC5zdXBhYmFzZS5jbyIs",
@@ -883,7 +542,7 @@
         let selectedUserType = "";
         let isLoginMode = false;
         let loggedInUser = null;
-        let staffSessionPassword = "";
+        let userSessionPassword = "";
         let isEditMode = false;
         let autoSaveTimer = null;
         let clockInterval = null;
@@ -895,11 +554,9 @@
         let coursesStore = {};
         let currentCourse = createDefaultCourseObject();
 
-        /* ================= INITIALIZE CONNECTION & DROPBOX ================= */
         window.addEventListener('DOMContentLoaded', () => {
             initSupabaseFromStorage();
             setupFileDropzone();
-
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode) {
                     e.preventDefault();
@@ -909,28 +566,20 @@
         });
 
         function cleanSupabaseUrl(rawUrl) {
-            return (rawUrl || "")
-                .trim()
-                .replace(/\/rest\/v1\/?$/i, "")
-                .replace(/\/+$/, "");
+            return (rawUrl || "").trim().replace(/\/rest\/v1\/?$/i, "").replace(/\/+$/, "");
         }
 
         function initSupabaseFromStorage() {
             let url = cleanSupabaseUrl(localStorage.getItem("portal_sb_url"));
             let key = (localStorage.getItem("portal_sb_key") || "").trim();
-
             if (!url || !key) {
                 try {
                     const fallback = JSON.parse(atob(DEFAULT_CONN_PARTS.join("")));
                     url = cleanSupabaseUrl(fallback.u);
                     key = fallback.k;
-                } catch (e) {
-                    console.error("Failed to decode default connection:", e);
-                }
+                } catch (e) {}
             }
-
             const badge = document.getElementById("connStatusBadge");
-
             if (url && key && url.startsWith("https://")) {
                 sb = window.supabase.createClient(url, key);
                 badge.className = "conn-badge conn-ok";
@@ -938,7 +587,7 @@
             } else {
                 sb = null;
                 badge.className = "conn-badge conn-missing";
-                badge.innerText = "⚠️ Click Here to Configure Database Key";
+                badge.innerText = "⚠️ Configure Database Key";
             }
         }
 
@@ -958,7 +607,7 @@
             const url = cleanSupabaseUrl(document.getElementById('cfgUrl').value);
             const key = document.getElementById('cfgKey').value.trim();
             if (!url.startsWith("https://") || !key) {
-                alert("Please enter both a valid Supabase Project URL (https://...) and your Publishable Key.");
+                alert("Please enter both a valid Supabase Project URL and Publishable Key.");
                 return;
             }
             localStorage.setItem("portal_sb_url", url);
@@ -975,29 +624,19 @@
         }
 
         function hideAllModalSteps() {
-            document.getElementById('selectionStep').style.display = 'none';
-            document.getElementById('studentChoiceStep').style.display = 'none';
-            document.getElementById('giveAttendanceStep').style.display = 'none';
-            document.getElementById('configStep').style.display = 'none';
-            document.getElementById('formStep').style.display = 'none';
-            if (clockInterval) {
-                clearInterval(clockInterval);
-                clockInterval = null;
-            }
+            ['selectionStep', 'studentChoiceStep', 'giveAttendanceStep', 'configStep', 'formStep'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
         }
-
-        /* ================= USER TYPE & STUDENT PORTAL FLOW ================= */
 
         function selectUserType(type) {
             if (!sb) initSupabaseFromStorage();
             selectedUserType = type;
             hideAllModalSteps();
-
             if (type === 'Student') {
-                // Present Student with "Give Attendance" or "Check Attendance"
                 document.getElementById('studentChoiceStep').style.display = 'block';
             } else {
-                // Staff goes directly to Staff Register / Login
                 isLoginMode = false;
                 hideStatus();
                 document.getElementById('formStep').style.display = 'block';
@@ -1006,6 +645,11 @@
         }
 
         function backToStudentChoice() {
+            if (loggedInUser && loggedInUser.userType === 'Student') {
+                document.getElementById('portalModal').style.display = 'none';
+                document.getElementById('studentDashboard').style.display = 'block';
+                return;
+            }
             hideAllModalSteps();
             document.getElementById('studentChoiceStep').style.display = 'block';
         }
@@ -1020,11 +664,8 @@
         }
 
         function handleAuthBack() {
-            if (selectedUserType === 'Student') {
-                backToStudentChoice();
-            } else {
-                resetModal();
-            }
+            if (selectedUserType === 'Student') backToStudentChoice();
+            else resetModal();
         }
 
         function resetModal() {
@@ -1042,6 +683,7 @@
             document.getElementById('giveAttendanceStep').style.display = 'block';
             document.getElementById('giveAttStatusBox').className = 'status-msg';
             document.getElementById('giveAttStatusBox').innerText = '';
+            resetMismatchReasonBox();
 
             if (loggedInUser && loggedInUser.userType === 'Student') {
                 document.getElementById('attStudentId').value = loggedInUser.idNumber;
@@ -1059,12 +701,10 @@
                 const { data, error } = await sb.rpc('get_courses_for_attendance_form');
                 if (error) throw error;
                 publicCoursesList = (data && data.courses) ? data.courses : [];
-
                 if (publicCoursesList.length === 0) {
                     courseSel.innerHTML = `<option value="">-- No Course Units Available Yet --</option>`;
                     return;
                 }
-
                 courseSel.innerHTML = `<option value="">-- Select Course Unit --</option>`;
                 publicCoursesList.forEach(c => {
                     const opt = document.createElement('option');
@@ -1074,8 +714,12 @@
                 });
             } catch (err) {
                 courseSel.innerHTML = `<option value="">-- Error loading courses --</option>`;
-                console.error(err);
             }
+        }
+
+        function resetMismatchReasonBox() {
+            document.getElementById('mismatchReasonContainer').style.display = 'none';
+            document.getElementById('attReasonInput').value = '';
         }
 
         function updateLiveClockBanner() {
@@ -1085,36 +729,31 @@
             const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
             document.getElementById('liveClockBanner').innerHTML =
                 `<strong>Current Time:</strong> ${dayName}, ${dateStr} — <strong>${timeStr}</strong><br>` +
-                `<span style="font-size:11px; color:#475569;">Window: 10 mins before session start to 10 mins after session end</span>`;
+                `<span style="font-size:11px; color:#475569;">Allowed Window: 10 mins before session start to 10 mins after session end</span>`;
         }
 
         function populateGiveAttendanceSessions() {
+            resetMismatchReasonBox();
             const code = document.getElementById('attCourseSelect').value;
             const sessionSel = document.getElementById('attSessionSelect');
             sessionSel.innerHTML = `<option value="">-- Select Lecture, Lab or Tutorial Session --</option>`;
 
             const courseObj = publicCoursesList.find(c => c.courseCode === code);
             if (!courseObj || !courseObj.schedules) return;
-
             const schedules = courseObj.schedules;
 
-            // 1. Lectures
             (schedules.lectures || []).forEach((s, idx) => {
                 const opt = document.createElement('option');
                 opt.value = `lecture:${idx}`;
                 opt.textContent = `Lecture ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
                 sessionSel.appendChild(opt);
             });
-
-            // 2. Labs
             (schedules.labs || []).forEach((s, idx) => {
                 const opt = document.createElement('option');
                 opt.value = `lab:${idx}`;
                 opt.textContent = `Lab ${idx + 1} — ${s.day || 'Day'} ${s.startTime || 'TBA'} to ${s.endTime || 'TBA'} (Room: ${s.room || 'TBA'})`;
                 sessionSel.appendChild(opt);
             });
-
-            // 3. Tutorials
             (schedules.tutorials || []).forEach((s, idx) => {
                 const opt = document.createElement('option');
                 opt.value = `tutorial:${idx}`;
@@ -1128,6 +767,7 @@
             const studentId = document.getElementById('attStudentId').value.trim();
             const courseCode = document.getElementById('attCourseSelect').value;
             const sessionVal = document.getElementById('attSessionSelect').value;
+            const reasonVal = document.getElementById('attReasonInput').value.trim();
             const statusBox = document.getElementById('giveAttStatusBox');
             const submitBtn = document.getElementById('giveAttSubmitBtn');
 
@@ -1148,7 +788,7 @@
 
             submitBtn.disabled = true;
             statusBox.className = 'status-msg status-loading';
-            statusBox.innerText = 'Verifying session schedule and time window...';
+            statusBox.innerText = 'Verifying session schedule, time window, and designated session...';
 
             try {
                 const { data: res, error } = await sb.rpc('submit_student_attendance', {
@@ -1158,14 +798,21 @@
                     p_session_idx: sessionIdx,
                     p_client_date: clientDate,
                     p_client_day: clientDay,
-                    p_client_time: clientTime
+                    p_client_time: clientTime,
+                    p_reason: reasonVal || null
                 });
 
                 if (error) throw error;
 
-                if (res && res.success) {
-                    statusBox.className = 'status-msg status-success';
+                if (res && res.needsReason) {
+                    document.getElementById('mismatchReasonContainer').style.display = 'block';
+                    document.getElementById('attReasonInput').focus();
+                    statusBox.className = 'status-msg status-warn';
                     statusBox.innerText = res.message;
+                } else if (res && res.success) {
+                    statusBox.className = res.status === 'REQ' ? 'status-msg status-warn' : 'status-msg status-success';
+                    statusBox.innerText = res.message;
+                    resetMismatchReasonBox();
                 } else {
                     statusBox.className = 'status-msg status-error';
                     statusBox.innerText = (res && res.message) || 'Could not record attendance.';
@@ -1184,31 +831,18 @@
             openGiveAttendanceStep();
         }
 
-        /* ================= AUTOMATIC EVALUATION OF PAST SESSIONS (P / A / L) ================= */
+        /* ================= SESSION STATUS & SEMESTER WEEK HELPERS ================= */
 
-        /**
-         * Determines the effective attendance status for a session:
-         * - If explicitly marked 'P', 'A', or 'L', returns that mark.
-         * - If blank ('') and the session's week/day/endTime+10min has already passed:
-         *     -> Returns 'A' if the student has registered/logged in (Did not give attendance during designed session)
-         *     -> Returns 'L' if the student has never logged in (Absent - Did not log in)
-         */
         function getEffectiveSessionStatus(rawVal, semStartStr, weekIndex0, slotObj, hasLoggedIn) {
-            if (rawVal === "P" || rawVal === "A" || rawVal === "L") {
-                return rawVal;
-            }
-            if (!semStartStr || !slotObj || !slotObj.day || !slotObj.endTime) {
-                return "";
-            }
+            if (rawVal === "P" || rawVal === "A" || rawVal === "L" || rawVal === "REQ") return rawVal;
+            if (!semStartStr || !slotObj || !slotObj.day || !slotObj.endTime) return "";
 
             const startParts = semStartStr.split('-');
             if (startParts.length !== 3) return "";
             const weekStart = new Date(Number(startParts[0]), Number(startParts[1]) - 1, Number(startParts[2]));
             if (isNaN(weekStart)) return "";
-
             weekStart.setDate(weekStart.getDate() + (weekIndex0 * 7));
 
-            // Map day offset within the week relative to weekStart
             const targetDayIdx = JS_DAY_NAMES.indexOf(slotObj.day);
             const startDayIdx = weekStart.getDay();
             let dayOffset = targetDayIdx - startDayIdx;
@@ -1219,12 +853,20 @@
 
             const [eh, em] = slotObj.endTime.split(':').map(Number);
             if (isNaN(eh) || isNaN(em)) return "";
-            sessionDate.setHours(eh, em + 10, 0, 0); // 10 minutes after session end
+            sessionDate.setHours(eh, em + 10, 0, 0);
 
-            if (new Date() > sessionDate) {
-                return hasLoggedIn ? "A" : "L";
-            }
+            if (new Date() > sessionDate) return hasLoggedIn ? "A" : "L";
             return "";
+        }
+
+        function calculateCurrentSemesterWeek(semStartStr) {
+            if (!semStartStr) return 1;
+            const parts = semStartStr.split('-');
+            if (parts.length !== 3) return 1;
+            const start = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            if (isNaN(start)) return 1;
+            const diffDays = Math.floor((new Date() - start) / 86400000);
+            return diffDays < 0 ? 1 : Math.floor(diffDays / 7) + 1;
         }
 
         /* ================= REGISTER & LOGIN AUTHENTICATION ================= */
@@ -1236,8 +878,7 @@
         }
 
         function updateFormView() {
-            const title = `${selectedUserType} ${isLoginMode ? 'Login' : 'Registration'}`;
-            document.getElementById('formTitle').innerText = title;
+            document.getElementById('formTitle').innerText = `${selectedUserType} ${isLoginMode ? 'Login' : 'Registration'}`;
             document.getElementById('submitBtnText').innerText = isLoginMode ? 'Login with ID & Password' : 'Register';
             document.getElementById('idLabel').innerText = `${selectedUserType} ID Number`;
 
@@ -1248,10 +889,7 @@
             regFields.style.display = isLoginMode ? 'none' : 'block';
             fullNameInput.disabled = isLoginMode;
             emailInput.disabled = isLoginMode;
-            if (isLoginMode) {
-                fullNameInput.value = "";
-                emailInput.value = "";
-            }
+            if (isLoginMode) { fullNameInput.value = ""; emailInput.value = ""; }
 
             document.getElementById('toggleText').innerText = isLoginMode
                 ? "First time user? Register here"
@@ -1272,11 +910,7 @@
 
         async function handleAuthSubmit(e) {
             e.preventDefault();
-
-            if (!sb) {
-                showStatus("Database connection not initialized.", "status-error");
-                return;
-            }
+            if (!sb) { showStatus("Database not connected.", "status-error"); return; }
 
             const idNumber = document.getElementById('idNumber').value.trim();
             const password = document.getElementById('password').value;
@@ -1288,15 +922,9 @@
                 showStatus("Please enter both your ID Number and Password.", "status-error");
                 return;
             }
-            if (!isLoginMode) {
-                if (!fullName) {
-                    showStatus("Please enter your Full Name to register.", "status-error");
-                    return;
-                }
-                if (!email || !email.includes("@")) {
-                    showStatus("Please enter a valid Email Address to register.", "status-error");
-                    return;
-                }
+            if (!isLoginMode && (!fullName || !email.includes("@"))) {
+                showStatus("Please enter your Full Name and a valid Email Address.", "status-error");
+                return;
             }
 
             submitBtn.disabled = true;
@@ -1305,68 +933,43 @@
             try {
                 if (!isLoginMode) {
                     const { data: rpcResult, error: rpcError } = await sb.rpc('register_portal_user', {
-                        p_user_type: selectedUserType,
-                        p_id_number: idNumber,
-                        p_full_name: fullName,
-                        p_email: email,
-                        p_password: password
+                        p_user_type: selectedUserType, p_id_number: idNumber,
+                        p_full_name: fullName, p_email: email, p_password: password
                     });
-
-                    if (rpcError) {
-                        showStatus("Database error: " + rpcError.message, "status-error");
-                        return;
-                    }
-                    if (!rpcResult || !rpcResult.success) {
-                        showStatus((rpcResult && rpcResult.message) || "Registration failed.", "status-error");
-                        return;
-                    }
+                    if (rpcError) { showStatus("Database error: " + rpcError.message, "status-error"); return; }
+                    if (!rpcResult || !rpcResult.success) { showStatus((rpcResult && rpcResult.message) || "Registration failed.", "status-error"); return; }
 
                     isLoginMode = true;
                     updateFormView();
                     document.getElementById('idNumber').value = idNumber;
                     document.getElementById('password').value = "";
                     showStatus("Registration complete! Please enter your ID and Password to log in.", "status-success");
-
                 } else {
                     const { data: loginRes, error: loginErr } = await sb.rpc('verify_portal_login', {
-                        p_user_type: selectedUserType,
-                        p_id_number: idNumber,
-                        p_password: password
+                        p_user_type: selectedUserType, p_id_number: idNumber, p_password: password
                     });
+                    if (loginErr) { showStatus("Login error: " + loginErr.message, "status-error"); return; }
+                    if (!loginRes || !loginRes.success) { showStatus((loginRes && loginRes.message) || "Invalid ID or Password.", "status-error"); return; }
 
-                    if (loginErr) {
-                        showStatus("Login error: " + loginErr.message, "status-error");
-                        return;
-                    }
-                    if (!loginRes || !loginRes.success) {
-                        showStatus((loginRes && loginRes.message) || "Invalid ID Number or Password.", "status-error");
-                        return;
-                    }
-
-                    showStatus("Login verified! Loading portal...", "status-success");
                     loggedInUser = loginRes.user;
+                    userSessionPassword = password;
                     coursesStore = {};
                     const rawCourses = loginRes.courses || {};
                     Object.keys(rawCourses).forEach(code => {
                         coursesStore[code] = normalizeCourseStructure(rawCourses[code]);
                     });
 
-                    if (selectedUserType === "Staff") {
-                        staffSessionPassword = password;
-                        openStaffDashboard();
-                    } else {
-                        openStudentDashboard();
-                    }
+                    if (selectedUserType === "Staff") openStaffDashboard();
+                    else openStudentDashboard();
                 }
             } catch (err) {
                 showStatus("Network error: " + err.message, "status-error");
-                console.error(err);
             } finally {
                 submitBtn.disabled = false;
             }
         }
 
-        /* ================= STUDENT CHECK ATTENDANCE DASHBOARD ================= */
+        /* ================= STUDENT CHECK ATTENDANCE & WEEK 1-2 PICKER ================= */
 
         function openStudentDashboard() {
             document.getElementById('portalModal').style.display = 'none';
@@ -1374,44 +977,138 @@
             document.getElementById('studentDashboard').style.display = 'block';
 
             document.getElementById('studentWelcomeMeta').innerText =
-                `Student Name: ${loggedInUser.fullName} | Student ID: ${loggedInUser.idNumber} (Private Attendance Record)`;
+                `Student Name: ${loggedInUser.fullName} | Student ID: ${loggedInUser.idNumber} (Private Attendance View)`;
 
             const sel = document.getElementById('studentCourseSelector');
             const codes = Object.keys(coursesStore);
             sel.innerHTML = "";
 
             if (codes.length === 0) {
-                const opt = document.createElement('option');
-                opt.value = "";
-                opt.textContent = "-- Not Enrolled in Any Course Yet --";
-                sel.appendChild(opt);
+                sel.innerHTML = `<option value="">-- Not Enrolled in Any Course Yet --</option>`;
                 clearStudentDashboardTables();
                 return;
             }
-
             codes.forEach(code => {
-                const c = coursesStore[code];
                 const opt = document.createElement('option');
                 opt.value = code;
-                opt.textContent = `${code} — ${c.courseTitle || 'Course Unit'}`;
+                opt.textContent = `${code} — ${coursesStore[code].courseTitle || 'Course Unit'}`;
                 sel.appendChild(opt);
             });
-
             sel.value = codes[0];
             renderStudentDashboardCourse();
         }
 
         function clearStudentDashboardTables() {
-            document.getElementById('stuLecStat').innerText = "0%";
-            document.getElementById('stuLabStat').innerText = "0%";
-            document.getElementById('stuTutStat').innerText = "0%";
-            document.getElementById('stuOverallStat').innerText = "0%";
+            document.getElementById('studentSessionPickerBox').style.display = 'none';
+            ['stuLecStat', 'stuLabStat', 'stuTutStat', 'stuOverallStat'].forEach(id => document.getElementById(id).innerText = "0%");
             document.getElementById('stuLectureHead').innerHTML = "";
             document.getElementById('stuLectureBody').innerHTML = `<tr><td style="padding:12px;">No course records found for your Student ID (${escapeHtml(loggedInUser.idNumber)}).</td></tr>`;
             document.getElementById('stuLabHead').innerHTML = "";
             document.getElementById('stuLabBody').innerHTML = "";
             document.getElementById('stuTutorialHead').innerHTML = "";
             document.getElementById('stuTutorialBody').innerHTML = "";
+        }
+
+        function renderStudentSessionPicker(course, st) {
+            document.getElementById('studentSessionPickerBox').style.display = 'block';
+            document.getElementById('stuPickStatusMsg').className = 'status-msg';
+            document.getElementById('stuPickStatusMsg').innerText = '';
+
+            const currentWeek = calculateCurrentSemesterWeek(course.semStart);
+            const canEditSessions = currentWeek <= 2;
+
+            const badge = document.getElementById('stuWeekWindowBadge');
+            if (canEditSessions) {
+                badge.className = 'week-window-badge window-open';
+                badge.innerText = `✓ Week ${currentWeek} of Semester — Session Selection OPEN (Weeks 1 & 2)`;
+            } else {
+                badge.className = 'week-window-badge window-closed';
+                badge.innerText = `🔒 Week ${currentWeek} of Semester — Selection CLOSED (Only Staff Can Change)`;
+            }
+
+            const labSlots = course.schedules.labs || [];
+            const tutSlots = course.schedules.tutorials || [];
+            const labCounts = (course.sessionCounts && course.sessionCounts.labCounts) ? course.sessionCounts.labCounts : {};
+            const tutCounts = (course.sessionCounts && course.sessionCounts.tutCounts) ? course.sessionCounts.tutCounts : {};
+
+            const labSel = document.getElementById('stuPickLabSelect');
+            labSel.innerHTML = "";
+            labSlots.forEach((s, idx) => {
+                const maxCap = Number(s.capacity || 25);
+                const enrolled = Number(labCounts[idx] || 0);
+                const isMyCurrent = Number(st.assignedLabIdx) === idx;
+                const isFull = enrolled >= maxCap && !isMyCurrent;
+
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.selected = isMyCurrent;
+                opt.disabled = isFull;
+                opt.textContent = `${formatSlotSummary(s, 'Lab', idx)} — [${enrolled}/${maxCap} students${isFull ? ' - FULL, Find Alternative' : ''}]`;
+                labSel.appendChild(opt);
+            });
+
+            const tutSel = document.getElementById('stuPickTutSelect');
+            tutSel.innerHTML = "";
+            tutSlots.forEach((s, idx) => {
+                const maxCap = Number(s.capacity || 25);
+                const enrolled = Number(tutCounts[idx] || 0);
+                const isMyCurrent = Number(st.assignedTutIdx) === idx;
+                const isFull = enrolled >= maxCap && !isMyCurrent;
+
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.selected = isMyCurrent;
+                opt.disabled = isFull;
+                opt.textContent = `${formatSlotSummary(s, 'Tut', idx)} — [${enrolled}/${maxCap} students${isFull ? ' - FULL, Find Alternative' : ''}]`;
+                tutSel.appendChild(opt);
+            });
+
+            labSel.disabled = !canEditSessions;
+            tutSel.disabled = !canEditSessions;
+            document.getElementById('stuSaveSessionsBtn').disabled = !canEditSessions;
+        }
+
+        async function saveStudentSessionSelection() {
+            const code = document.getElementById('studentCourseSelector').value;
+            const course = coursesStore[code];
+            if (!course || !course.students || !course.students[0]) return;
+
+            const labIdx = parseInt(document.getElementById('stuPickLabSelect').value, 10);
+            const tutIdx = parseInt(document.getElementById('stuPickTutSelect').value, 10);
+            const statusMsg = document.getElementById('stuPickStatusMsg');
+            const btn = document.getElementById('stuSaveSessionsBtn');
+
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const clientDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+            btn.disabled = true;
+            statusMsg.className = 'status-msg status-loading';
+            statusMsg.innerText = 'Checking session capacity and saving selection...';
+
+            try {
+                const { data: res, error } = await sb.rpc('student_update_session_assignment', {
+                    p_student_id: loggedInUser.idNumber, p_password: userSessionPassword,
+                    p_course_code: code, p_lab_idx: labIdx, p_tut_idx: tutIdx, p_client_date: clientDate
+                });
+                if (error) throw error;
+                if (res && res.success) {
+                    course.students[0].assignedLabIdx = labIdx;
+                    course.students[0].assignedTutIdx = tutIdx;
+                    if (res.sessionCounts) course.sessionCounts = res.sessionCounts;
+                    renderStudentDashboardCourse();
+                    statusMsg.className = 'status-msg status-success';
+                    statusMsg.innerText = res.message;
+                } else {
+                    statusMsg.className = 'status-msg status-error';
+                    statusMsg.innerText = (res && res.message) || 'Could not update session selection.';
+                }
+            } catch (err) {
+                statusMsg.className = 'status-msg status-error';
+                statusMsg.innerText = 'Error: ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         function renderStudentDashboardCourse() {
@@ -1421,23 +1118,25 @@
                 clearStudentDashboardTables();
                 return;
             }
-
-            // Strictly the single logged-in student's record
             const st = course.students[0];
+            renderStudentSessionPicker(course, st);
+
             const weeks = course.weeks || [];
             const lecSlots = course.schedules.lectures || [];
             const labSlots = course.schedules.labs || [];
             const tutSlots = course.schedules.tutorials || [];
             const numLecs = lecSlots.length;
+            const myLabIdx = st.assignedLabIdx >= 0 ? st.assignedLabIdx : 0;
+            const myTutIdx = st.assignedTutIdx >= 0 ? st.assignedTutIdx : 0;
 
             document.getElementById('stuLectureScheduleSummary').innerHTML =
                 `<strong>Scheduled Lectures:</strong> ${escapeHtml(lecSlots.map((s, i) => formatSlotSummary(s, 'Lec', i)).join(" | "))}`;
             document.getElementById('stuLabScheduleSummary').innerHTML =
-                `<strong>My Assigned Lab:</strong> ${escapeHtml(formatSlotSummary(labSlots[st.assignedLabIdx || 0] || labSlots[0], 'Lab', st.assignedLabIdx || 0))}`;
+                `<strong>My Designated Lab:</strong> ${escapeHtml(formatSlotSummary(labSlots[myLabIdx] || labSlots[0], 'Lab', myLabIdx))}`;
             document.getElementById('stuTutorialScheduleSummary').innerHTML =
-                `<strong>My Assigned Tutorial:</strong> ${escapeHtml(formatSlotSummary(tutSlots[st.assignedTutIdx || 0] || tutSlots[0], 'Tut', st.assignedTutIdx || 0))}`;
+                `<strong>My Designated Tutorial:</strong> ${escapeHtml(formatSlotSummary(tutSlots[myTutIdx] || tutSlots[0], 'Tut', myTutIdx))}`;
 
-            // 1. Render Student Lecture Row
+            // 1. Student Lecture Table
             let lecHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th>`;
             weeks.forEach(w => {
                 const sub = lecSlots.map((s, idx) => `L${idx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
@@ -1446,104 +1145,80 @@
             lecHead += `<th>Lectures Present</th><th>Full Weeks</th><th>Lecture %</th></tr>`;
             document.getElementById('stuLectureHead').innerHTML = lecHead;
 
-            let lecPresent = 0, lecTotal = 0, fullWeeks = 0, weeksEval = 0;
-            let lecCells = "";
+            let lecPresent = 0, lecTotal = 0, fullWeeks = 0, weeksEval = 0, lecCells = "";
             weeks.forEach((w, wIdx) => {
-                let wkPres = 0, wkMark = 0;
-                let badges = "";
+                let wkPres = 0, wkMark = 0, badges = "";
                 for (let lIdx = 0; lIdx < numLecs; lIdx++) {
-                    const key = `W${wIdx + 1}_L${lIdx + 1}`;
-                    const rawVal = st.lectureAttendance[key] || "";
+                    const rawVal = st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "";
                     const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, lecSlots[lIdx], true);
                     if (val === "P") { lecPresent++; lecTotal++; wkPres++; wkMark++; }
                     else if (val === "A" || val === "L") { lecTotal++; wkMark++; }
-
-                    const cls = val ? `att-${val}` : "";
-                    badges += `<span class="legend-pill ${cls}" style="border:1px solid #cbd5e1;">L${lIdx + 1}: ${val || '-'}</span>`;
+                    badges += `<span class="legend-pill ${val ? 'att-' + val : ''}" style="border:1px solid #cbd5e1;">L${lIdx + 1}: ${val || '-'}</span>`;
                 }
-                if (wkMark > 0) {
-                    weeksEval++;
-                    if (wkPres === numLecs) fullWeeks++;
-                }
+                if (wkMark > 0) { weeksEval++; if (wkPres === numLecs) fullWeeks++; }
                 lecCells += `<td><div class="lec-week-box">${badges}</div></td>`;
             });
             const lecPct = lecTotal > 0 ? Math.round((lecPresent / lecTotal) * 100) + "%" : "0%";
             document.getElementById('stuLectureBody').innerHTML = `<tr>
-                <td class="summary-cell">${escapeHtml(st.studentId)}</td>
-                <td class="summary-cell">${escapeHtml(st.lastName)}</td>
-                <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(st.course || code)}</td>
-                <td class="summary-cell">${escapeHtml(st.mode)}</td>
-                ${lecCells}
+                <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
+                <td class="summary-cell">${escapeHtml(st.firstName)}</td><td class="summary-cell">${escapeHtml(st.course || code)}</td>
+                <td class="summary-cell">${escapeHtml(st.mode)}</td>${lecCells}
                 <td class="summary-cell">${lecPresent} / ${lecTotal || (weeks.length * numLecs)}</td>
-                <td class="summary-cell">${fullWeeks} / ${weeksEval || weeks.length}</td>
-                <td class="summary-cell">${lecPct}</td>
+                <td class="summary-cell">${fullWeeks} / ${weeksEval || weeks.length}</td><td class="summary-cell">${lecPct}</td>
             </tr>`;
 
-            // 2. Render Student Lab Row
-            let labHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Assigned Lab</th>`;
+            // 2. Student Lab Table
+            let labHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>My Designated Lab</th>`;
             weeks.forEach(w => { labHead += `<th>${w}</th>`; });
             labHead += `<th>Labs Present</th><th>Lab %</th></tr>`;
             document.getElementById('stuLabHead').innerHTML = labHead;
 
-            let labPresent = 0, labTotal = 0;
-            let labCells = "";
-            const stuLabSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
+            let labPresent = 0, labTotal = 0, labCells = "";
+            const stuLabSlot = labSlots[myLabIdx] || labSlots[0];
             weeks.forEach((w, wIdx) => {
                 const rawVal = st.labAttendance[`W${wIdx + 1}`] || "";
                 const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, stuLabSlot, true);
                 if (val === "P") { labPresent++; labTotal++; }
                 else if (val === "A" || val === "L") { labTotal++; }
-                const cls = val ? `att-${val}` : "";
-                labCells += `<td class="summary-cell ${cls}">${val || '-'}</td>`;
+                labCells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
             });
             const labPct = labTotal > 0 ? Math.round((labPresent / labTotal) * 100) + "%" : "0%";
             document.getElementById('stuLabBody').innerHTML = `<tr>
-                <td class="summary-cell">${escapeHtml(st.studentId)}</td>
-                <td class="summary-cell">${escapeHtml(st.lastName)}</td>
+                <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
                 <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuLabSlot, 'Lab', st.assignedLabIdx || 0))}</td>
-                ${labCells}
-                <td class="summary-cell">${labPresent} / ${labTotal || weeks.length}</td>
-                <td class="summary-cell">${labPct}</td>
+                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuLabSlot, 'Lab', myLabIdx))}</td>
+                ${labCells}<td class="summary-cell">${labPresent} / ${labTotal || weeks.length}</td><td class="summary-cell">${labPct}</td>
             </tr>`;
 
-            // 3. Render Student Tutorial Row
-            let tutHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>Assigned Tutorial</th>`;
+            // 3. Student Tutorial Table
+            let tutHead = `<tr><th>ID</th><th>Last Name</th><th>First Name</th><th>My Designated Tutorial</th>`;
             weeks.forEach(w => { tutHead += `<th>${w}</th>`; });
             tutHead += `<th>Tutorials Present</th><th>Tutorial %</th></tr>`;
             document.getElementById('stuTutorialHead').innerHTML = tutHead;
 
-            let tutPresent = 0, tutTotal = 0;
-            let tutCells = "";
-            const stuTutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
+            let tutPresent = 0, tutTotal = 0, tutCells = "";
+            const stuTutSlot = tutSlots[myTutIdx] || tutSlots[0];
             weeks.forEach((w, wIdx) => {
                 const rawVal = st.tutorialAttendance[`W${wIdx + 1}`] || "";
                 const val = getEffectiveSessionStatus(rawVal, course.semStart, wIdx, stuTutSlot, true);
                 if (val === "P") { tutPresent++; tutTotal++; }
                 else if (val === "A" || val === "L") { tutTotal++; }
-                const cls = val ? `att-${val}` : "";
-                tutCells += `<td class="summary-cell ${cls}">${val || '-'}</td>`;
+                tutCells += `<td class="summary-cell ${val ? 'att-' + val : ''}">${val || '-'}</td>`;
             });
             const tutPct = tutTotal > 0 ? Math.round((tutPresent / tutTotal) * 100) + "%" : "0%";
             document.getElementById('stuTutorialBody').innerHTML = `<tr>
-                <td class="summary-cell">${escapeHtml(st.studentId)}</td>
-                <td class="summary-cell">${escapeHtml(st.lastName)}</td>
+                <td class="summary-cell">${escapeHtml(st.studentId)}</td><td class="summary-cell">${escapeHtml(st.lastName)}</td>
                 <td class="summary-cell">${escapeHtml(st.firstName)}</td>
-                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuTutSlot, 'Tut', st.assignedTutIdx || 0))}</td>
-                ${tutCells}
-                <td class="summary-cell">${tutPresent} / ${tutTotal || weeks.length}</td>
-                <td class="summary-cell">${tutPct}</td>
+                <td class="summary-cell">${escapeHtml(formatSlotSummary(stuTutSlot, 'Tut', myTutIdx))}</td>
+                ${tutCells}<td class="summary-cell">${tutPresent} / ${tutTotal || weeks.length}</td><td class="summary-cell">${tutPct}</td>
             </tr>`;
 
             const overallMark = lecTotal + labTotal + tutTotal;
             const overallPres = lecPresent + labPresent + tutPresent;
-            const overallPct = overallMark > 0 ? Math.round((overallPres / overallMark) * 100) + "%" : "0%";
-
             document.getElementById('stuLecStat').innerText = lecPct;
             document.getElementById('stuLabStat').innerText = labPct;
             document.getElementById('stuTutStat').innerText = tutPct;
-            document.getElementById('stuOverallStat').innerText = overallPct;
+            document.getElementById('stuOverallStat').innerText = overallMark > 0 ? Math.round((overallPres / overallMark) * 100) + "%" : "0%";
         }
 
         /* ================= STAFF DASHBOARD & COURSE MANAGEMENT ================= */
@@ -1552,42 +1227,24 @@
             const today = new Date().toISOString().split('T')[0];
             const future = new Date(Date.now() + 14 * 7 * 86400000).toISOString().split('T')[0];
             return {
-                courseCode: "",
-                courseTitle: "",
-                semStart: today,
-                semEnd: future,
+                courseCode: "", courseTitle: "", semStart: today, semEnd: future,
                 schedules: {
-                    lectures: [
-                        { day: "Mon", startTime: "09:00", endTime: "10:00", room: "" },
-                        { day: "Wed", startTime: "09:00", endTime: "10:00", room: "" }
-                    ],
-                    labs: [
-                        { day: "Tue", startTime: "14:00", endTime: "17:00", room: "" }
-                    ],
-                    tutorials: [
-                        { day: "Thu", startTime: "11:00", endTime: "12:00", room: "" }
-                    ]
+                    lectures: [{ day: "Mon", startTime: "09:00", endTime: "10:00", room: "" }, { day: "Wed", startTime: "09:00", endTime: "10:00", room: "" }],
+                    labs: [{ day: "Tue", startTime: "14:00", endTime: "17:00", room: "", capacity: 25 }],
+                    tutorials: [{ day: "Thu", startTime: "11:00", endTime: "12:00", room: "", capacity: 25 }]
                 },
                 weeks: generateWeeksList(today, future),
-                students: [
-                    createEmptyStudent("")
-                ]
+                students: [createEmptyStudent("")],
+                pendingRequests: [],
+                sessionCounts: { labCounts: {}, tutCounts: {} }
             };
         }
 
         function createEmptyStudent(courseCode) {
             return {
-                studentId: "",
-                lastName: "",
-                firstName: "",
-                course: courseCode || "",
-                mode: "F",
-                assignedLabIdx: 0,
-                assignedTutIdx: 0,
-                lectureAttendance: {},
-                labAttendance: {},
-                tutorialAttendance: {},
-                hasLoggedIn: false
+                studentId: "", lastName: "", firstName: "", course: courseCode || "", mode: "F",
+                assignedLabIdx: 0, assignedTutIdx: 0,
+                lectureAttendance: {}, labAttendance: {}, tutorialAttendance: {}, hasLoggedIn: false
             };
         }
 
@@ -1595,13 +1252,12 @@
             document.getElementById('portalModal').style.display = 'none';
             document.getElementById('studentDashboard').style.display = 'none';
             document.getElementById('staffDashboard').style.display = 'block';
-            document.getElementById('staffWelcomeMeta').innerText =
-                `Staff Name: ${loggedInUser.fullName} | Staff ID: ${loggedInUser.idNumber}`;
+            document.getElementById('staffWelcomeMeta').innerText = `Staff Name: ${loggedInUser.fullName} | Staff ID: ${loggedInUser.idNumber}`;
 
             populateCourseDropdown();
-            const courseCodes = Object.keys(coursesStore);
-            if (courseCodes.length > 0) {
-                document.getElementById('courseSelector').value = courseCodes[0];
+            const codes = Object.keys(coursesStore);
+            if (codes.length > 0) {
+                document.getElementById('courseSelector').value = codes[0];
                 loadSelectedCourse();
                 setEditMode(false);
             } else {
@@ -1612,7 +1268,7 @@
 
         function logoutUser() {
             loggedInUser = null;
-            staffSessionPassword = "";
+            userSessionPassword = "";
             document.getElementById('staffDashboard').style.display = 'none';
             document.getElementById('studentDashboard').style.display = 'none';
             document.getElementById('portalModal').style.display = 'flex';
@@ -1623,10 +1279,9 @@
             const sel = document.getElementById('courseSelector');
             sel.innerHTML = `<option value="">-- Create / Select Course Unit --</option>`;
             Object.keys(coursesStore).forEach(code => {
-                const c = coursesStore[code];
                 const opt = document.createElement('option');
                 opt.value = code;
-                opt.textContent = `${code} - ${c.courseTitle || 'Untitled'}`;
+                opt.textContent = `${code} - ${coursesStore[code].courseTitle || 'Untitled'}`;
                 sel.appendChild(opt);
             });
         }
@@ -1640,21 +1295,14 @@
         function normalizeCourseStructure(raw) {
             const def = createDefaultCourseObject();
             const c = Object.assign({}, def, raw);
-
             if (!c.schedules) c.schedules = def.schedules;
-            if (!Array.isArray(c.schedules.lectures) || c.schedules.lectures.length === 0) {
-                c.schedules.lectures = def.schedules.lectures;
-            }
-            if (!Array.isArray(c.schedules.labs) || c.schedules.labs.length === 0) {
-                c.schedules.labs = def.schedules.labs;
-            }
-            if (!Array.isArray(c.schedules.tutorials) || c.schedules.tutorials.length === 0) {
-                c.schedules.tutorials = def.schedules.tutorials;
-            }
+            if (!Array.isArray(c.schedules.lectures) || !c.schedules.lectures.length) c.schedules.lectures = def.schedules.lectures;
+            if (!Array.isArray(c.schedules.labs) || !c.schedules.labs.length) c.schedules.labs = def.schedules.labs;
+            if (!Array.isArray(c.schedules.tutorials) || !c.schedules.tutorials.length) c.schedules.tutorials = def.schedules.tutorials;
 
-            if (!c.weeks || c.weeks.length === 0) {
-                c.weeks = generateWeeksList(c.semStart, c.semEnd);
-            }
+            c.schedules.labs = c.schedules.labs.map(s => Object.assign({ capacity: 25 }, s));
+            c.schedules.tutorials = c.schedules.tutorials.map(s => Object.assign({ capacity: 25 }, s));
+            if (!c.weeks || !c.weeks.length) c.weeks = generateWeeksList(c.semStart, c.semEnd);
 
             c.students = (c.students || []).map(st => ({
                 studentId: st.studentId || "",
@@ -1662,33 +1310,25 @@
                 firstName: st.firstName || "",
                 course: st.course !== undefined ? st.course : (st.idUnit || c.courseCode || ""),
                 mode: st.mode || "F",
-                assignedLabIdx: Number(st.assignedLabIdx || 0),
-                assignedTutIdx: Number(st.assignedTutIdx || 0),
+                assignedLabIdx: st.assignedLabIdx !== undefined ? Number(st.assignedLabIdx) : 0,
+                assignedTutIdx: st.assignedTutIdx !== undefined ? Number(st.assignedTutIdx) : 0,
                 lectureAttendance: st.lectureAttendance || st.attendance || {},
                 labAttendance: st.labAttendance || {},
                 tutorialAttendance: st.tutorialAttendance || {},
                 hasLoggedIn: Boolean(st.hasLoggedIn)
             }));
-
-            if (c.students.length === 0) {
-                c.students = [createEmptyStudent(c.courseCode)];
-            }
+            if (!c.students.length) c.students = [createEmptyStudent(c.courseCode)];
             return c;
         }
 
         function loadSelectedCourse() {
             const code = document.getElementById('courseSelector').value;
-            if (!code || !coursesStore[code]) {
-                startNewCourse();
-                return;
-            }
+            if (!code || !coursesStore[code]) { startNewCourse(); return; }
             currentCourse = normalizeCourseStructure(JSON.parse(JSON.stringify(coursesStore[code])));
             renderCourseToUI();
         }
 
-        function toggleEditMode() {
-            setEditMode(!isEditMode);
-        }
+        function toggleEditMode() { setEditMode(!isEditMode); }
 
         function setEditMode(enabled) {
             isEditMode = enabled;
@@ -1696,167 +1336,148 @@
             btn.innerText = isEditMode ? "Lock / View Only" : "Enable Edit Mode";
             btn.className = isEditMode ? "btn btn-dark" : "btn btn-warning";
 
-            document.getElementById('courseCode').disabled = !isEditMode;
-            document.getElementById('courseTitle').disabled = !isEditMode;
-            document.getElementById('semStart').disabled = !isEditMode;
-            document.getElementById('semEnd').disabled = !isEditMode;
-            document.getElementById('addRowBtn').disabled = !isEditMode;
-            document.getElementById('clearRowsBtn').disabled = !isEditMode;
-            document.getElementById('addLecSlotBtn').disabled = !isEditMode;
-            document.getElementById('addLabSlotBtn').disabled = !isEditMode;
-            document.getElementById('addTutSlotBtn').disabled = !isEditMode;
-            document.getElementById('deleteCourseBtn').disabled = !isEditMode;
+            ['courseCode', 'courseTitle', 'semStart', 'semEnd', 'addRowBtn', 'clearRowsBtn', 'addLecSlotBtn', 'addLabSlotBtn', 'addTutSlotBtn', 'deleteCourseBtn'].forEach(id => {
+                document.getElementById(id).disabled = !isEditMode;
+            });
 
             const dz = document.getElementById('classlistDropzone');
-            if (isEditMode) {
-                dz.classList.remove('disabled-zone');
-            } else {
-                dz.classList.add('disabled-zone');
-                dz.classList.remove('staged');
-                stagedClasslist = null;
-            }
+            if (isEditMode) dz.classList.remove('disabled-zone');
+            else { dz.classList.add('disabled-zone'); dz.classList.remove('staged'); stagedClasslist = null; }
 
             renderScheduleCards();
             renderAllThreeTables();
         }
 
+        function renderStaffPendingRequests() {
+            const panel = document.getElementById('staffRequestsPanel');
+            const tbody = document.getElementById('staffRequestsBody');
+            const reqs = currentCourse.pendingRequests || [];
+            if (!reqs.length) { panel.style.display = 'none'; return; }
+
+            panel.style.display = 'block';
+            document.getElementById('pendingReqCount').innerText = reqs.length;
+            tbody.innerHTML = "";
+
+            const labSlots = currentCourse.schedules.labs || [];
+            const tutSlots = currentCourse.schedules.tutorials || [];
+
+            reqs.forEach(r => {
+                const slots = r.sessionType === 'lab' ? labSlots : tutSlots;
+                const prefix = r.sessionType === 'lab' ? 'Lab' : 'Tut';
+                const desText = r.designatedIdx >= 0 && slots[r.designatedIdx] ? formatSlotSummary(slots[r.designatedIdx], prefix, r.designatedIdx) : 'Unassigned';
+                const attText = slots[r.attendedIdx] ? formatSlotSummary(slots[r.attendedIdx], prefix, r.attendedIdx) : `${prefix} ${r.attendedIdx + 1}`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${escapeHtml(r.studentId)}</strong><br>${escapeHtml(r.studentName)}</td>
+                    <td><strong>${escapeHtml(prefix.toUpperCase())}</strong> — ${escapeHtml(r.weekKey)}</td>
+                    <td>${escapeHtml(desText)}</td>
+                    <td>${escapeHtml(attText)}</td>
+                    <td>${escapeHtml(r.reason)}</td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn btn-student" style="padding:5px 10px; font-size:11px;" onclick="resolveStaffRequest(${r.id}, 'APPROVE')">Approve (P)</button>
+                            <button type="button" class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="resolveStaffRequest(${r.id}, 'REJECT')">Reject (A)</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function resolveStaffRequest(requestId, decision) {
+            try {
+                const { data: res, error } = await sb.rpc('resolve_attendance_request', {
+                    p_staff_id: loggedInUser.idNumber, p_password: userSessionPassword,
+                    p_request_id: requestId, p_decision: decision
+                });
+                if (error) throw error;
+                if (!res || !res.success) throw new Error((res && res.message) || "Decision failed.");
+
+                const st = currentCourse.students.find(s => s.studentId.toUpperCase() === String(res.studentId).toUpperCase());
+                if (st) {
+                    if (res.sessionType === 'lab') st.labAttendance[res.weekKey] = res.mark;
+                    else st.tutorialAttendance[res.weekKey] = res.mark;
+                }
+                currentCourse.pendingRequests = (currentCourse.pendingRequests || []).filter(r => r.id !== requestId);
+                coursesStore[currentCourse.courseCode] = JSON.parse(JSON.stringify(currentCourse));
+                renderStaffPendingRequests();
+                renderAllThreeTables();
+            } catch (err) {
+                alert("Error resolving request: " + err.message);
+            }
+        }
+
         /* ================= DROPBOX & CSV PARSER ================= */
 
         function triggerFileSelect() {
-            if (!isEditMode) {
-                alert("Please click 'Enable Edit Mode' first to upload or drop a classlist.");
-                return;
-            }
+            if (!isEditMode) { alert("Please click 'Enable Edit Mode' first."); return; }
             document.getElementById('classlistFileInput').click();
         }
 
         function setupFileDropzone() {
             const dz = document.getElementById('classlistDropzone');
-
-            dz.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                if (!isEditMode) return;
-                dz.classList.add('dragover');
-            });
-
-            dz.addEventListener('dragleave', () => {
-                dz.classList.remove('dragover');
-            });
-
-            dz.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dz.classList.remove('dragover');
-                if (!isEditMode) {
-                    alert("Please click 'Enable Edit Mode' first to drop a classlist.");
-                    return;
-                }
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    stageClasslistFile(e.dataTransfer.files[0]);
-                }
+            dz.addEventListener('dragover', e => { e.preventDefault(); if (isEditMode) dz.classList.add('dragover'); });
+            dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+            dz.addEventListener('drop', e => {
+                e.preventDefault(); dz.classList.remove('dragover');
+                if (!isEditMode) { alert("Please click 'Enable Edit Mode' first."); return; }
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) stageClasslistFile(e.dataTransfer.files[0]);
             });
         }
 
         function handleClasslistFileSelect(e) {
             if (!isEditMode) return;
-            if (e.target.files && e.target.files[0]) {
-                stageClasslistFile(e.target.files[0]);
-                e.target.value = "";
-            }
+            if (e.target.files && e.target.files[0]) { stageClasslistFile(e.target.files[0]); e.target.value = ""; }
         }
 
         function stageClasslistFile(file) {
             stagedFileName = file.name;
             const ext = file.name.split('.').pop().toLowerCase();
-
+            const reader = new FileReader();
             if (ext === 'csv') {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const rows = parseCSVToRows(evt.target.result);
-                    extractStudentsFromRows(rows, file.name);
-                };
+                reader.onload = evt => extractStudentsFromRows(parseCSVToRows(evt.target.result), file.name);
                 reader.readAsText(file);
             } else {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
+                reader.onload = evt => {
                     try {
-                        const data = new Uint8Array(evt.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+                        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
                         extractStudentsFromRows(rows, file.name);
-                    } catch (err) {
-                        alert("Error reading spreadsheet file: " + err.message);
-                    }
+                    } catch (err) { alert("Error reading file: " + err.message); }
                 };
                 reader.readAsArrayBuffer(file);
             }
         }
 
         function parseCSVToRows(csvText) {
-            const rows = [];
-            let currentRow = [];
-            let currentVal = "";
-            let inQuotes = false;
-
+            const rows = []; let row = [], val = "", inQuotes = false;
             for (let i = 0; i < csvText.length; i++) {
-                const ch = csvText[i];
-                const nextCh = csvText[i + 1];
-
+                const ch = csvText[i], next = csvText[i + 1];
                 if (inQuotes) {
-                    if (ch === '"' && nextCh === '"') {
-                        currentVal += '"';
-                        i++;
-                    } else if (ch === '"') {
-                        inQuotes = false;
-                    } else {
-                        currentVal += ch;
-                    }
+                    if (ch === '"' && next === '"') { val += '"'; i++; }
+                    else if (ch === '"') inQuotes = false;
+                    else val += ch;
                 } else {
-                    if (ch === '"') {
-                        inQuotes = true;
-                    } else if (ch === ',') {
-                        currentRow.push(currentVal.trim());
-                        currentVal = "";
-                    } else if (ch === '\r' && nextCh === '\n') {
-                        currentRow.push(currentVal.trim());
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentVal = "";
-                        i++;
-                    } else if (ch === '\n' || ch === '\r') {
-                        currentRow.push(currentVal.trim());
-                        rows.push(currentRow);
-                        currentRow = [];
-                        currentVal = "";
-                    } else {
-                        currentVal += ch;
-                    }
+                    if (ch === '"') inQuotes = true;
+                    else if (ch === ',') { row.push(val.trim()); val = ""; }
+                    else if (ch === '\r' && next === '\n') { row.push(val.trim()); rows.push(row); row = []; val = ""; i++; }
+                    else if (ch === '\n' || ch === '\r') { row.push(val.trim()); rows.push(row); row = []; val = ""; }
+                    else val += ch;
                 }
             }
-            if (currentVal.length > 0 || currentRow.length > 0) {
-                currentRow.push(currentVal.trim());
-                rows.push(currentRow);
-            }
+            if (val.length || row.length) { row.push(val.trim()); rows.push(row); }
             return rows;
         }
 
         function extractStudentsFromRows(rows, fileName) {
-            if (!rows || rows.length === 0) {
-                alert("The selected file is empty.");
-                return;
-            }
-
-            let headerRowIdx = -1;
+            if (!rows || !rows.length) { alert("File is empty."); return; }
+            let hIdx = 0;
             for (let i = 0; i < Math.min(rows.length, 15); i++) {
-                const normalized = rows[i].map(c => String(c || "").trim().toLowerCase());
-                if (normalized.includes("id") && (normalized.includes("last name") || normalized.includes("surname") || normalized.includes("first name"))) {
-                    headerRowIdx = i;
-                    break;
-                }
+                const norm = rows[i].map(c => String(c || "").trim().toLowerCase());
+                if (norm.includes("id") && (norm.includes("last name") || norm.includes("surname") || norm.includes("first name"))) { hIdx = i; break; }
             }
-            if (headerRowIdx === -1) headerRowIdx = 0;
-
-            const headers = rows[headerRowIdx].map(h => String(h || "").trim().toLowerCase());
+            const headers = rows[hIdx].map(h => String(h || "").trim().toLowerCase());
             const idCol = headers.indexOf("id") !== -1 ? headers.indexOf("id") : 0;
             const lastCol = headers.indexOf("last name") !== -1 ? headers.indexOf("last name") : (headers.indexOf("surname") !== -1 ? headers.indexOf("surname") : 1);
             const firstCol = headers.indexOf("first name") !== -1 ? headers.indexOf("first name") : 2;
@@ -1864,71 +1485,43 @@
             const modeCol = headers.indexOf("mode") !== -1 ? headers.indexOf("mode") : 5;
 
             const parsed = [];
-            for (let r = headerRowIdx + 1; r < rows.length; r++) {
-                const row = rows[r];
-                if (!row || row.length === 0) continue;
-
+            for (let r = hIdx + 1; r < rows.length; r++) {
+                const row = rows[r]; if (!row || !row.length) continue;
                 const sid = String(row[idCol] || "").trim();
                 const lname = String(row[lastCol] || "").trim();
-                const fname = String(row[firstCol] || "").trim();
-                const course = courseCol !== -1 && row[courseCol] !== undefined ? String(row[courseCol]).trim() : "";
-                const mode = modeCol !== -1 && row[modeCol] !== undefined ? String(row[modeCol]).trim().toUpperCase() : "F";
-
                 if (!sid || !lname || sid.toLowerCase().includes("rows") || sid.toLowerCase() === "id") continue;
-
                 parsed.push({
-                    studentId: sid,
-                    lastName: lname,
-                    firstName: fname,
-                    course: course,
-                    mode: (mode === "O" || mode === "F") ? mode : (mode || "F")
+                    studentId: sid, lastName: lname,
+                    firstName: String(row[firstCol] || "").trim(),
+                    course: courseCol !== -1 && row[courseCol] !== undefined ? String(row[courseCol]).trim() : "",
+                    mode: modeCol !== -1 && row[modeCol] !== undefined ? String(row[modeCol]).trim().toUpperCase() || "F" : "F"
                 });
             }
-
-            if (parsed.length === 0) {
-                alert("No valid student records (ID, Last Name, First Name) were found in this file.");
-                return;
-            }
-
+            if (!parsed.length) { alert("No valid student rows found."); return; }
             stagedClasslist = parsed;
-
             const dz = document.getElementById('classlistDropzone');
-            dz.classList.add('staged');
-            dz.focus();
-
-            const detectedCourse = parsed[0].course || "Course";
-            document.getElementById('dropzoneMainText').innerHTML =
-                `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students Detected for ${escapeHtml(detectedCourse)})</strong>`;
-            document.getElementById('dropzoneSubText').innerHTML =
-                `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill All 3 Tables & Save to Supabase ↵</span>`;
+            dz.classList.add('staged'); dz.focus();
+            document.getElementById('dropzoneMainText').innerHTML = `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students Detected)</strong>`;
+            document.getElementById('dropzoneSubText').innerHTML = `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill All 3 Tables & Save to Supabase ↵</span>`;
         }
 
         function applyStagedClasslistAndSync() {
-            if (!stagedClasslist || stagedClasslist.length === 0) return;
-
+            if (!stagedClasslist || !stagedClasslist.length) return;
             const detectedCourse = stagedClasslist[0].course ? stagedClasslist[0].course.toUpperCase() : "";
             if (detectedCourse) {
                 currentCourse.courseCode = detectedCourse;
                 document.getElementById('courseCode').value = detectedCourse;
             }
-
             const existingMap = {};
-            currentCourse.students.forEach(st => {
-                if (st.studentId) {
-                    existingMap[st.studentId.toUpperCase()] = st;
-                }
-            });
+            currentCourse.students.forEach(st => { if (st.studentId) existingMap[st.studentId.toUpperCase()] = st; });
 
             currentCourse.students = stagedClasslist.map(st => {
                 const prev = existingMap[st.studentId.toUpperCase()] || {};
                 return {
-                    studentId: st.studentId,
-                    lastName: st.lastName,
-                    firstName: st.firstName,
-                    course: st.course || currentCourse.courseCode || "",
-                    mode: st.mode || "F",
-                    assignedLabIdx: prev.assignedLabIdx || 0,
-                    assignedTutIdx: prev.assignedTutIdx || 0,
+                    studentId: st.studentId, lastName: st.lastName, firstName: st.firstName,
+                    course: st.course || currentCourse.courseCode || "", mode: st.mode || "F",
+                    assignedLabIdx: prev.assignedLabIdx !== undefined ? prev.assignedLabIdx : 0,
+                    assignedTutIdx: prev.assignedTutIdx !== undefined ? prev.assignedTutIdx : 0,
                     lectureAttendance: prev.lectureAttendance || {},
                     labAttendance: prev.labAttendance || {},
                     tutorialAttendance: prev.tutorialAttendance || {},
@@ -1936,22 +1529,16 @@
                 };
             });
 
-            const importedCount = stagedClasslist.length;
-            const fileName = stagedFileName;
+            const count = stagedClasslist.length;
             stagedClasslist = null;
-
-            const dz = document.getElementById('classlistDropzone');
-            dz.classList.remove('staged');
-            document.getElementById('dropzoneMainText').innerHTML =
-                `<strong>Autofilled ${importedCount} Students from ${escapeHtml(fileName)} into Lecture, Lab & Tutorial Tables!</strong>`;
-            document.getElementById('dropzoneSubText').innerHTML =
-                `Click or drag & drop another classlist file (.csv, .xls, .xlsx) and press <strong>ENTER</strong> to load another course.`;
-
+            document.getElementById('classlistDropzone').classList.remove('staged');
+            document.getElementById('dropzoneMainText').innerHTML = `<strong>Autofilled ${count} Students from ${escapeHtml(stagedFileName)}!</strong>`;
+            document.getElementById('dropzoneSubText').innerHTML = `Click or drag & drop another classlist file and press <strong>ENTER</strong>.`;
             renderAllThreeTables();
             saveCourseAndAttendance(false);
         }
 
-        /* ================= SECURE SUPABASE RPC SAVE & DELETE ================= */
+        /* ================= SAVE & DELETE COURSE RPC ================= */
 
         async function saveCourseAndAttendance(manualClick) {
             currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
@@ -1960,124 +1547,90 @@
             currentCourse.semEnd = document.getElementById('semEnd').value;
 
             const code = currentCourse.courseCode;
-            if (!code) {
-                if (manualClick) alert("Please enter a Course Unit Code (or drop a classlist CSV) before saving.");
-                return;
-            }
+            if (!code) { if (manualClick) alert("Please enter a Course Unit Code before saving."); return; }
 
             const indicator = document.getElementById('syncIndicator');
             indicator.innerText = "Saving to Supabase...";
-
             try {
                 const { data: res, error } = await sb.rpc('save_portal_course', {
-                    p_staff_id: loggedInUser.idNumber,
-                    p_password: staffSessionPassword,
-                    p_course: currentCourse
+                    p_staff_id: loggedInUser.idNumber, p_password: userSessionPassword, p_course: currentCourse
                 });
-
                 if (error) throw error;
                 if (!res || !res.success) throw new Error((res && res.message) || "Save rejected.");
 
                 coursesStore[code] = JSON.parse(JSON.stringify(currentCourse));
                 populateCourseDropdown();
                 document.getElementById('courseSelector').value = code;
-
-                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                indicator.innerText = `Saved (${timeStr})`;
+                indicator.innerText = `Saved (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })})`;
             } catch (err) {
                 indicator.innerText = "Save error";
-                console.error("Supabase save error:", err);
-                if (manualClick) alert("Error saving to Supabase: " + err.message);
+                if (manualClick) alert("Error saving: " + err.message);
             }
         }
 
         async function deleteCurrentCourse() {
-            if (!isEditMode) {
-                alert("Please click 'Enable Edit Mode' first before deleting a course.");
-                return;
-            }
-
+            if (!isEditMode) { alert("Please click 'Enable Edit Mode' first."); return; }
             const code = (currentCourse.courseCode || document.getElementById('courseCode').value).trim().toUpperCase();
-            if (!code) {
-                alert("No Course Unit Code is currently selected to delete.");
-                return;
-            }
-
-            const confirmed = confirm(
-                `Are you sure you want to permanently DELETE course "${code}"?\n\nThis will delete the course, its timetable, and all Lecture, Lab, and Tutorial attendance records for "${code}" from Supabase.`
-            );
-            if (!confirmed) return;
+            if (!code || !confirm(`Permanently DELETE course "${code}" and all its attendance records?`)) return;
 
             const indicator = document.getElementById('syncIndicator');
             indicator.innerText = `Deleting ${code}...`;
-
             try {
                 const { data: res, error } = await sb.rpc('delete_portal_course', {
-                    p_staff_id: loggedInUser.idNumber,
-                    p_password: staffSessionPassword,
-                    p_course_code: code
+                    p_staff_id: loggedInUser.idNumber, p_password: userSessionPassword, p_course_code: code
                 });
-
                 if (error) throw error;
-                if (!res || !res.success) throw new Error((res && res.message) || "Delete rejected.");
-
                 delete coursesStore[code];
                 populateCourseDropdown();
-
-                const remainingCodes = Object.keys(coursesStore);
-                if (remainingCodes.length > 0) {
-                    document.getElementById('courseSelector').value = remainingCodes[0];
-                    loadSelectedCourse();
-                } else {
-                    startNewCourse();
-                }
-
+                const rem = Object.keys(coursesStore);
+                if (rem.length) { document.getElementById('courseSelector').value = rem[0]; loadSelectedCourse(); }
+                else startNewCourse();
                 indicator.innerText = `Deleted ${code}`;
-                alert(`Course "${code}" and all related attendance records have been deleted.`);
             } catch (err) {
                 indicator.innerText = "Delete failed";
-                console.error(err);
                 alert("Could not delete course: " + err.message);
             }
         }
 
-        /* ================= SCHEDULE SLOTS (LECTURE, LAB, TUTORIAL) ================= */
+        /* ================= SCHEDULE SLOTS & 3 ATTENDANCE TABLES ================= */
 
         function renderScheduleCards() {
-            renderSlotGroup('lectures', 'lecturesSlotList', 'Lec');
-            renderSlotGroup('labs', 'labsSlotList', 'Lab');
-            renderSlotGroup('tutorials', 'tutorialsSlotList', 'Tut');
+            renderSlotGroup('lectures', 'lecturesSlotList', 'Lec', false);
+            renderSlotGroup('labs', 'labsSlotList', 'Lab', true);
+            renderSlotGroup('tutorials', 'tutorialsSlotList', 'Tut', true);
             updateScheduleSummaryBars();
         }
 
-        function renderSlotGroup(groupKey, containerId, prefix) {
+        function getEnrolledCountForStream(groupKey, slotIdx) {
+            let count = 0;
+            (currentCourse.students || []).forEach(st => {
+                if (!st.studentId && !st.lastName) return;
+                if (groupKey === 'labs' && Number(st.assignedLabIdx) === slotIdx) count++;
+                if (groupKey === 'tutorials' && Number(st.assignedTutIdx) === slotIdx) count++;
+            });
+            return count;
+        }
+
+        function renderSlotGroup(groupKey, containerId, prefix, hasCapacity) {
             const container = document.getElementById(containerId);
             container.innerHTML = "";
             const slots = currentCourse.schedules[groupKey] || [];
-            const disabledAttr = isEditMode ? "" : "disabled";
+            const dis = isEditMode ? "" : "disabled";
 
             slots.forEach((slot, idx) => {
                 const row = document.createElement('div');
-                row.className = 'slot-row';
-
-                let dayOptions = DAYS_OF_WEEK.map(d =>
-                    `<option value="${d}" ${slot.day === d ? "selected" : ""}>${prefix} ${idx + 1} (${d})</option>`
-                ).join("");
-
+                row.className = hasCapacity ? 'slot-row-cap' : 'slot-row-lec';
+                const dayOpts = DAYS_OF_WEEK.map(d => `<option value="${d}" ${slot.day === d ? "selected" : ""}>${prefix} ${idx + 1} (${d})</option>`).join("");
+                const capInput = hasCapacity
+                    ? `<input type="number" min="1" max="500" value="${escapeHtml(slot.capacity || 25)}" ${dis} oninput="updateScheduleSlot('${groupKey}', ${idx}, 'capacity', Number(this.value))" title="Max Capacity">`
+                    : "";
                 row.innerHTML = `
-                    <select ${disabledAttr} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'day', this.value)">
-                        ${dayOptions}
-                    </select>
-                    <input type="time" value="${escapeHtml(slot.startTime || '')}" ${disabledAttr}
-                        onchange="updateScheduleSlot('${groupKey}', ${idx}, 'startTime', this.value)" title="Start Time">
-                    <input type="time" value="${escapeHtml(slot.endTime || '')}" ${disabledAttr}
-                        onchange="updateScheduleSlot('${groupKey}', ${idx}, 'endTime', this.value)" title="End Time">
-                    <input type="text" value="${escapeHtml(slot.room || '')}" placeholder="Room # / Place" ${disabledAttr}
-                        oninput="updateScheduleSlot('${groupKey}', ${idx}, 'room', this.value)" title="Place (Room Number)">
-                    ${isEditMode && slots.length > 1
-                        ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>`
-                        : `<span style="width:24px;"></span>`
-                    }
+                    <select ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'day', this.value)">${dayOpts}</select>
+                    <input type="time" value="${escapeHtml(slot.startTime || '')}" ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'startTime', this.value)">
+                    <input type="time" value="${escapeHtml(slot.endTime || '')}" ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'endTime', this.value)">
+                    <input type="text" value="${escapeHtml(slot.room || '')}" placeholder="Room #" ${dis} oninput="updateScheduleSlot('${groupKey}', ${idx}, 'room', this.value)">
+                    ${capInput}
+                    ${isEditMode && slots.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>` : `<span style="width:24px;"></span>`}
                 `;
                 container.appendChild(row);
             });
@@ -2085,69 +1638,46 @@
 
         function addScheduleSlot(groupKey) {
             if (!isEditMode) return;
-            currentCourse.schedules[groupKey].push({
-                day: "Mon",
-                startTime: "10:00",
-                endTime: "11:00",
-                room: ""
-            });
-            renderScheduleCards();
-            renderAllThreeTables();
-            queueAutoSave();
+            const slot = { day: "Mon", startTime: "10:00", endTime: "11:00", room: "" };
+            if (groupKey !== 'lectures') slot.capacity = 25;
+            currentCourse.schedules[groupKey].push(slot);
+            renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
         }
 
         function removeScheduleSlot(groupKey, idx) {
-            if (!isEditMode) return;
-            if (currentCourse.schedules[groupKey].length <= 1) return;
+            if (!isEditMode || currentCourse.schedules[groupKey].length <= 1) return;
             currentCourse.schedules[groupKey].splice(idx, 1);
-            renderScheduleCards();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
         }
 
         function updateScheduleSlot(groupKey, idx, field, val) {
             currentCourse.schedules[groupKey][idx][field] = val;
-            updateScheduleSummaryBars();
-            renderAllThreeTables();
-            queueAutoSave();
+            updateScheduleSummaryBars(); renderAllThreeTables(); queueAutoSave();
         }
 
-        function formatSlotSummary(slot, labelPrefix, idx) {
-            if (!slot) return `${labelPrefix} ${idx + 1}`;
-            const timeRange = (slot.startTime && slot.endTime) ? `${slot.startTime}–${slot.endTime}` : "Time TBA";
-            const roomStr = slot.room ? `Room: ${slot.room}` : "Room TBA";
-            return `${labelPrefix} ${idx + 1} (${slot.day || 'Day'} ${timeRange}, ${roomStr})`;
+        function formatSlotSummary(slot, prefix, idx) {
+            if (!slot) return `${prefix} ${idx + 1}`;
+            const time = (slot.startTime && slot.endTime) ? `${slot.startTime}–${slot.endTime}` : "Time TBA";
+            return `${prefix} ${idx + 1} (${slot.day || 'Day'} ${time}, ${slot.room ? 'Room: ' + slot.room : 'Room TBA'})`;
         }
 
         function updateScheduleSummaryBars() {
             const lecs = currentCourse.schedules.lectures.map((s, i) => formatSlotSummary(s, 'Lec', i)).join("  |  ");
-            const labs = currentCourse.schedules.labs.map((s, i) => formatSlotSummary(s, 'Lab', i)).join("  |  ");
-            const tuts = currentCourse.schedules.tutorials.map((s, i) => formatSlotSummary(s, 'Tut', i)).join("  |  ");
-
-            document.getElementById('lectureScheduleSummary').innerHTML =
-                `<strong>Scheduled Weekly Lectures (${currentCourse.schedules.lectures.length} per week — Student must attend ALL):</strong> ${escapeHtml(lecs)}`;
-            document.getElementById('labScheduleSummary').innerHTML =
-                `<strong>Available Lab Streams (Student must attend 1 Lab per week):</strong> ${escapeHtml(labs)}`;
-            document.getElementById('tutorialScheduleSummary').innerHTML =
-                `<strong>Available Tutorial Streams (Student must attend 1 Tutorial per week):</strong> ${escapeHtml(tuts)}`;
+            const labs = currentCourse.schedules.labs.map((s, i) => `${formatSlotSummary(s, 'Lab', i)} [Cap: ${getEnrolledCountForStream('labs', i)}/${s.capacity || 25}]`).join("  |  ");
+            const tuts = currentCourse.schedules.tutorials.map((s, i) => `${formatSlotSummary(s, 'Tut', i)} [Cap: ${getEnrolledCountForStream('tutorials', i)}/${s.capacity || 25}]`).join("  |  ");
+            document.getElementById('lectureScheduleSummary').innerHTML = `<strong>Scheduled Weekly Lectures (Attend ALL):</strong> ${escapeHtml(lecs)}`;
+            document.getElementById('labScheduleSummary').innerHTML = `<strong>Lab Streams (1/Wk — Capacity Tracked):</strong> ${escapeHtml(labs)}`;
+            document.getElementById('tutorialScheduleSummary').innerHTML = `<strong>Tutorial Streams (1/Wk — Capacity Tracked):</strong> ${escapeHtml(tuts)}`;
         }
-
-        /* ================= WEEKS & METADATA LOGIC ================= */
 
         function generateWeeksList(startStr, endStr) {
             if (!startStr || !endStr) return ["Week 1", "Week 2", "Week 3", "Week 4"];
-            const start = new Date(startStr);
-            const end = new Date(endStr);
+            const start = new Date(startStr), end = new Date(endStr);
             if (isNaN(start) || isNaN(end) || end < start) return ["Week 1"];
-
-            const weeks = [];
-            let curr = new Date(start);
-            let weekNum = 1;
-            while (curr <= end && weekNum <= 24) {
-                const labelDate = curr.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-                weeks.push(`Wk ${weekNum} (${labelDate})`);
-                curr.setDate(curr.getDate() + 7);
-                weekNum++;
+            const weeks = []; let curr = new Date(start), wk = 1;
+            while (curr <= end && wk <= 24) {
+                weeks.push(`Wk ${wk} (${curr.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })})`);
+                curr.setDate(curr.getDate() + 7); wk++;
             }
             return weeks.length ? weeks : ["Week 1"];
         }
@@ -2155,10 +1685,7 @@
         function handleCourseMetaEdit() {
             currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
             currentCourse.courseTitle = document.getElementById('courseTitle').value;
-
-            currentCourse.students.forEach(st => {
-                if (!st.course) st.course = currentCourse.courseCode;
-            });
+            currentCourse.students.forEach(st => { if (!st.course) st.course = currentCourse.courseCode; });
             queueAutoSave();
         }
 
@@ -2166,8 +1693,7 @@
             currentCourse.semStart = document.getElementById('semStart').value;
             currentCourse.semEnd = document.getElementById('semEnd').value;
             currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function renderCourseToUI() {
@@ -2175,45 +1701,28 @@
             document.getElementById('courseTitle').value = currentCourse.courseTitle || "";
             document.getElementById('semStart').value = currentCourse.semStart || "";
             document.getElementById('semEnd').value = currentCourse.semEnd || "";
-
+            renderStaffPendingRequests();
             renderScheduleCards();
             renderAllThreeTables();
         }
 
-        /* ================= RENDER ALL 3 STAFF WEEK-WISE ATTENDANCE TABLES ================= */
-
         function renderAllThreeTables() {
+            updateScheduleSummaryBars();
             renderLectureTable();
             renderLabTable();
             renderTutorialTable();
         }
 
-        function buildCommonStudentCells(st, idx, disabledAttr) {
+        function buildCommonStudentCells(st, idx, dis) {
             const modeVal = st.mode || "F";
             return `
                 <td class="row-num">${idx + 1}</td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.studentId)}" placeholder="ID" ${dis} onchange="updateStudentField(${idx}, 'studentId', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.lastName)}" placeholder="Last Name" ${dis} onchange="updateStudentField(${idx}, 'lastName', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.firstName)}" placeholder="First Name" ${dis} onchange="updateStudentField(${idx}, 'firstName', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}" placeholder="Course" ${dis} onchange="updateStudentField(${idx}, 'course', this.value)"></td>
                 <td>
-                    <input class="cell-input" type="text" value="${escapeHtml(st.studentId)}"
-                        placeholder="Enter ID" ${disabledAttr}
-                        onchange="updateStudentField(${idx}, 'studentId', this.value)">
-                </td>
-                <td>
-                    <input class="cell-input" type="text" value="${escapeHtml(st.lastName)}"
-                        placeholder="Last Name" ${disabledAttr}
-                        onchange="updateStudentField(${idx}, 'lastName', this.value)">
-                </td>
-                <td>
-                    <input class="cell-input" type="text" value="${escapeHtml(st.firstName)}"
-                        placeholder="First Name" ${disabledAttr}
-                        onchange="updateStudentField(${idx}, 'firstName', this.value)">
-                </td>
-                <td>
-                    <input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}"
-                        placeholder="Course" ${disabledAttr}
-                        onchange="updateStudentField(${idx}, 'course', this.value)">
-                </td>
-                <td>
-                    <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'mode', this.value)">
+                    <select class="cell-select" ${dis} onchange="updateStudentField(${idx}, 'mode', this.value)">
                         <option value="F" ${modeVal === "F" ? "selected" : ""}>F</option>
                         <option value="O" ${modeVal === "O" ? "selected" : ""}>O</option>
                     </select>
@@ -2221,440 +1730,250 @@
             `;
         }
 
-        // TABLE 1: LECTURE TABLE (Only 'P' counts as Present; 'A' & 'L' count as Absent)
         function renderLectureTable() {
-            const thead = document.getElementById('lectureTableHead');
-            const tbody = document.getElementById('lectureTableBody');
-            const weeks = currentCourse.weeks || [];
-            const lecSlots = currentCourse.schedules.lectures || [];
-            const numLecs = lecSlots.length;
-
-            let headHTML = `<tr>
-                <th>#</th>
-                <th style="min-width:115px;">ID</th>
-                <th style="min-width:135px;">Last Name</th>
-                <th style="min-width:125px;">First Name</th>
-                <th style="min-width:80px;">Course</th>
-                <th style="min-width:70px;">Mode</th>`;
-
+            const weeks = currentCourse.weeks || [], lecSlots = currentCourse.schedules.lectures || [], numLecs = lecSlots.length;
+            let head = `<tr><th>#</th><th style="min-width:110px;">ID</th><th style="min-width:130px;">Last Name</th><th style="min-width:120px;">First Name</th><th>Course</th><th>Mode</th>`;
             weeks.forEach(w => {
-                const subLabels = lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
-                headHTML += `<th style="min-width:${Math.max(105, numLecs * 48)}px;">
-                    <div>${w}</div>
-                    <div style="font-size:10px; font-weight:normal; color:#475569;">${escapeHtml(subLabels)}</div>
-                </th>`;
+                const sub = lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
+                head += `<th style="min-width:${Math.max(100, numLecs * 46)}px;"><div>${w}</div><div style="font-size:10px; font-weight:normal;">${escapeHtml(sub)}</div></th>`;
             });
+            head += `<th>Present</th><th>Full Wks</th><th>Lecture %</th>${isEditMode ? `<th>Del</th>` : ""}</tr>`;
+            document.getElementById('lectureTableHead').innerHTML = head;
 
-            headHTML += `
-                <th style="min-width:95px;">Sessions Present</th>
-                <th style="min-width:105px;">Full Weeks (All ${numLecs} Lec)</th>
-                <th style="min-width:90px;">Lecture %</th>
-                ${isEditMode ? `<th style="width:50px;">Del</th>` : ""}
-            </tr>`;
-            thead.innerHTML = headHTML;
-
+            const tbody = document.getElementById('lectureTableBody');
             tbody.innerHTML = "";
-            const disabledAttr = isEditMode ? "" : "disabled";
+            const dis = isEditMode ? "" : "disabled";
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let totalLecPresent = 0;
-                let totalLecMarked = 0;
-                let fullWeeksAttended = 0;
-                let weeksMarkedCount = 0;
-
-                let weekCellsHTML = "";
+                let totPres = 0, totMark = 0, fullWks = 0, wksMark = 0, cells = "";
                 weeks.forEach((w, wIdx) => {
-                    let presentThisWeek = 0;
-                    let markedThisWeek = 0;
-
-                    let selectsHTML = "";
+                    let wkPres = 0, wkMark = 0, sels = "";
                     for (let lIdx = 0; lIdx < numLecs; lIdx++) {
                         const key = `W${wIdx + 1}_L${lIdx + 1}`;
-                        const rawVal = st.lectureAttendance[key] || "";
-                        const val = getEffectiveSessionStatus(rawVal, currentCourse.semStart, wIdx, lecSlots[lIdx], st.hasLoggedIn);
-
-                        if (val === "P") {
-                            presentThisWeek++;
-                            markedThisWeek++;
-                            totalLecPresent++;
-                            totalLecMarked++;
-                        } else if (val === "A" || val === "L") {
-                            markedThisWeek++;
-                            totalLecMarked++;
-                        }
-
-                        const slotInfo = formatSlotSummary(lecSlots[lIdx], 'Lecture', lIdx);
-                        const colorClass = val ? `att-${val}` : "";
-
-                        selectsHTML += `
-                            <select class="lec-sub-select ${colorClass}" title="${escapeHtml(slotInfo)}" ${disabledAttr}
-                                onchange="updateLectureCell(${idx}, '${key}', this.value)">
-                                <option value="" ${val === "" ? "selected" : ""}>L${lIdx + 1}:-</option>
-                                <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
-                                <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
-                                <option value="L" ${val === "L" ? "selected" : ""}>L${lIdx + 1}:L</option>
-                            </select>
-                        `;
+                        const val = getEffectiveSessionStatus(st.lectureAttendance[key] || "", currentCourse.semStart, wIdx, lecSlots[lIdx], st.hasLoggedIn);
+                        if (val === "P") { wkPres++; wkMark++; totPres++; totMark++; }
+                        else if (val === "A" || val === "L") { wkMark++; totMark++; }
+                        sels += `<select class="lec-sub-select ${val ? 'att-' + val : ''}" ${dis} onchange="updateLectureCell(${idx}, '${key}', this.value)">
+                            <option value="" ${val === "" ? "selected" : ""}>L${lIdx + 1}:-</option>
+                            <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
+                            <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
+                            <option value="L" ${val === "L" ? "selected" : ""}>L${lIdx + 1}:L</option>
+                        </select>`;
                     }
-
-                    let chipHTML = "";
-                    if (markedThisWeek > 0) {
-                        weeksMarkedCount++;
-                        if (presentThisWeek === numLecs) {
-                            fullWeeksAttended++;
-                            chipHTML = `<span class="wk-status-chip chip-full" title="Present for ALL lectures this week">${presentThisWeek}/${numLecs}✓</span>`;
-                        } else if (presentThisWeek > 0) {
-                            chipHTML = `<span class="wk-status-chip chip-partial">${presentThisWeek}/${numLecs}</span>`;
-                        } else {
-                            chipHTML = `<span class="wk-status-chip chip-none">0/${numLecs}</span>`;
-                        }
+                    let chip = "";
+                    if (wkMark > 0) {
+                        wksMark++;
+                        if (wkPres === numLecs) { fullWks++; chip = `<span class="wk-status-chip chip-full">${wkPres}/${numLecs}✓</span>`; }
+                        else chip = `<span class="wk-status-chip ${wkPres > 0 ? 'chip-partial' : 'chip-none'}">${wkPres}/${numLecs}</span>`;
                     }
-
-                    weekCellsHTML += `<td><div class="lec-week-box">${selectsHTML}${chipHTML}</div></td>`;
+                    cells += `<td><div class="lec-week-box">${sels}${chip}</div></td>`;
                 });
-
-                const lecPct = totalLecMarked > 0 ? Math.round((totalLecPresent / totalLecMarked) * 100) + "%" : "0%";
-
-                tr.innerHTML = `
-                    ${buildCommonStudentCells(st, idx, disabledAttr)}
-                    ${weekCellsHTML}
-                    <td class="summary-cell">${totalLecPresent} / ${totalLecMarked || (weeks.length * numLecs)}</td>
-                    <td class="summary-cell">${fullWeeksAttended} / ${weeksMarkedCount || weeks.length} Wks</td>
-                    <td class="summary-cell">${lecPct}</td>
-                    ${isEditMode ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
-                `;
+                const pct = totMark > 0 ? Math.round((totPres / totMark) * 100) + "%" : "0%";
+                tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}${cells}
+                    <td class="summary-cell">${totPres}/${totMark || (weeks.length * numLecs)}</td>
+                    <td class="summary-cell">${fullWks}/${wksMark || weeks.length}</td>
+                    <td class="summary-cell">${pct}</td>
+                    ${isEditMode ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}`;
                 tbody.appendChild(tr);
             });
         }
 
-        // TABLE 2: LAB TABLE
         function renderLabTable() {
-            const thead = document.getElementById('labTableHead');
+            const weeks = currentCourse.weeks || [], labSlots = currentCourse.schedules.labs || [];
+            let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Lab (Staff Override)</th>`;
+            weeks.forEach(w => { head += `<th>${w}</th>`; });
+            head += `<th>Labs Present</th><th>Lab %</th></tr>`;
+            document.getElementById('labTableHead').innerHTML = head;
+
             const tbody = document.getElementById('labTableBody');
-            const weeks = currentCourse.weeks || [];
-            const labSlots = currentCourse.schedules.labs || [];
-
-            let headHTML = `<tr>
-                <th>#</th>
-                <th style="min-width:115px;">ID</th>
-                <th style="min-width:135px;">Last Name</th>
-                <th style="min-width:125px;">First Name</th>
-                <th style="min-width:80px;">Course</th>
-                <th style="min-width:70px;">Mode</th>
-                <th style="min-width:185px;">Assigned Lab (Time & Room)</th>`;
-
-            weeks.forEach(w => {
-                headHTML += `<th style="min-width:90px;">${w}<div style="font-size:10px; font-weight:normal; color:#047857;">(1 Lab Req.)</div></th>`;
-            });
-
-            headHTML += `
-                <th style="min-width:95px;">Labs Present</th>
-                <th style="min-width:90px;">Lab %</th>
-            </tr>`;
-            thead.innerHTML = headHTML;
-
             tbody.innerHTML = "";
-            const disabledAttr = isEditMode ? "" : "disabled";
+            const dis = isEditMode ? "" : "disabled";
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let labsPresent = 0;
-                let labsMarked = 0;
+                let pres = 0, mark = 0, cells = "";
+                const labOpts = labSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedLabIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))} [${getEnrolledCountForStream('labs', sIdx)}/${s.capacity || 25}]</option>`).join("");
+                const slot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
 
-                let labOptions = labSlots.map((s, sIdx) =>
-                    `<option value="${sIdx}" ${Number(st.assignedLabIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))}</option>`
-                ).join("");
-
-                const stuLabSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
-                let weekCellsHTML = "";
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
-                    const rawVal = (st.labAttendance && st.labAttendance[key]) ? st.labAttendance[key] : "";
-                    const val = getEffectiveSessionStatus(rawVal, currentCourse.semStart, wIdx, stuLabSlot, st.hasLoggedIn);
-
-                    if (val === "P") { labsPresent++; labsMarked++; }
-                    else if (val === "A" || val === "L") { labsMarked++; }
-
-                    const colorClass = val ? `att-${val}` : "";
-                    weekCellsHTML += `<td class="${colorClass}">
-                        <select class="att-select" ${disabledAttr} onchange="updateSingleSessionCell(${idx}, 'labAttendance', '${key}', this.value)">
+                    const val = getEffectiveSessionStatus((st.labAttendance && st.labAttendance[key]) || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                    if (val === "P") { pres++; mark++; }
+                    else if (val === "A" || val === "L") { mark++; }
+                    cells += `<td class="${val ? 'att-' + val : ''}">
+                        <select class="att-select" ${dis} onchange="updateSingleSessionCell(${idx}, 'labAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L</option>
+                            <option value="REQ" ${val === "REQ" ? "selected" : ""}>REQ</option>
                         </select>
                     </td>`;
                 });
-
-                const labPct = labsMarked > 0 ? Math.round((labsPresent / labsMarked) * 100) + "%" : "0%";
-
-                tr.innerHTML = `
-                    ${buildCommonStudentCells(st, idx, disabledAttr)}
-                    <td>
-                        <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">
-                            ${labOptions}
-                        </select>
-                    </td>
-                    ${weekCellsHTML}
-                    <td class="summary-cell">${labsPresent} / ${labsMarked || weeks.length}</td>
-                    <td class="summary-cell">${labPct}</td>
-                `;
+                const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
+                // Staff can always change student's designated Lab in Edit Mode (or anytime)
+                tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
+                    <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">${labOpts}</select></td>
+                    ${cells}<td class="summary-cell">${pres}/${mark || weeks.length}</td><td class="summary-cell">${pct}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        // TABLE 3: TUTORIAL TABLE
         function renderTutorialTable() {
-            const thead = document.getElementById('tutorialTableHead');
+            const weeks = currentCourse.weeks || [], tutSlots = currentCourse.schedules.tutorials || [], numLecs = (currentCourse.schedules.lectures || []).length;
+            let head = `<tr><th>#</th><th>ID</th><th>Last Name</th><th>First Name</th><th>Course</th><th>Mode</th><th style="min-width:210px;">Designated Tutorial (Staff Override)</th>`;
+            weeks.forEach(w => { head += `<th>${w}</th>`; });
+            head += `<th>Tuts Present</th><th>Tutorial %</th><th>Overall %</th></tr>`;
+            document.getElementById('tutorialTableHead').innerHTML = head;
+
             const tbody = document.getElementById('tutorialTableBody');
-            const weeks = currentCourse.weeks || [];
-            const tutSlots = currentCourse.schedules.tutorials || [];
-            const numLecs = (currentCourse.schedules.lectures || []).length;
-
-            let headHTML = `<tr>
-                <th>#</th>
-                <th style="min-width:115px;">ID</th>
-                <th style="min-width:135px;">Last Name</th>
-                <th style="min-width:125px;">First Name</th>
-                <th style="min-width:80px;">Course</th>
-                <th style="min-width:70px;">Mode</th>
-                <th style="min-width:185px;">Assigned Tutorial (Time & Room)</th>`;
-
-            weeks.forEach(w => {
-                headHTML += `<th style="min-width:90px;">${w}<div style="font-size:10px; font-weight:normal; color:#6d28d9;">(1 Tut Req.)</div></th>`;
-            });
-
-            headHTML += `
-                <th style="min-width:95px;">Tuts Present</th>
-                <th style="min-width:90px;">Tutorial %</th>
-                <th style="min-width:115px;">Overall Course %</th>
-            </tr>`;
-            thead.innerHTML = headHTML;
-
             tbody.innerHTML = "";
-            const disabledAttr = isEditMode ? "" : "disabled";
+            const dis = isEditMode ? "" : "disabled";
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                let tutsPresent = 0;
-                let tutsMarked = 0;
+                let pres = 0, mark = 0, cells = "";
+                const tutOpts = tutSlots.map((s, sIdx) => `<option value="${sIdx}" ${Number(st.assignedTutIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))} [${getEnrolledCountForStream('tutorials', sIdx)}/${s.capacity || 25}]</option>`).join("");
+                const slot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
 
-                let tutOptions = tutSlots.map((s, sIdx) =>
-                    `<option value="${sIdx}" ${Number(st.assignedTutIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))}</option>`
-                ).join("");
-
-                const stuTutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
-                let weekCellsHTML = "";
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
-                    const rawVal = (st.tutorialAttendance && st.tutorialAttendance[key]) ? st.tutorialAttendance[key] : "";
-                    const val = getEffectiveSessionStatus(rawVal, currentCourse.semStart, wIdx, stuTutSlot, st.hasLoggedIn);
-
-                    if (val === "P") { tutsPresent++; tutsMarked++; }
-                    else if (val === "A" || val === "L") { tutsMarked++; }
-
-                    const colorClass = val ? `att-${val}` : "";
-                    weekCellsHTML += `<td class="${colorClass}">
-                        <select class="att-select" ${disabledAttr} onchange="updateSingleSessionCell(${idx}, 'tutorialAttendance', '${key}', this.value)">
+                    const val = getEffectiveSessionStatus((st.tutorialAttendance && st.tutorialAttendance[key]) || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                    if (val === "P") { pres++; mark++; }
+                    else if (val === "A" || val === "L") { mark++; }
+                    cells += `<td class="${val ? 'att-' + val : ''}">
+                        <select class="att-select" ${dis} onchange="updateSingleSessionCell(${idx}, 'tutorialAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
                             <option value="L" ${val === "L" ? "selected" : ""}>L</option>
+                            <option value="REQ" ${val === "REQ" ? "selected" : ""}>REQ</option>
                         </select>
                     </td>`;
                 });
-
-                const tutPct = tutsMarked > 0 ? Math.round((tutsPresent / tutsMarked) * 100) + "%" : "0%";
-                const overallPct = computeOverallStudentPercentage(st, weeks.length, numLecs);
-
-                tr.innerHTML = `
-                    ${buildCommonStudentCells(st, idx, disabledAttr)}
-                    <td>
-                        <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'assignedTutIdx', Number(this.value))">
-                            ${tutOptions}
-                        </select>
-                    </td>
-                    ${weekCellsHTML}
-                    <td class="summary-cell">${tutsPresent} / ${tutsMarked || weeks.length}</td>
-                    <td class="summary-cell">${tutPct}</td>
-                    <td class="summary-cell" style="background:#eef2ff; color:#1e3a8a;">${overallPct}</td>
-                `;
+                const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
+                const overall = computeOverallStudentPercentage(st, weeks.length, numLecs);
+                tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
+                    <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedTutIdx', Number(this.value))">${tutOpts}</select></td>
+                    ${cells}<td class="summary-cell">${pres}/${mark || weeks.length}</td><td class="summary-cell">${pct}</td>
+                    <td class="summary-cell" style="background:#eef2ff; color:#1e3a8a;">${overall}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function computeOverallStudentPercentage(st, numWeeks, numLecs) {
-            let present = 0;
-            let marked = 0;
-            const lecSlots = currentCourse.schedules.lectures || [];
-            const labSlots = currentCourse.schedules.labs || [];
-            const tutSlots = currentCourse.schedules.tutorials || [];
-            const stuLabSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0];
-            const stuTutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
-
+            let pres = 0, mark = 0;
+            const lecSlots = currentCourse.schedules.lectures || [], labSlots = currentCourse.schedules.labs || [], tutSlots = currentCourse.schedules.tutorials || [];
+            const labSlot = labSlots[st.assignedLabIdx || 0] || labSlots[0], tutSlot = tutSlots[st.assignedTutIdx || 0] || tutSlots[0];
             for (let w = 0; w < numWeeks; w++) {
                 for (let l = 0; l < numLecs; l++) {
-                    const rawV = st.lectureAttendance ? st.lectureAttendance[`W${w + 1}_L${l + 1}`] : "";
-                    const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, w, lecSlots[l], st.hasLoggedIn);
-                    if (v === "P") { present++; marked++; }
-                    else if (v === "A" || v === "L") { marked++; }
+                    const v = getEffectiveSessionStatus(st.lectureAttendance ? st.lectureAttendance[`W${w + 1}_L${l + 1}`] : "", currentCourse.semStart, w, lecSlots[l], st.hasLoggedIn);
+                    if (v === "P") { pres++; mark++; } else if (v === "A" || v === "L") mark++;
                 }
-                const rawLab = st.labAttendance ? st.labAttendance[`W${w + 1}`] : "";
-                const labV = getEffectiveSessionStatus(rawLab, currentCourse.semStart, w, stuLabSlot, st.hasLoggedIn);
-                if (labV === "P") { present++; marked++; }
-                else if (labV === "A" || labV === "L") { marked++; }
-
-                const rawTut = st.tutorialAttendance ? st.tutorialAttendance[`W${w + 1}`] : "";
-                const tutV = getEffectiveSessionStatus(rawTut, currentCourse.semStart, w, stuTutSlot, st.hasLoggedIn);
-                if (tutV === "P") { present++; marked++; }
-                else if (tutV === "A" || tutV === "L") { marked++; }
+                const lv = getEffectiveSessionStatus(st.labAttendance ? st.labAttendance[`W${w + 1}`] : "", currentCourse.semStart, w, labSlot, st.hasLoggedIn);
+                if (lv === "P") { pres++; mark++; } else if (lv === "A" || lv === "L") mark++;
+                const tv = getEffectiveSessionStatus(st.tutorialAttendance ? st.tutorialAttendance[`W${w + 1}`] : "", currentCourse.semStart, w, tutSlot, st.hasLoggedIn);
+                if (tv === "P") { pres++; mark++; } else if (tv === "A" || tv === "L") mark++;
             }
-            return marked > 0 ? Math.round((present / marked) * 100) + "%" : "0%";
+            return mark > 0 ? Math.round((pres / mark) * 100) + "%" : "0%";
         }
-
-        /* ================= CELL, ROSTER & EXCEL EXPORT HANDLERS ================= */
 
         function updateStudentField(rowIndex, field, value) {
             currentCourse.students[rowIndex][field] = value;
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function updateLectureCell(rowIndex, key, value) {
-            if (!currentCourse.students[rowIndex].lectureAttendance) {
-                currentCourse.students[rowIndex].lectureAttendance = {};
-            }
             currentCourse.students[rowIndex].lectureAttendance[key] = value;
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function updateSingleSessionCell(rowIndex, mapName, weekKey, value) {
-            if (!currentCourse.students[rowIndex][mapName]) {
-                currentCourse.students[rowIndex][mapName] = {};
-            }
             currentCourse.students[rowIndex][mapName][weekKey] = value;
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function addStudentRow() {
             if (!isEditMode) return;
             currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function clearAllRows() {
-            if (!isEditMode) return;
-            if (!confirm("Clear all student rows from all 3 attendance tables?")) return;
+            if (!isEditMode || !confirm("Clear all student rows?")) return;
             currentCourse.students = [createEmptyStudent(currentCourse.courseCode)];
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function deleteStudentRow(rowIndex) {
             if (!isEditMode) return;
             currentCourse.students.splice(rowIndex, 1);
-            if (currentCourse.students.length === 0) {
-                currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
-            }
-            renderAllThreeTables();
-            queueAutoSave();
+            if (!currentCourse.students.length) currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function queueAutoSave() {
-            const autoSaveEnabled = document.getElementById('autoSaveToggle').checked;
-            if (!autoSaveEnabled || !currentCourse.courseCode) return;
-
+            if (!document.getElementById('autoSaveToggle').checked || !currentCourse.courseCode) return;
             document.getElementById('syncIndicator').innerText = "Unsaved edits...";
             clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(() => {
-                saveCourseAndAttendance(false);
-            }, 600);
+            autoSaveTimer = setTimeout(() => saveCourseAndAttendance(false), 600);
         }
 
         function exportCourseToExcel() {
-            const code = currentCourse.courseCode || "Course";
-            const weeks = currentCourse.weeks || [];
-            const lecSlots = currentCourse.schedules.lectures || [];
-            const labSlots = currentCourse.schedules.labs || [];
-            const tutSlots = currentCourse.schedules.tutorials || [];
+            const code = currentCourse.courseCode || "Course", weeks = currentCourse.weeks || [];
+            const lecSlots = currentCourse.schedules.lectures || [], labSlots = currentCourse.schedules.labs || [], tutSlots = currentCourse.schedules.tutorials || [];
             const wb = XLSX.utils.book_new();
 
             const lecHeaders = ["ID", "Last Name", "First Name", "Course", "Mode"];
-            weeks.forEach(w => {
-                lecSlots.forEach((s, lIdx) => {
-                    lecHeaders.push(`${w} - L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`);
-                });
-            });
+            weeks.forEach(w => lecSlots.forEach((s, lIdx) => lecHeaders.push(`${w} - L${lIdx + 1}`)));
             lecHeaders.push("Lecture %");
-
             const lecRows = [lecHeaders];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
                 const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode];
-                weeks.forEach((_, wIdx) => {
-                    lecSlots.forEach((slotObj, lIdx) => {
-                        const rawV = st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "";
-                        const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, wIdx, slotObj, st.hasLoggedIn);
-                        row.push(v);
-                        if (v === "P") { att++; mark++; }
-                        else if (v === "A" || v === "L") { mark++; }
-                    });
-                });
+                weeks.forEach((_, wIdx) => lecSlots.forEach((slotObj, lIdx) => {
+                    const v = getEffectiveSessionStatus(st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "", currentCourse.semStart, wIdx, slotObj, st.hasLoggedIn);
+                    row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
+                }));
                 row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
                 lecRows.push(row);
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(lecRows), `${code}_Lectures`);
 
-            const labHeaders = ["ID", "Last Name", "First Name", "Course", "Mode", "Assigned Lab", ...weeks, "Lab %"];
-            const labRows = [labHeaders];
+            const labRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Lab", ...weeks, "Lab %"]];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
-                const labSlot = labSlots[st.assignedLabIdx || 0] || {};
-                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(labSlot, 'Lab', st.assignedLabIdx || 0)];
+                const slot = labSlots[st.assignedLabIdx || 0] || {};
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(slot, 'Lab', st.assignedLabIdx || 0)];
                 weeks.forEach((_, wIdx) => {
-                    const rawV = st.labAttendance[`W${wIdx + 1}`] || "";
-                    const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, wIdx, labSlot, st.hasLoggedIn);
-                    row.push(v);
-                    if (v === "P") { att++; mark++; }
-                    else if (v === "A" || v === "L") { mark++; }
+                    const v = getEffectiveSessionStatus(st.labAttendance[`W${wIdx + 1}`] || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                    row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
                 });
                 row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
                 labRows.push(row);
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(labRows), `${code}_Labs`);
 
-            const tutHeaders = ["ID", "Last Name", "First Name", "Course", "Mode", "Assigned Tutorial", ...weeks, "Tutorial %", "Overall Course %"];
-            const tutRows = [tutHeaders];
+            const tutRows = [["ID", "Last Name", "First Name", "Course", "Mode", "Designated Tutorial", ...weeks, "Tutorial %", "Overall %"]];
             currentCourse.students.forEach(st => {
                 let att = 0, mark = 0;
-                const tutSlot = tutSlots[st.assignedTutIdx || 0] || {};
-                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(tutSlot, 'Tut', st.assignedTutIdx || 0)];
+                const slot = tutSlots[st.assignedTutIdx || 0] || {};
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(slot, 'Tut', st.assignedTutIdx || 0)];
                 weeks.forEach((_, wIdx) => {
-                    const rawV = st.tutorialAttendance[`W${wIdx + 1}`] || "";
-                    const v = getEffectiveSessionStatus(rawV, currentCourse.semStart, wIdx, tutSlot, st.hasLoggedIn);
-                    row.push(v);
-                    if (v === "P") { att++; mark++; }
-                    else if (v === "A" || v === "L") { mark++; }
+                    const v = getEffectiveSessionStatus(st.tutorialAttendance[`W${wIdx + 1}`] || "", currentCourse.semStart, wIdx, slot, st.hasLoggedIn);
+                    row.push(v); if (v === "P") { att++; mark++; } else if (v === "A" || v === "L") mark++;
                 });
                 row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
                 row.push(computeOverallStudentPercentage(st, weeks.length, lecSlots.length));
                 tutRows.push(row);
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tutRows), `${code}_Tutorials`);
-
             XLSX.writeFile(wb, `${code}_Semester_Attendance.xlsx`);
         }
 
         function escapeHtml(str) {
-            return String(str || "")
-                .replace(/&/g, "&amp;")
-                .replace(/"/g, "&quot;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;");
+            return String(str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
     </script>
 </body>
