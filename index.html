@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal - Staff & Student Login / Course Attendance</title>
-    <!-- SheetJS fallback so both .CSV and .XLS/.XLSX files work -->
+    <title>Portal - Staff & Student Login / Course Attendance (Supabase)</title>
+    <!-- Supabase JS v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS for reading Classlist (.csv/.xls/.xlsx) & exporting Attendance Workbooks -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -442,7 +444,7 @@
                 </div>
             </div>
 
-            <!-- Step 2: Register / Login Form (novalidate prevents hidden inputs from blocking submit) -->
+            <!-- Step 2: Register / Login Form -->
             <div id="formStep" class="form-container">
                 <h2 id="formTitle">Register</h2>
                 <form id="authForm" novalidate onsubmit="handleAuthSubmit(event)">
@@ -480,7 +482,8 @@
                 <div class="topbar-meta" id="staffWelcomeMeta">Logged in as Staff</div>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <span class="sync-badge" id="syncIndicator">Ready</span>
+                <span class="sync-badge" id="syncIndicator">Connected to Supabase</span>
+                <button type="button" class="btn btn-dark" onclick="exportCourseToExcel()" title="Download Excel workbook with Lecture, Lab & Tutorial tabs">Export Excel (.xlsx)</button>
                 <button type="button" class="btn btn-danger" onclick="logoutStaff()">Logout</button>
             </div>
         </div>
@@ -502,7 +505,7 @@
                         <input type="checkbox" id="autoSaveToggle" checked> Auto-save on edit
                     </label>
                     <button type="button" class="btn btn-warning" id="editModeBtn" onclick="toggleEditMode()">Enable Edit Mode</button>
-                    <button type="button" class="btn btn-student" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Google Sheet</button>
+                    <button type="button" class="btn btn-student" id="saveAllBtn" onclick="saveCourseAndAttendance(true)">Save All to Database</button>
                 </div>
             </div>
 
@@ -572,7 +575,7 @@
                         <strong>Click or Drag & Drop Course Classlist File Here (.csv, .xls, .xlsx)</strong>
                     </div>
                     <div id="dropzoneSubText" style="font-size:12px; margin-top:4px;">
-                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode across all 3 Attendance Tables (Lecture, Lab & Tutorial) and Google Sheets.
+                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode across all 3 Attendance Tables (Lecture, Lab & Tutorial) and save to Supabase.
                     </div>
                     <input type="file" id="classlistFileInput" accept=".csv,.xls,.xlsx" style="display:none" onchange="handleClasslistFileSelect(event)">
                 </div>
@@ -641,8 +644,15 @@
     </div>
 
     <script>
-        // REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZdAYGsLolINFwW_aBwsoP5vJuWyU-XT2xqkvisZrw6jTIWRVjza1kIbf4DadvuyFS/exec";
+        // ============================================================================
+        // REPLACE THESE TWO VALUES WITH YOUR SUPABASE PROJECT URL & ANON PUBLIC KEY
+        // (Found in Supabase Dashboard -> Project Settings -> API)
+        // ============================================================================
+        const SUPABASE_URL = "https://ecdqapbbbafamvehmoyp.supabase.co/rest/v1/";
+        const SUPABASE_ANON_KEY = "sb_secret_10nXnvvyFKtWRlO8SRk6vA_8CxBLsu1";
+
+        // Initialize Supabase Client
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -890,7 +900,7 @@
             document.getElementById('dropzoneMainText').innerHTML =
                 `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students Detected for ${escapeHtml(detectedCourse)})</strong>`;
             document.getElementById('dropzoneSubText').innerHTML =
-                `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill All 3 Tables & Save to Google Sheets ↵</span>`;
+                `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill All 3 Tables & Save to Supabase ↵</span>`;
         }
 
         function applyStagedClasslistAndSync() {
@@ -940,7 +950,7 @@
             saveCourseAndAttendance(false);
         }
 
-        /* ================= AUTHENTICATION LOGIC (FIXED) ================= */
+        /* ================= SUPABASE AUTHENTICATION & ID LOGIN ================= */
 
         function selectUserType(type) {
             selectedUserType = type;
@@ -976,7 +986,6 @@
             const emailInput = document.getElementById('email');
 
             regFields.style.display = isLoginMode ? 'none' : 'block';
-            // Disable and clear hidden fields in Login mode so browser validation never blocks form submit
             fullNameInput.disabled = isLoginMode;
             emailInput.disabled = isLoginMode;
             if (isLoginMode) {
@@ -1004,13 +1013,17 @@
         async function handleAuthSubmit(e) {
             e.preventDefault();
 
+            if (SUPABASE_URL.includes("YOUR_PROJECT_ID")) {
+                showStatus("Please set your SUPABASE_URL and SUPABASE_ANON_KEY in the HTML script first.", "status-error");
+                return;
+            }
+
             const idNumber = document.getElementById('idNumber').value.trim();
             const password = document.getElementById('password').value;
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const submitBtn = document.getElementById('submitBtnText');
 
-            // Explicit JavaScript validation
             if (!idNumber || !password) {
                 showStatus("Please enter both your ID Number and Password.", "status-error");
                 return;
@@ -1026,67 +1039,271 @@
                 }
             }
 
-            const payload = {
-                action: isLoginMode ? "login" : "register",
-                userType: selectedUserType,
-                idNumber: idNumber,
-                password: password,
-                fullName: fullName,
-                email: email
-            };
-
             submitBtn.disabled = true;
-            showStatus(isLoginMode ? "Verifying ID & Password..." : "Saving registration...", "status-loading");
+            showStatus(isLoginMode ? "Verifying ID & Password..." : "Registering account in Supabase...", "status-loading");
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
-
-                const rawText = await response.text();
-                let result;
-                try {
-                    result = JSON.parse(rawText);
-                } catch (parseErr) {
-                    showStatus("Apps Script returned an invalid response. Please re-deploy your Web App as a New Version with 'Anyone' access.", "status-error");
-                    console.error("Raw response from Apps Script:", rawText);
-                    return;
-                }
-
-                if (!result.success) {
-                    showStatus(result.message || "Invalid ID Number or Password.", "status-error");
-                    return;
-                }
-
                 if (!isLoginMode) {
+                    // 1. Register in Supabase Auth (optional best-effort) + PostgreSQL portal_users (bcrypt hashed)
+                    let authUserId = null;
+                    try {
+                        const { data: authData } = await sb.auth.signUp({
+                            email: email,
+                            password: password,
+                            options: {
+                                data: { full_name: fullName, id_number: idNumber, user_type: selectedUserType }
+                            }
+                        });
+                        if (authData && authData.user) authUserId = authData.user.id;
+                    } catch (_) {}
+
+                    const { data: rpcResult, error: rpcError } = await sb.rpc('register_portal_user', {
+                        p_user_type: selectedUserType,
+                        p_id_number: idNumber,
+                        p_full_name: fullName,
+                        p_email: email,
+                        p_password: password,
+                        p_auth_user_id: authUserId
+                    });
+
+                    if (rpcError) {
+                        showStatus("Database error: " + rpcError.message, "status-error");
+                        return;
+                    }
+                    if (!rpcResult || !rpcResult.success) {
+                        showStatus((rpcResult && rpcResult.message) || "Registration failed.", "status-error");
+                        return;
+                    }
+
+                    // Redirect directly to Login Mode with ID pre-filled
                     isLoginMode = true;
                     updateFormView();
                     document.getElementById('idNumber').value = idNumber;
                     document.getElementById('password').value = "";
-                    showStatus("Registration saved! Please enter your ID and Password to log in.", "status-success");
+                    showStatus("Registration complete! Please enter your ID and Password to log in.", "status-success");
+
                 } else {
-                    showStatus("Login verified! Redirecting...", "status-success");
+                    // 2. Verify ID Number & Password via PostgreSQL bcrypt RPC
+                    const { data: loginRes, error: loginErr } = await sb.rpc('verify_portal_login', {
+                        p_user_type: selectedUserType,
+                        p_id_number: idNumber,
+                        p_password: password
+                    });
+
+                    if (loginErr) {
+                        showStatus("Login error: " + loginErr.message, "status-error");
+                        return;
+                    }
+                    if (!loginRes || !loginRes.success) {
+                        showStatus((loginRes && loginRes.message) || "Invalid ID Number or Password.", "status-error");
+                        return;
+                    }
+
+                    // Also sign in to Supabase Auth session in the background if email confirmation is off
+                    if (loginRes.user && loginRes.user.email) {
+                        sb.auth.signInWithPassword({ email: loginRes.user.email, password: password }).catch(() => {});
+                    }
+
+                    showStatus("Login verified! Loading courses...", "status-success");
+
                     if (selectedUserType === "Staff") {
-                        loggedInStaff = result.user;
-                        coursesStore = result.courses || {};
+                        loggedInStaff = loginRes.user;
+                        await fetchAllCoursesFromSupabase();
                         openStaffDashboard();
                     } else {
-                        alert(`Welcome ${result.user.fullName} (${result.user.idNumber})! Student login verified.`);
+                        alert(`Welcome ${loginRes.user.fullName} (${loginRes.user.idNumber})! Student login verified.`);
                         document.getElementById('portalModal').style.display = 'none';
                     }
                 }
-            } catch (error) {
-                showStatus("Network error connecting to Google Sheets. Check your SCRIPT_URL and internet connection.", "status-error");
-                console.error(error);
+            } catch (err) {
+                showStatus("Network error: " + err.message, "status-error");
+                console.error(err);
             } finally {
                 submitBtn.disabled = false;
             }
         }
 
-        /* ================= STAFF DASHBOARD & COURSE DELETION ================= */
+        /* ================= SUPABASE DATABASE CRUD OPERATIONS ================= */
+
+        async function fetchAllCoursesFromSupabase() {
+            coursesStore = {};
+            const { data: coursesData, error: cErr } = await sb
+                .from('courses')
+                .select('*')
+                .order('course_code', { ascending: true });
+
+            if (cErr || !coursesData) {
+                console.error("Error fetching courses:", cErr);
+                return;
+            }
+
+            const { data: enrollmentsData, error: eErr } = await sb
+                .from('course_enrollments')
+                .select('*')
+                .order('sort_order', { ascending: true });
+
+            if (eErr) {
+                console.error("Error fetching enrollments:", eErr);
+            }
+
+            const enrollmentsByCourse = {};
+            (enrollmentsData || []).forEach(row => {
+                const code = row.course_code;
+                if (!enrollmentsByCourse[code]) enrollmentsByCourse[code] = [];
+                enrollmentsByCourse[code].push({
+                    studentId: row.student_id || "",
+                    lastName: row.last_name || "",
+                    firstName: row.first_name || "",
+                    course: code,
+                    mode: row.mode || "F",
+                    assignedLabIdx: Number(row.assigned_lab_idx || 0),
+                    assignedTutIdx: Number(row.assigned_tut_idx || 0),
+                    lectureAttendance: row.lecture_attendance || {},
+                    labAttendance: row.lab_attendance || {},
+                    tutorialAttendance: row.tutorial_attendance || {}
+                });
+            });
+
+            coursesData.forEach(c => {
+                coursesStore[c.course_code] = normalizeCourseStructure({
+                    courseCode: c.course_code,
+                    courseTitle: c.course_title || "",
+                    semStart: c.sem_start || "",
+                    semEnd: c.sem_end || "",
+                    schedules: c.schedules,
+                    weeks: c.weeks,
+                    students: enrollmentsByCourse[c.course_code] || []
+                });
+            });
+        }
+
+        async function saveCourseAndAttendance(manualClick) {
+            currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
+            currentCourse.courseTitle = document.getElementById('courseTitle').value.trim();
+            currentCourse.semStart = document.getElementById('semStart').value;
+            currentCourse.semEnd = document.getElementById('semEnd').value;
+
+            const code = currentCourse.courseCode;
+            if (!code) {
+                if (manualClick) alert("Please enter a Course Unit Code (or drop a classlist CSV) before saving.");
+                return;
+            }
+
+            const indicator = document.getElementById('syncIndicator');
+            indicator.innerText = "Saving to Supabase...";
+
+            try {
+                // 1. Upsert Course Record in `public.courses`
+                const { error: courseErr } = await sb
+                    .from('courses')
+                    .upsert({
+                        course_code: code,
+                        course_title: currentCourse.courseTitle,
+                        sem_start: currentCourse.semStart || null,
+                        sem_end: currentCourse.semEnd || null,
+                        staff_id: loggedInStaff ? loggedInStaff.idNumber : "",
+                        schedules: currentCourse.schedules,
+                        weeks: currentCourse.weeks,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'course_code' });
+
+                if (courseErr) throw courseErr;
+
+                // 2. Replace Student Enrollment Rows for this Course in `public.course_enrollments`
+                const { error: delErr } = await sb
+                    .from('course_enrollments')
+                    .delete()
+                    .eq('course_code', code);
+
+                if (delErr) throw delErr;
+
+                const validRows = currentCourse.students
+                    .filter(st => st.studentId || st.lastName || st.firstName)
+                    .map((st, idx) => ({
+                        course_code: code,
+                        student_id: String(st.studentId || "").trim(),
+                        last_name: String(st.lastName || "").trim(),
+                        first_name: String(st.firstName || "").trim(),
+                        mode: st.mode || "F",
+                        assigned_lab_idx: Number(st.assignedLabIdx || 0),
+                        assigned_tut_idx: Number(st.assignedTutIdx || 0),
+                        lecture_attendance: st.lectureAttendance || {},
+                        lab_attendance: st.labAttendance || {},
+                        tutorial_attendance: st.tutorialAttendance || {},
+                        sort_order: idx
+                    }));
+
+                if (validRows.length > 0) {
+                    const { error: insErr } = await sb
+                        .from('course_enrollments')
+                        .insert(validRows);
+                    if (insErr) throw insErr;
+                }
+
+                coursesStore[code] = JSON.parse(JSON.stringify(currentCourse));
+                populateCourseDropdown();
+                document.getElementById('courseSelector').value = code;
+
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                indicator.innerText = `Saved (${timeStr})`;
+            } catch (err) {
+                indicator.innerText = "Save error";
+                console.error("Supabase save error:", err);
+                if (manualClick) alert("Error saving to Supabase: " + err.message);
+            }
+        }
+
+        // Delete Course Unit & All Related Student Attendance Data from Supabase
+        async function deleteCurrentCourse() {
+            if (!isEditMode) {
+                alert("Please click 'Enable Edit Mode' first before deleting a course.");
+                return;
+            }
+
+            const code = (currentCourse.courseCode || document.getElementById('courseCode').value).trim().toUpperCase();
+            if (!code) {
+                alert("No Course Unit Code is currently selected to delete.");
+                return;
+            }
+
+            const confirmed = confirm(
+                `Are you sure you want to permanently DELETE course "${code}"?\n\nThis will delete the course, its timetable, and all Lecture, Lab, and Tutorial attendance records for "${code}" from Supabase.`
+            );
+            if (!confirmed) return;
+
+            const indicator = document.getElementById('syncIndicator');
+            indicator.innerText = `Deleting ${code}...`;
+
+            try {
+                // ON DELETE CASCADE automatically deletes all rows in course_enrollments for this course_code
+                const { error } = await sb
+                    .from('courses')
+                    .delete()
+                    .eq('course_code', code);
+
+                if (error) throw error;
+
+                delete coursesStore[code];
+                populateCourseDropdown();
+
+                const remainingCodes = Object.keys(coursesStore);
+                if (remainingCodes.length > 0) {
+                    document.getElementById('courseSelector').value = remainingCodes[0];
+                    loadSelectedCourse();
+                } else {
+                    startNewCourse();
+                }
+
+                indicator.innerText = `Deleted ${code}`;
+                alert(`Course "${code}" and all related attendance records have been deleted.`);
+            } catch (err) {
+                indicator.innerText = "Delete failed";
+                console.error(err);
+                alert("Could not delete course: " + err.message);
+            }
+        }
+
+        /* ================= STAFF DASHBOARD & UI LOGIC ================= */
 
         function openStaffDashboard() {
             document.getElementById('portalModal').style.display = 'none';
@@ -1108,6 +1325,7 @@
 
         function logoutStaff() {
             loggedInStaff = null;
+            sb.auth.signOut().catch(() => {});
             document.getElementById('staffDashboard').style.display = 'none';
             document.getElementById('portalModal').style.display = 'flex';
             resetModal();
@@ -1129,65 +1347,6 @@
             document.getElementById('courseSelector').value = "";
             currentCourse = createDefaultCourseObject();
             renderCourseToUI();
-        }
-
-        // Delete Course Unit & Any Related Spreadsheets in Google Drive / Master Sheet
-        async function deleteCurrentCourse() {
-            if (!isEditMode) {
-                alert("Please click 'Enable Edit Mode' first before deleting a course.");
-                return;
-            }
-
-            const code = (currentCourse.courseCode || document.getElementById('courseCode').value).trim().toUpperCase();
-            if (!code) {
-                alert("No Course Unit Code is currently selected to delete.");
-                return;
-            }
-
-            const confirmed = confirm(
-                `Are you sure you want to permanently DELETE course "${code}"?\n\nThis will delete its record, its sheet tab in the main Google Spreadsheet, and move its dedicated Course Attendance Spreadsheet to the Trash.`
-            );
-            if (!confirmed) return;
-
-            const indicator = document.getElementById('syncIndicator');
-            indicator.innerText = `Deleting ${code}...`;
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: "deleteCourse",
-                        courseCode: code,
-                        staffId: loggedInStaff ? loggedInStaff.idNumber : ""
-                    })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    delete coursesStore[code];
-                    populateCourseDropdown();
-
-                    const remainingCodes = Object.keys(coursesStore);
-                    if (remainingCodes.length > 0) {
-                        document.getElementById('courseSelector').value = remainingCodes[0];
-                        loadSelectedCourse();
-                    } else {
-                        startNewCourse();
-                    }
-
-                    indicator.innerText = `Deleted ${code}`;
-                    alert(`Course "${code}" and its related spreadsheets have been deleted.`);
-                } else {
-                    indicator.innerText = "Delete failed";
-                    alert("Could not delete course: " + (result.message || "Unknown error"));
-                }
-            } catch (err) {
-                indicator.innerText = "Delete error";
-                console.error(err);
-                alert("Network error while trying to delete course.");
-            }
         }
 
         function normalizeCourseStructure(raw) {
@@ -1731,7 +1890,7 @@
             return marked > 0 ? Math.round((attended / marked) * 100) + "%" : "0%";
         }
 
-        /* ================= CELL & ROSTER HANDLERS ================= */
+        /* ================= CELL, ROSTER & EXCEL EXPORT HANDLERS ================= */
 
         function updateStudentField(rowIndex, field, value) {
             currentCourse.students[rowIndex][field] = value;
@@ -1790,52 +1949,82 @@
             clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => {
                 saveCourseAndAttendance(false);
-            }, 1200);
+            }, 600);
         }
 
-        async function saveCourseAndAttendance(manualClick) {
-            currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
-            currentCourse.courseTitle = document.getElementById('courseTitle').value.trim();
-            currentCourse.semStart = document.getElementById('semStart').value;
-            currentCourse.semEnd = document.getElementById('semEnd').value;
+        // One-Click Export to Multi-Tab Excel Workbook (.xlsx)
+        function exportCourseToExcel() {
+            const code = currentCourse.courseCode || "Course";
+            const weeks = currentCourse.weeks || [];
+            const lecSlots = currentCourse.schedules.lectures || [];
+            const labSlots = currentCourse.schedules.labs || [];
+            const tutSlots = currentCourse.schedules.tutorials || [];
+            const wb = XLSX.utils.book_new();
 
-            if (!currentCourse.courseCode) {
-                if (manualClick) alert("Please enter a Course Unit Code (or drop a classlist CSV) before saving.");
-                return;
-            }
-
-            const indicator = document.getElementById('syncIndicator');
-            indicator.innerText = "Saving to Google Sheet...";
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: "saveCourseAndAttendance",
-                        staffId: loggedInStaff.idNumber,
-                        course: currentCourse
-                    })
+            // 1. Lectures Tab
+            const lecHeaders = ["ID", "Last Name", "First Name", "Course", "Mode"];
+            weeks.forEach(w => {
+                lecSlots.forEach((s, lIdx) => {
+                    lecHeaders.push(`${w} - L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`);
                 });
+            });
+            lecHeaders.push("Lecture %");
 
-                const result = await response.json();
-                if (result.success) {
-                    coursesStore[currentCourse.courseCode] = JSON.parse(JSON.stringify(currentCourse));
-                    populateCourseDropdown();
-                    document.getElementById('courseSelector').value = currentCourse.courseCode;
-                    renderCourseToUI();
+            const lecRows = [lecHeaders];
+            currentCourse.students.forEach(st => {
+                let att = 0, mark = 0;
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode];
+                weeks.forEach((_, wIdx) => {
+                    lecSlots.forEach((__, lIdx) => {
+                        const v = st.lectureAttendance[`W${wIdx + 1}_L${lIdx + 1}`] || "";
+                        row.push(v);
+                        if (v === "P" || v === "L" || v === "E") { att++; mark++; }
+                        else if (v === "A") { mark++; }
+                    });
+                });
+                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
+                lecRows.push(row);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(lecRows), `${code}_Lectures`);
 
-                    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    indicator.innerText = `Saved (${timeStr})`;
-                } else {
-                    indicator.innerText = "Save error";
-                    if (manualClick) alert("Error saving: " + result.message);
-                }
-            } catch (err) {
-                indicator.innerText = "Sync failed";
-                console.error(err);
-            }
+            // 2. Labs Tab
+            const labHeaders = ["ID", "Last Name", "First Name", "Course", "Mode", "Assigned Lab", ...weeks, "Lab %"];
+            const labRows = [labHeaders];
+            currentCourse.students.forEach(st => {
+                let att = 0, mark = 0;
+                const labSlot = labSlots[st.assignedLabIdx || 0] || {};
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(labSlot, 'Lab', st.assignedLabIdx || 0)];
+                weeks.forEach((_, wIdx) => {
+                    const v = st.labAttendance[`W${wIdx + 1}`] || "";
+                    row.push(v);
+                    if (v === "P" || v === "L" || v === "E") { att++; mark++; }
+                    else if (v === "A") { mark++; }
+                });
+                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
+                labRows.push(row);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(labRows), `${code}_Labs`);
+
+            // 3. Tutorials Tab
+            const tutHeaders = ["ID", "Last Name", "First Name", "Course", "Mode", "Assigned Tutorial", ...weeks, "Tutorial %", "Overall Course %"];
+            const tutRows = [tutHeaders];
+            currentCourse.students.forEach(st => {
+                let att = 0, mark = 0;
+                const tutSlot = tutSlots[st.assignedTutIdx || 0] || {};
+                const row = [st.studentId, st.lastName, st.firstName, st.course || code, st.mode, formatSlotSummary(tutSlot, 'Tut', st.assignedTutIdx || 0)];
+                weeks.forEach((_, wIdx) => {
+                    const v = st.tutorialAttendance[`W${wIdx + 1}`] || "";
+                    row.push(v);
+                    if (v === "P" || v === "L" || v === "E") { att++; mark++; }
+                    else if (v === "A") { mark++; }
+                });
+                row.push(mark > 0 ? Math.round((att / mark) * 100) + "%" : "0%");
+                row.push(computeOverallStudentPercentage(st, weeks.length, lecSlots.length));
+                tutRows.push(row);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tutRows), `${code}_Tutorials`);
+
+            XLSX.writeFile(wb, `${code}_Semester_Attendance.xlsx`);
         }
 
         function escapeHtml(str) {
