@@ -63,7 +63,9 @@
         .slot-row-cap { display:grid; grid-template-columns:80px 1fr 1fr 1fr 70px auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
         .slot-label-cap { display:grid; grid-template-columns:80px 1fr 1fr 1fr 70px 28px; gap:6px; font-size:11px; font-weight:bold; color:#475569; margin-bottom:4px; padding:0 6px; }
         .slot-row-2col { display:grid; grid-template-columns:145px 1fr auto; gap:6px; align-items:center; margin-bottom:8px; background:#fff; padding:6px; border-radius:4px; border:1px solid #e2e8f0; }
-        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input, .slot-row-2col select, .slot-row-2col input { width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
+        .slot-row-access { display:grid; grid-template-columns:1.2fr 1fr auto; gap:8px; align-items:center; margin-bottom:8px; background:#fff; padding:8px; border-radius:4px; border:1px solid #cbd5e1; font-size:12.5px; }
+        .slot-row-lec select, .slot-row-lec input, .slot-row-cap select, .slot-row-cap input, .slot-row-2col select, .slot-row-2col input, .slot-row-access select { width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px; box-sizing:border-box; }
+        .access-role-badge { font-size:12px; padding:4px 10px; border-radius:12px; font-weight:bold; background:#e0e7ff; color:#1e40af; }
         .requests-panel { background:#fff8e6; border:2px solid #f39c12; border-radius:8px; padding:16px 20px; margin-bottom:20px; display:none; }
         .requests-panel h3 { margin:0 0 10px 0; font-size:15px; color:#9c640c; }
         .req-table { width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; }
@@ -265,10 +267,11 @@
     <div id="staffDashboard">
         <div class="topbar">
             <div>
-                <h1>Course Unit, Timetable, Holidays & Attendance Portal</h1>
+                <h1>Course Unit, Timetable, Access Control & Attendance Portal</h1>
                 <div class="topbar-meta" id="staffWelcomeMeta">Logged in as Staff</div>
             </div>
-            <div style="display:flex; gap:10px; align-items:center;">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <span class="access-role-badge" id="myCourseRoleBadge">Role: Owner</span>
                 <span class="sync-badge" id="syncIndicator">Connected to Supabase</span>
                 <button type="button" class="btn btn-dark" onclick="exportCourseToExcel()">Export Excel (.xlsx)</button>
                 <button type="button" class="btn btn-danger" onclick="logoutUser()">Logout</button>
@@ -300,8 +303,8 @@
         <div class="course-panel">
             <div class="panel-header">
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                    <strong>Select Saved Course:</strong>
-                    <select id="courseSelector" onchange="loadSelectedCourse()" style="padding:8px; border-radius:4px; border:1px solid #ccc; min-width:220px;">
+                    <strong>My Accessible Courses:</strong>
+                    <select id="courseSelector" onchange="loadSelectedCourse()" style="padding:8px; border-radius:4px; border:1px solid #ccc; min-width:240px;">
                         <option value="">-- Create / Select Course Unit --</option>
                     </select>
                     <button type="button" class="btn btn-staff" onclick="startNewCourse()">+ New Course Unit</button>
@@ -373,7 +376,7 @@
                 </div>
             </div>
 
-            <!-- HOLIDAYS & EXEMPT WEEKS (STUDY BREAKS) EDITING CARDS -->
+            <!-- HOLIDAYS, EXEMPT WEEKS, AND MULTI-STAFF ACCESS CONTROL CARDS -->
             <div class="schedule-grid">
                 <!-- 4. Holidays Card -->
                 <div class="schedule-card" style="border-color:#c4b5fd; background:#faf5ff;">
@@ -397,6 +400,32 @@
                         Designate study break weeks where attendance is not taken and specify the reason (marked as <strong>BRK</strong>).
                     </div>
                     <div id="exemptWeeksListContainer"></div>
+                </div>
+
+                <!-- 6. Course Access & Staff Permissions Card (Owner Can Share With Unlimited Registered Staff) -->
+                <div class="schedule-card" style="border-color:#93c5fd; background:#eff6ff;">
+                    <div class="schedule-card-header">
+                        <h3 style="color:#1e40af;">6. Staff Access & Attendance Editing Permissions</h3>
+                        <span id="courseOwnerLabel" style="font-size:11.5px; font-weight:bold; color:#1e3a8a;"></span>
+                    </div>
+                    <div style="font-size:11.5px; color:#1e3a8a; margin-bottom:8px;">
+                        Each Staff member can only view courses they created or were granted access to below. <strong>If a Staff member's name is not in the dropdown, they must register on the Staff Registration page first.</strong>
+                    </div>
+
+                    <!-- Add Registered Staff Form (Active for Course Owner in Edit Mode) -->
+                    <div id="grantStaffAccessControls" style="display:grid; grid-template-columns:1.2fr 1fr auto; gap:6px; margin-bottom:10px;">
+                        <select id="grantStaffSelect" style="padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;">
+                            <option value="">-- Select Registered Staff --</option>
+                        </select>
+                        <select id="grantLevelSelect" style="padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:4px;">
+                            <option value="attendance_only">Attendance Editing Only</option>
+                            <option value="full_edit">Full Edit (Co-Editor)</option>
+                            <option value="view_only">View & Export Only</option>
+                        </select>
+                        <button type="button" class="btn btn-staff" id="grantStaffBtn" style="padding:6px 10px; font-size:11.5px;" onclick="grantStaffAccess()">+ Grant Access</button>
+                    </div>
+
+                    <div id="sharedStaffListContainer"></div>
                 </div>
             </div>
 
@@ -483,6 +512,7 @@
         let stagedFileName = "";
 
         let publicCoursesList = [];
+        let registeredStaffDirectory = []; // All registered Staff from portal_users
         let coursesStore = {};
         let currentCourse = createDefaultCourseObject();
 
@@ -490,7 +520,7 @@
             initSupabaseFromStorage();
             setupFileDropzone();
             window.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode) {
+                if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode && canEditCourseStructure()) {
                     e.preventDefault();
                     applyStagedClasslistAndSync();
                 }
@@ -608,6 +638,35 @@
             isLoginMode = false;
         }
 
+        /* ================= ACCESS LEVEL PERMISSION HELPERS ================= */
+
+        function getMyAccessLevel() {
+            return (currentCourse && currentCourse.myAccessLevel) ? currentCourse.myAccessLevel : "owner";
+        }
+
+        function isCourseOwner() {
+            return getMyAccessLevel() === "owner";
+        }
+
+        // Can edit course code/title, dates, schedules, holidays, exempt weeks, and roster
+        function canEditCourseStructure() {
+            const lvl = getMyAccessLevel();
+            return lvl === "owner" || lvl === "full_edit";
+        }
+
+        // Can mark/edit attendance cells, change student Lab/Tutorial assignment, and approve/reject requests
+        function canEditAttendance() {
+            const lvl = getMyAccessLevel();
+            return lvl === "owner" || lvl === "full_edit" || lvl === "attendance_only";
+        }
+
+        function formatRoleBadgeText(lvl) {
+            if (lvl === "owner") return "Role: Course Owner (Full Control & Sharing)";
+            if (lvl === "full_edit") return "Role: Co-Editor (Full Edit Access)";
+            if (lvl === "attendance_only") return "Role: Attendance Marker (Attendance Editing Only)";
+            return "Role: Viewer (Read-Only Access)";
+        }
+
         /* ================= DATE, HOLIDAY, STUDY BREAK & DAILY/WEEKLY HELPERS ================= */
 
         function toIsoDateStr(d) {
@@ -615,7 +674,6 @@
             return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         }
 
-        // Returns the exact YYYY-MM-DD of a session's weekday within Week (weekIndex0 + 1)
         function getSessionDateInWeek(semStartStr, weekIndex0, slotDayName) {
             if (!semStartStr || !slotDayName || slotDayName === "Daily") return "";
             const parts = semStartStr.split('-');
@@ -645,7 +703,6 @@
             return course.schedules.exemptWeeks.find(ew => Number(ew.weekNum) === Number(weekNum1)) || null;
         }
 
-        // Generates active teaching columns: either Weekly columns or Daily columns
         function getActiveColumnsForCourse(course) {
             const mode = (course.schedules && course.schedules.attendanceMode) ? course.schedules.attendanceMode : "weekly";
             if (mode === "daily") {
@@ -662,7 +719,6 @@
             }));
         }
 
-        // Generates Mon-Fri teaching days between semStart and semEnd for Daily Attendance Mode
         function generateDailyColumns(startStr, endStr) {
             if (!startStr || !endStr) return [{ mode: "daily", index0: 0, weekNum: 1, keyPrefix: "D_Day1", label: "Day 1", isoDate: "" }];
             const sp = startStr.split('-'), ep = endStr.split('-');
@@ -676,7 +732,7 @@
             let count = 0;
             while (curr <= end && count < 90) {
                 const dow = curr.getDay();
-                if (dow >= 1 && dow <= 5) { // Mon–Fri
+                if (dow >= 1 && dow <= 5) {
                     const iso = toIsoDateStr(curr);
                     const diffDays = Math.floor((curr - start) / 86400000);
                     const wkNum = Math.floor(diffDays / 7) + 1;
@@ -697,29 +753,18 @@
             return cols;
         }
 
-        /**
-         * Evaluates effective status for a cell:
-         * 1. If the week is in exemptWeeks (Study Break) -> returns 'BRK' (No penalty)
-         * 2. If the session's date is in holidays and rawVal is not 'P' -> returns 'HOL' (No penalty)
-         * 3. If explicitly marked 'P', 'A', 'L', 'REQ', 'HOL', 'BRK' -> returns that mark
-         * 4. If session time has passed without attendance -> returns 'A' (if logged in) or 'L' (if never logged in)
-         */
         function getEffectiveSessionStatus(course, rawVal, colObj, slotObj, hasLoggedIn) {
             if (!course || !colObj) return rawVal || "";
 
-            // 1. Check if this column belongs to an Exempt / Study Break Week
             const exemptWk = findExemptWeek(course, colObj.weekNum);
             if (exemptWk) return "BRK";
 
-            // 2. Determine the exact date of this session
             const sessionIsoDate = colObj.mode === "daily"
                 ? colObj.isoDate
                 : getSessionDateInWeek(course.semStart, colObj.index0, slotObj ? slotObj.day : "");
 
-            // 3. If student already attended ('P', e.g. via an alternative session during a holiday week), keep 'P'!
             if (rawVal === "P") return "P";
 
-            // 4. Check if session date falls on a designated Holiday
             if (sessionIsoDate && findHolidayForDate(course, sessionIsoDate)) {
                 return "HOL";
             }
@@ -993,6 +1038,7 @@
 
                     loggedInUser = loginRes.user;
                     userSessionPassword = password;
+                    registeredStaffDirectory = loginRes.registeredStaff || [];
                     coursesStore = {};
                     const rawCourses = loginRes.courses || {};
                     Object.keys(rawCourses).forEach(code => {
@@ -1273,6 +1319,9 @@
             const future = new Date(Date.now() + 14 * 7 * 86400000).toISOString().split('T')[0];
             return {
                 courseCode: "", courseTitle: "", semStart: today, semEnd: future,
+                ownerStaffId: loggedInUser ? loggedInUser.idNumber : "",
+                myAccessLevel: "owner",
+                sharedStaff: [],
                 schedules: {
                     attendanceMode: "weekly",
                     lectures: [{ day: "Mon", startTime: "09:00", endTime: "10:00", room: "" }, { day: "Wed", startTime: "09:00", endTime: "10:00", room: "" }],
@@ -1327,9 +1376,11 @@
             const sel = document.getElementById('courseSelector');
             sel.innerHTML = `<option value="">-- Create / Select Course Unit --</option>`;
             Object.keys(coursesStore).forEach(code => {
+                const c = coursesStore[code];
+                const roleTag = c.myAccessLevel === 'owner' ? 'Owner' : (c.myAccessLevel === 'full_edit' ? 'Co-Editor' : (c.myAccessLevel === 'attendance_only' ? 'Attendance Marker' : 'Viewer'));
                 const opt = document.createElement('option');
                 opt.value = code;
-                opt.textContent = `${code} - ${coursesStore[code].courseTitle || 'Untitled'}`;
+                opt.textContent = `${code} - ${c.courseTitle || 'Untitled'} (${roleTag})`;
                 sel.appendChild(opt);
             });
         }
@@ -1337,12 +1388,16 @@
         function startNewCourse() {
             document.getElementById('courseSelector').value = "";
             currentCourse = createDefaultCourseObject();
+            setEditMode(true);
             renderCourseToUI();
         }
 
         function normalizeCourseStructure(raw) {
             const def = createDefaultCourseObject();
             const c = Object.assign({}, def, raw);
+            if (!c.ownerStaffId) c.ownerStaffId = loggedInUser ? loggedInUser.idNumber : "";
+            if (!c.myAccessLevel) c.myAccessLevel = "owner";
+            if (!Array.isArray(c.sharedStaff)) c.sharedStaff = [];
             if (!c.schedules) c.schedules = def.schedules;
             if (!c.schedules.attendanceMode) c.schedules.attendanceMode = "weekly";
             if (!Array.isArray(c.schedules.lectures) || !c.schedules.lectures.length) c.schedules.lectures = def.schedules.lectures;
@@ -1376,32 +1431,157 @@
             const code = document.getElementById('courseSelector').value;
             if (!code || !coursesStore[code]) { startNewCourse(); return; }
             currentCourse = normalizeCourseStructure(JSON.parse(JSON.stringify(coursesStore[code])));
+            setEditMode(false);
             renderCourseToUI();
         }
 
-        function toggleEditMode() { setEditMode(!isEditMode); }
+        function toggleEditMode() {
+            if (!canEditAttendance()) {
+                alert("You have View-Only access to this course.");
+                return;
+            }
+            setEditMode(!isEditMode);
+        }
 
         function setEditMode(enabled) {
-            isEditMode = enabled;
+            const canStruct = canEditCourseStructure();
+            const canAtt = canEditAttendance();
+            isEditMode = enabled && canAtt;
+
             const btn = document.getElementById('editModeBtn');
-            btn.innerText = isEditMode ? "Lock / View Only" : "Enable Edit Mode";
+            btn.disabled = !canAtt;
+            btn.innerText = !canAtt ? "View Only Access" : (isEditMode ? "Lock / View Only" : "Enable Edit Mode");
             btn.className = isEditMode ? "btn btn-dark" : "btn btn-warning";
 
+            document.getElementById('saveAllBtn').disabled = !canAtt;
+            document.getElementById('deleteCourseBtn').disabled = !(isEditMode && isCourseOwner());
+
+            // Course structure fields are only unlocked if isEditMode AND user has owner or full_edit permission
+            const structUnlocked = isEditMode && canStruct;
             [
                 'courseCode', 'courseTitle', 'semStart', 'semEnd', 'attendanceModeSelect',
                 'addRowBtn', 'clearRowsBtn', 'addLecSlotBtn', 'addLabSlotBtn', 'addTutSlotBtn',
-                'addHolidayBtn', 'addExemptWeekBtn', 'deleteCourseBtn'
+                'addHolidayBtn', 'addExemptWeekBtn'
             ].forEach(id => {
-                document.getElementById(id).disabled = !isEditMode;
+                document.getElementById(id).disabled = !structUnlocked;
             });
 
             const dz = document.getElementById('classlistDropzone');
-            if (isEditMode) dz.classList.remove('disabled-zone');
+            if (structUnlocked) dz.classList.remove('disabled-zone');
             else { dz.classList.add('disabled-zone'); dz.classList.remove('staged'); stagedClasslist = null; }
 
             renderScheduleCards();
             renderHolidaysAndExemptWeeks();
+            renderStaffAccessControls();
             renderAllThreeTables();
+        }
+
+        /* ================= MULTI-STAFF ACCESS & PERMISSIONS EDITOR ================= */
+
+        function renderStaffAccessControls() {
+            const ownerLabel = document.getElementById('courseOwnerLabel');
+            const ownerId = currentCourse.ownerStaffId || (loggedInUser ? loggedInUser.idNumber : "");
+            const ownerInfo = registeredStaffDirectory.find(s => s.staffId.toUpperCase() === ownerId.toUpperCase());
+            ownerLabel.innerText = `Course Owner: ${ownerInfo ? ownerInfo.fullName + ' (' + ownerId + ')' : ownerId}`;
+
+            document.getElementById('myCourseRoleBadge').innerText = formatRoleBadgeText(getMyAccessLevel());
+
+            const canManageSharing = isEditMode && isCourseOwner();
+            const staffSelect = document.getElementById('grantStaffSelect');
+            const levelSelect = document.getElementById('grantLevelSelect');
+            const grantBtn = document.getElementById('grantStaffBtn');
+
+            staffSelect.disabled = !canManageSharing;
+            levelSelect.disabled = !canManageSharing;
+            grantBtn.disabled = !canManageSharing;
+
+            // Populate dropdown with registered Staff (excluding course owner and already-added staff)
+            const sharedIds = new Set((currentCourse.sharedStaff || []).map(x => String(x.staffId).toUpperCase()));
+            staffSelect.innerHTML = `<option value="">-- Select Registered Staff to Grant Access --</option>`;
+
+            let availableCount = 0;
+            registeredStaffDirectory.forEach(st => {
+                const sidUpper = String(st.staffId).toUpperCase();
+                if (sidUpper === String(ownerId).toUpperCase() || sharedIds.has(sidUpper)) return;
+                const opt = document.createElement('option');
+                opt.value = st.staffId;
+                opt.textContent = `${st.fullName} (${st.staffId})`;
+                staffSelect.appendChild(opt);
+                availableCount++;
+            });
+
+            if (availableCount === 0) {
+                const opt = document.createElement('option');
+                opt.value = "";
+                opt.disabled = true;
+                opt.textContent = "-- No other registered Staff found (New Staff must register first) --";
+                staffSelect.appendChild(opt);
+            }
+
+            // Render list of Staff currently granted access
+            const listContainer = document.getElementById('sharedStaffListContainer');
+            listContainer.innerHTML = "";
+            const sharedList = currentCourse.sharedStaff || [];
+
+            if (sharedList.length === 0) {
+                listContainer.innerHTML = `<div style="font-size:12px; color:#64748b; padding:4px;">No other staff granted access yet. Only the Course Owner can view/edit this course.</div>`;
+                return;
+            }
+
+            sharedList.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'slot-row-access';
+                const dis = canManageSharing ? "" : "disabled";
+                row.innerHTML = `
+                    <div><strong>${escapeHtml(item.fullName || item.staffId)}</strong> <span style="color:#475569;">(${escapeHtml(item.staffId)})</span></div>
+                    <select ${dis} onchange="updateSharedStaffLevel(${idx}, this.value)">
+                        <option value="attendance_only" ${item.accessLevel === 'attendance_only' ? 'selected' : ''}>Attendance Editing Only</option>
+                        <option value="full_edit" ${item.accessLevel === 'full_edit' ? 'selected' : ''}>Full Edit (Co-Editor)</option>
+                        <option value="view_only" ${item.accessLevel === 'view_only' ? 'selected' : ''}>View & Export Only</option>
+                    </select>
+                    ${canManageSharing
+                        ? `<button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="revokeStaffAccess(${idx})">Revoke ✕</button>`
+                        : `<span style="width:24px;"></span>`}
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function grantStaffAccess() {
+            if (!isEditMode || !isCourseOwner()) {
+                alert("Only the Course Owner in Edit Mode can grant access to other staff.");
+                return;
+            }
+            const staffId = document.getElementById('grantStaffSelect').value;
+            const accessLevel = document.getElementById('grantLevelSelect').value;
+            if (!staffId) {
+                alert("Please select a registered Staff member from the dropdown. If their name is not listed, ask them to register on the Staff Registration page first.");
+                return;
+            }
+            const staffObj = registeredStaffDirectory.find(s => s.staffId.toUpperCase() === staffId.toUpperCase());
+            if (!Array.isArray(currentCourse.sharedStaff)) currentCourse.sharedStaff = [];
+
+            currentCourse.sharedStaff.push({
+                staffId: staffObj ? staffObj.staffId : staffId,
+                fullName: staffObj ? staffObj.fullName : staffId,
+                accessLevel: accessLevel
+            });
+
+            renderStaffAccessControls();
+            queueAutoSave();
+        }
+
+        function updateSharedStaffLevel(idx, newLevel) {
+            if (!isEditMode || !isCourseOwner()) return;
+            currentCourse.sharedStaff[idx].accessLevel = newLevel;
+            queueAutoSave();
+        }
+
+        function revokeStaffAccess(idx) {
+            if (!isEditMode || !isCourseOwner()) return;
+            currentCourse.sharedStaff.splice(idx, 1);
+            renderStaffAccessControls();
+            queueAutoSave();
         }
 
         /* ================= HOLIDAYS & EXEMPT STUDY BREAK WEEKS EDITORS ================= */
@@ -1411,7 +1591,7 @@
             const exContainer = document.getElementById('exemptWeeksListContainer');
             holContainer.innerHTML = "";
             exContainer.innerHTML = "";
-            const dis = isEditMode ? "" : "disabled";
+            const dis = (isEditMode && canEditCourseStructure()) ? "" : "disabled";
 
             const holidays = currentCourse.schedules.holidays || [];
             if (holidays.length === 0) {
@@ -1423,7 +1603,7 @@
                     row.innerHTML = `
                         <input type="date" value="${escapeHtml(h.date || '')}" ${dis} onchange="updateHolidayField(${idx}, 'date', this.value)">
                         <input type="text" value="${escapeHtml(h.name || '')}" placeholder="Holiday Name (e.g. Fiji Day)" ${dis} oninput="updateHolidayField(${idx}, 'name', this.value)">
-                        ${isEditMode ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeHolidayRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
+                        ${!dis ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeHolidayRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
                     `;
                     holContainer.appendChild(row);
                 });
@@ -1443,7 +1623,7 @@
                     row.innerHTML = `
                         <select ${dis} onchange="updateExemptWeekField(${idx}, 'weekNum', Number(this.value))">${wkOpts}</select>
                         <input type="text" value="${escapeHtml(ew.reason || '')}" placeholder="Why no attendance? (e.g. Study Break)" ${dis} oninput="updateExemptWeekField(${idx}, 'reason', this.value)">
-                        ${isEditMode ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeExemptWeekRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
+                        ${!dis ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeExemptWeekRow(${idx})">✕</button>` : `<span style="width:24px;"></span>`}
                     `;
                     exContainer.appendChild(row);
                 });
@@ -1451,59 +1631,46 @@
         }
 
         function addHolidayRow() {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.schedules.holidays.push({ date: currentCourse.semStart || toIsoDateStr(new Date()), name: "Public Holiday" });
-            renderHolidaysAndExemptWeeks();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
 
         function updateHolidayField(idx, field, val) {
             currentCourse.schedules.holidays[idx][field] = val;
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function removeHolidayRow(idx) {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.schedules.holidays.splice(idx, 1);
-            renderHolidaysAndExemptWeeks();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
 
         function addExemptWeekRow() {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.schedules.exemptWeeks.push({ weekNum: 1, reason: "Mid-Semester Study Break" });
-            renderHolidaysAndExemptWeeks();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
 
         function updateExemptWeekField(idx, field, val) {
             currentCourse.schedules.exemptWeeks[idx][field] = val;
-            renderAllThreeTables();
-            queueAutoSave();
+            renderAllThreeTables(); queueAutoSave();
         }
 
         function removeExemptWeekRow(idx) {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.schedules.exemptWeeks.splice(idx, 1);
-            renderHolidaysAndExemptWeeks();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderHolidaysAndExemptWeeks(); renderAllThreeTables(); queueAutoSave();
         }
 
         function handleAttendanceModeChange() {
             const newMode = document.getElementById('attendanceModeSelect').value;
             currentCourse.schedules.attendanceMode = newMode;
             if (newMode === "daily") {
-                // Default slots to "Daily" if switching to Daily Mode
                 currentCourse.schedules.lectures.forEach(s => { if (!s.day) s.day = "Daily"; });
             }
-            renderScheduleCards();
-            renderAllThreeTables();
-            queueAutoSave();
+            renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
         }
 
         /* ================= STAFF PENDING APPROVAL REQUESTS ================= */
@@ -1512,7 +1679,7 @@
             const panel = document.getElementById('staffRequestsPanel');
             const tbody = document.getElementById('staffRequestsBody');
             const reqs = currentCourse.pendingRequests || [];
-            if (!reqs.length) { panel.style.display = 'none'; return; }
+            if (!reqs.length || !canEditAttendance()) { panel.style.display = 'none'; return; }
 
             panel.style.display = 'block';
             document.getElementById('pendingReqCount').innerText = reqs.length;
@@ -1571,23 +1738,26 @@
         /* ================= DROPBOX & CSV PARSER ================= */
 
         function triggerFileSelect() {
-            if (!isEditMode) { alert("Please click 'Enable Edit Mode' first."); return; }
+            if (!isEditMode || !canEditCourseStructure()) {
+                alert("Course classlist upload requires Course Owner or Full Edit permission in Edit Mode.");
+                return;
+            }
             document.getElementById('classlistFileInput').click();
         }
 
         function setupFileDropzone() {
             const dz = document.getElementById('classlistDropzone');
-            dz.addEventListener('dragover', e => { e.preventDefault(); if (isEditMode) dz.classList.add('dragover'); });
+            dz.addEventListener('dragover', e => { e.preventDefault(); if (isEditMode && canEditCourseStructure()) dz.classList.add('dragover'); });
             dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
             dz.addEventListener('drop', e => {
                 e.preventDefault(); dz.classList.remove('dragover');
-                if (!isEditMode) { alert("Please click 'Enable Edit Mode' first."); return; }
+                if (!isEditMode || !canEditCourseStructure()) { alert("Classlist upload requires Owner or Full Edit permission in Edit Mode."); return; }
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) stageClasslistFile(e.dataTransfer.files[0]);
             });
         }
 
         function handleClasslistFileSelect(e) {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             if (e.target.files && e.target.files[0]) { stageClasslistFile(e.target.files[0]); e.target.value = ""; }
         }
 
@@ -1701,6 +1871,8 @@
         /* ================= SAVE & DELETE COURSE RPC ================= */
 
         async function saveCourseAndAttendance(manualClick) {
+            if (!canEditAttendance()) return;
+
             currentCourse.courseCode = document.getElementById('courseCode').value.trim().toUpperCase();
             currentCourse.courseTitle = document.getElementById('courseTitle').value.trim();
             currentCourse.semStart = document.getElementById('semStart').value;
@@ -1718,6 +1890,7 @@
                 if (error) throw error;
                 if (!res || !res.success) throw new Error((res && res.message) || "Save rejected.");
 
+                if (res.myAccessLevel) currentCourse.myAccessLevel = res.myAccessLevel;
                 coursesStore[code] = JSON.parse(JSON.stringify(currentCourse));
                 populateCourseDropdown();
                 document.getElementById('courseSelector').value = code;
@@ -1729,7 +1902,10 @@
         }
 
         async function deleteCurrentCourse() {
-            if (!isEditMode) { alert("Please click 'Enable Edit Mode' first."); return; }
+            if (!isEditMode || !isCourseOwner()) {
+                alert("Only the Course Owner in Edit Mode can delete this course.");
+                return;
+            }
             const code = (currentCourse.courseCode || document.getElementById('courseCode').value).trim().toUpperCase();
             if (!code || !confirm(`Permanently DELETE course "${code}" and all its attendance records?`)) return;
 
@@ -1740,6 +1916,8 @@
                     p_staff_id: loggedInUser.idNumber, p_password: userSessionPassword, p_course_code: code
                 });
                 if (error) throw error;
+                if (!res || !res.success) throw new Error((res && res.message) || "Delete rejected.");
+
                 delete coursesStore[code];
                 populateCourseDropdown();
                 const rem = Object.keys(coursesStore);
@@ -1775,7 +1953,7 @@
             const container = document.getElementById(containerId);
             container.innerHTML = "";
             const slots = currentCourse.schedules[groupKey] || [];
-            const dis = isEditMode ? "" : "disabled";
+            const dis = (isEditMode && canEditCourseStructure()) ? "" : "disabled";
 
             slots.forEach((slot, idx) => {
                 const row = document.createElement('div');
@@ -1790,14 +1968,14 @@
                     <input type="time" value="${escapeHtml(slot.endTime || '')}" ${dis} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'endTime', this.value)">
                     <input type="text" value="${escapeHtml(slot.room || '')}" placeholder="Room #" ${dis} oninput="updateScheduleSlot('${groupKey}', ${idx}, 'room', this.value)">
                     ${capInput}
-                    ${isEditMode && slots.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>` : `<span style="width:24px;"></span>`}
+                    ${!dis && slots.length > 1 ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>` : `<span style="width:24px;"></span>`}
                 `;
                 container.appendChild(row);
             });
         }
 
         function addScheduleSlot(groupKey) {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             const defaultDay = currentCourse.schedules.attendanceMode === 'daily' ? 'Daily' : 'Mon';
             const slot = { day: defaultDay, startTime: "10:00", endTime: "11:00", room: "" };
             if (groupKey !== 'lectures') slot.capacity = 25;
@@ -1806,7 +1984,7 @@
         }
 
         function removeScheduleSlot(groupKey, idx) {
-            if (!isEditMode || currentCourse.schedules[groupKey].length <= 1) return;
+            if (!isEditMode || !canEditCourseStructure() || currentCourse.schedules[groupKey].length <= 1) return;
             currentCourse.schedules[groupKey].splice(idx, 1);
             renderScheduleCards(); renderAllThreeTables(); queueAutoSave();
         }
@@ -1878,6 +2056,7 @@
             renderStaffPendingRequests();
             renderScheduleCards();
             renderHolidaysAndExemptWeeks();
+            renderStaffAccessControls();
             renderAllThreeTables();
         }
 
@@ -1888,16 +2067,16 @@
             renderTutorialTable();
         }
 
-        function buildCommonStudentCells(st, idx, dis) {
+        function buildCommonStudentCells(st, idx, structDis) {
             const modeVal = st.mode || "F";
             return `
                 <td class="row-num">${idx + 1}</td>
-                <td><input class="cell-input" type="text" value="${escapeHtml(st.studentId)}" placeholder="ID" ${dis} onchange="updateStudentField(${idx}, 'studentId', this.value)"></td>
-                <td><input class="cell-input" type="text" value="${escapeHtml(st.lastName)}" placeholder="Last Name" ${dis} onchange="updateStudentField(${idx}, 'lastName', this.value)"></td>
-                <td><input class="cell-input" type="text" value="${escapeHtml(st.firstName)}" placeholder="First Name" ${dis} onchange="updateStudentField(${idx}, 'firstName', this.value)"></td>
-                <td><input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}" placeholder="Course" ${dis} onchange="updateStudentField(${idx}, 'course', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.studentId)}" placeholder="ID" ${structDis} onchange="updateStudentField(${idx}, 'studentId', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.lastName)}" placeholder="Last Name" ${structDis} onchange="updateStudentField(${idx}, 'lastName', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.firstName)}" placeholder="First Name" ${structDis} onchange="updateStudentField(${idx}, 'firstName', this.value)"></td>
+                <td><input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}" placeholder="Course" ${structDis} onchange="updateStudentField(${idx}, 'course', this.value)"></td>
                 <td>
-                    <select class="cell-select" ${dis} onchange="updateStudentField(${idx}, 'mode', this.value)">
+                    <select class="cell-select" ${structDis} onchange="updateStudentField(${idx}, 'mode', this.value)">
                         <option value="F" ${modeVal === "F" ? "selected" : ""}>F</option>
                         <option value="O" ${modeVal === "O" ? "selected" : ""}>O</option>
                     </select>
@@ -1908,18 +2087,21 @@
         function renderLectureTable() {
             const cols = getActiveColumnsForCourse(currentCourse);
             const lecSlots = currentCourse.schedules.lectures || [], numLecs = lecSlots.length;
+            const canDelRow = isEditMode && canEditCourseStructure();
+
             let head = `<tr><th>#</th><th style="min-width:110px;">ID</th><th style="min-width:130px;">Last Name</th><th style="min-width:120px;">First Name</th><th>Course</th><th>Mode</th>`;
             cols.forEach(c => {
                 const brk = findExemptWeek(currentCourse, c.weekNum);
                 const sub = brk ? `🚫 ${brk.reason}` : lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
                 head += `<th style="min-width:${Math.max(100, numLecs * 46)}px;"><div>${escapeHtml(c.label)}</div><div style="font-size:10px; font-weight:normal; color:${brk ? '#b91c1c' : '#475569'};">${escapeHtml(sub)}</div></th>`;
             });
-            head += `<th>Present</th><th>Lecture %</th>${isEditMode ? `<th>Del</th>` : ""}</tr>`;
+            head += `<th>Present</th><th>Lecture %</th>${canDelRow ? `<th>Del</th>` : ""}</tr>`;
             document.getElementById('lectureTableHead').innerHTML = head;
 
             const tbody = document.getElementById('lectureTableBody');
             tbody.innerHTML = "";
-            const dis = isEditMode ? "" : "disabled";
+            const structDis = (isEditMode && canEditCourseStructure()) ? "" : "disabled";
+            const attDis = (isEditMode && canEditAttendance()) ? "" : "disabled";
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
@@ -1931,7 +2113,7 @@
                         const val = getEffectiveSessionStatus(currentCourse, st.lectureAttendance[key] || "", c, lecSlots[lIdx], st.hasLoggedIn);
                         if (val === "P") { totPres++; totMark++; }
                         else if (val === "A" || val === "L") { totMark++; }
-                        sels += `<select class="lec-sub-select ${val ? 'att-' + val : ''}" ${dis} onchange="updateLectureCell(${idx}, '${key}', this.value)">
+                        sels += `<select class="lec-sub-select ${val ? 'att-' + val : ''}" ${attDis} onchange="updateLectureCell(${idx}, '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>L${lIdx + 1}:-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
@@ -1943,10 +2125,10 @@
                     cells += `<td><div class="lec-week-box">${sels}</div></td>`;
                 });
                 const pct = totMark > 0 ? Math.round((totPres / totMark) * 100) + "%" : "100%";
-                tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}${cells}
+                tr.innerHTML = `${buildCommonStudentCells(st, idx, structDis)}${cells}
                     <td class="summary-cell">${totPres}/${totMark}</td>
                     <td class="summary-cell">${pct}</td>
-                    ${isEditMode ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}`;
+                    ${canDelRow ? `<td style="text-align:center;"><button type="button" class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}`;
                 tbody.appendChild(tr);
             });
         }
@@ -1963,7 +2145,8 @@
 
             const tbody = document.getElementById('labTableBody');
             tbody.innerHTML = "";
-            const dis = isEditMode ? "" : "disabled";
+            const structDis = (isEditMode && canEditCourseStructure()) ? "" : "disabled";
+            const attDis = (isEditMode && canEditAttendance()) ? "" : "disabled";
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
@@ -1978,7 +2161,7 @@
                     if (val === "P") { pres++; mark++; }
                     else if (val === "A" || val === "L") { mark++; }
                     cells += `<td class="${val ? 'att-' + val : ''}">
-                        <select class="att-select" ${dis} onchange="updateSingleSessionCell(${idx}, 'labAttendance', '${key}', this.value)">
+                        <select class="att-select" ${attDis} onchange="updateSingleSessionCell(${idx}, 'labAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
@@ -1990,8 +2173,8 @@
                     </td>`;
                 });
                 const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "100%";
-                tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
-                    <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">${labOpts}</select></td>
+                tr.innerHTML = `${buildCommonStudentCells(st, idx, structDis)}
+                    <td><select class="cell-select" ${attDis} onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">${labOpts}</select></td>
                     ${cells}<td class="summary-cell">${pres}/${mark}</td><td class="summary-cell">${pct}</td>`;
                 tbody.appendChild(tr);
             });
@@ -2009,7 +2192,8 @@
 
             const tbody = document.getElementById('tutorialTableBody');
             tbody.innerHTML = "";
-            const dis = isEditMode ? "" : "disabled";
+            const structDis = (isEditMode && canEditCourseStructure()) ? "" : "disabled";
+            const attDis = (isEditMode && canEditAttendance()) ? "" : "disabled";
 
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
@@ -2024,7 +2208,7 @@
                     if (val === "P") { pres++; mark++; }
                     else if (val === "A" || val === "L") { mark++; }
                     cells += `<td class="${val ? 'att-' + val : ''}">
-                        <select class="att-select" ${dis} onchange="updateSingleSessionCell(${idx}, 'tutorialAttendance', '${key}', this.value)">
+                        <select class="att-select" ${attDis} onchange="updateSingleSessionCell(${idx}, 'tutorialAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
@@ -2037,8 +2221,8 @@
                 });
                 const pct = mark > 0 ? Math.round((pres / mark) * 100) + "%" : "100%";
                 const overall = computeOverallStudentPercentage(st, cols, numLecs);
-                tr.innerHTML = `${buildCommonStudentCells(st, idx, dis)}
-                    <td><select class="cell-select" onchange="updateStudentField(${idx}, 'assignedTutIdx', Number(this.value))">${tutOpts}</select></td>
+                tr.innerHTML = `${buildCommonStudentCells(st, idx, structDis)}
+                    <td><select class="cell-select" ${attDis} onchange="updateStudentField(${idx}, 'assignedTutIdx', Number(this.value))">${tutOpts}</select></td>
                     ${cells}<td class="summary-cell">${pres}/${mark}</td><td class="summary-cell">${pct}</td>
                     <td class="summary-cell" style="background:#eef2ff; color:#1e3a8a;">${overall}</td>`;
                 tbody.appendChild(tr);
@@ -2079,26 +2263,26 @@
         }
 
         function addStudentRow() {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
             renderAllThreeTables(); queueAutoSave();
         }
 
         function clearAllRows() {
-            if (!isEditMode || !confirm("Clear all student rows?")) return;
+            if (!isEditMode || !canEditCourseStructure() || !confirm("Clear all student rows?")) return;
             currentCourse.students = [createEmptyStudent(currentCourse.courseCode)];
             renderAllThreeTables(); queueAutoSave();
         }
 
         function deleteStudentRow(rowIndex) {
-            if (!isEditMode) return;
+            if (!isEditMode || !canEditCourseStructure()) return;
             currentCourse.students.splice(rowIndex, 1);
             if (!currentCourse.students.length) currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
             renderAllThreeTables(); queueAutoSave();
         }
 
         function queueAutoSave() {
-            if (!document.getElementById('autoSaveToggle').checked || !currentCourse.courseCode) return;
+            if (!document.getElementById('autoSaveToggle').checked || !currentCourse.courseCode || !canEditAttendance()) return;
             document.getElementById('syncIndicator').innerText = "Unsaved edits...";
             clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => saveCourseAndAttendance(false), 600);
