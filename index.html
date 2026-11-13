@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal - Staff & Student Login / Course Attendance</title>
-    <!-- Optional SheetJS fallback so both .CSV and .XLS/.XLSX files work -->
+    <!-- SheetJS fallback so both .CSV and .XLS/.XLSX files work -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -13,6 +13,9 @@
             --dark: #2c3e50;
             --border: #d1d5db;
             --bg: #f4f7f6;
+            --lec-color: #1d4ed8;
+            --lab-color: #047857;
+            --tut-color: #6d28d9;
         }
         body {
             font-family: Arial, sans-serif;
@@ -43,7 +46,7 @@
         .modal-box h2 { margin-top: 0; color: #333; }
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .btn {
-            padding: 9px 15px;
+            padding: 9px 14px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -57,6 +60,9 @@
         .btn-dark { background-color: var(--dark); }
         .btn-danger { background-color: #dc3545; }
         .btn-warning { background-color: #f39c12; }
+        .btn-lec { background-color: var(--lec-color); }
+        .btn-lab { background-color: var(--lab-color); }
+        .btn-tut { background-color: var(--tut-color); }
         .btn:hover { opacity: 0.9; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -91,8 +97,8 @@
         /* Staff Course & Attendance Dashboard */
         #staffDashboard {
             display: none;
-            padding: 20px 30px;
-            max-width: 1450px;
+            padding: 20px 28px;
+            max-width: 1550px;
             margin: 0 auto;
         }
         .topbar {
@@ -153,6 +159,62 @@
             color: #555;
         }
 
+        /* Schedule Configuration Grid (Lecture / Lab / Tutorial) */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .schedule-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 14px;
+            background: #f8fafc;
+        }
+        .schedule-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .schedule-card-header h3 {
+            margin: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .slot-row {
+            display: grid;
+            grid-template-columns: 78px 1fr 1fr 1.2fr auto;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 8px;
+            background: #fff;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .slot-row select, .slot-row input {
+            width: 100%;
+            padding: 6px;
+            font-size: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .slot-label-row {
+            display: grid;
+            grid-template-columns: 78px 1fr 1fr 1.2fr 28px;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 4px;
+            padding: 0 6px;
+        }
+
         /* Classlist Dropbox Styling */
         .dropbox-container {
             margin-top: 18px;
@@ -161,7 +223,7 @@
             border: 2px dashed #007BFF;
             background: #eef6ff;
             border-radius: 8px;
-            padding: 18px;
+            padding: 16px;
             text-align: center;
             cursor: pointer;
             font-size: 14px;
@@ -197,7 +259,20 @@
             border-radius: 4px;
             font-size: 12px;
             font-weight: bold;
-            letter-spacing: 0.3px;
+        }
+
+        /* Quick Navigation Bar for the 3 Attendance Tables */
+        .tables-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         /* Spreadsheet Table Styling */
@@ -207,7 +282,13 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             padding: 20px;
             overflow-x: auto;
+            margin-bottom: 28px;
+            border-top: 4px solid var(--dark);
         }
+        .sheet-wrapper.lec-sheet { border-top-color: var(--lec-color); }
+        .sheet-wrapper.lab-sheet { border-top-color: var(--lab-color); }
+        .sheet-wrapper.tut-sheet { border-top-color: var(--tut-color); }
+
         .sheet-toolbar {
             display: flex;
             justify-content: space-between;
@@ -215,6 +296,30 @@
             margin-bottom: 12px;
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .sheet-title-badge {
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rule-pill {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: normal;
+        }
+        .schedule-summary-bar {
+            font-size: 12px;
+            color: #475569;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 12px;
         }
         .sync-badge {
             font-size: 13px;
@@ -227,7 +332,7 @@
         table.spreadsheet {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12.5px;
             min-width: 980px;
         }
         table.spreadsheet th, table.spreadsheet td {
@@ -239,25 +344,23 @@
             background-color: #f1f5f9;
             color: #1e293b;
             font-weight: bold;
-            padding: 10px 8px;
+            padding: 8px 6px;
             text-align: center;
             white-space: nowrap;
-            position: sticky;
-            top: 0;
         }
         table.spreadsheet td.row-num {
             background-color: #f8fafc;
             text-align: center;
             font-weight: bold;
             color: #64748b;
-            width: 36px;
+            width: 34px;
             padding: 6px;
         }
         table.spreadsheet input.cell-input, table.spreadsheet select.cell-select {
             width: 100%;
             border: none;
-            padding: 8px 6px;
-            font-size: 13px;
+            padding: 7px 6px;
+            font-size: 12.5px;
             box-sizing: border-box;
             background: transparent;
         }
@@ -272,13 +375,41 @@
         table.spreadsheet select.att-select {
             width: 100%;
             border: none;
-            padding: 8px 4px;
+            padding: 7px 2px;
             font-size: 12px;
             font-weight: bold;
             text-align: center;
             background: transparent;
             cursor: pointer;
         }
+        /* Multi-lecture per week cell container */
+        .lec-week-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2px;
+            padding: 2px 4px;
+        }
+        .lec-sub-select {
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 1px;
+            cursor: pointer;
+            background: #fff;
+        }
+        .wk-status-chip {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .chip-full { background: #dcfce7; color: #166534; }
+        .chip-partial { background: #fef9c3; color: #854d0e; }
+        .chip-none { background: #fee2e2; color: #991b1b; }
+
         .att-P { background-color: #d4edda !important; color: #155724; }
         .att-A { background-color: #f8d7da !important; color: #721c24; }
         .att-L { background-color: #fff3cd !important; color: #856404; }
@@ -286,8 +417,9 @@
         .summary-cell {
             text-align: center !important;
             font-weight: bold;
-            padding: 8px !important;
+            padding: 7px !important;
             background: #f8fafc;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -337,11 +469,11 @@
         </div>
     </div>
 
-    <!-- STAFF COURSE UNIT & ATTENDANCE DASHBOARD -->
+    <!-- STAFF COURSE UNIT & 3-TABLE ATTENDANCE DASHBOARD -->
     <div id="staffDashboard">
         <div class="topbar">
             <div>
-                <h1>Course Unit & Semester Attendance Portal</h1>
+                <h1>Course Unit, Timetable & Semester Attendance Portal</h1>
                 <div class="topbar-meta" id="staffWelcomeMeta">Logged in as Staff</div>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
@@ -350,7 +482,7 @@
             </div>
         </div>
 
-        <!-- Course Configuration & Classlist Dropbox -->
+        <!-- Course Configuration, Session Schedules & Classlist Dropbox -->
         <div class="course-panel">
             <div class="panel-header">
                 <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -370,6 +502,7 @@
                 </div>
             </div>
 
+            <!-- Basic Course Metadata -->
             <div class="course-grid">
                 <div class="field-group">
                     <label>Course Unit Code</label>
@@ -389,6 +522,45 @@
                 </div>
             </div>
 
+            <!-- SCHEDULE CONFIGURATION: LECTURES, LABS, TUTORIALS (START TIME, END TIME, ROOM NUMBER) -->
+            <div class="schedule-grid">
+                <!-- 1. Lectures Schedule Box -->
+                <div class="schedule-card">
+                    <div class="schedule-card-header">
+                        <h3 style="color:var(--lec-color);">1. Weekly Lectures (Attend ALL)</h3>
+                        <button type="button" class="btn btn-lec" id="addLecSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('lectures')">+ Add Lecture</button>
+                    </div>
+                    <div class="slot-label-row">
+                        <span>Day</span><span>Start Time</span><span>End Time</span><span>Place (Room #)</span><span></span>
+                    </div>
+                    <div id="lecturesSlotList"></div>
+                </div>
+
+                <!-- 2. Labs Schedule Box -->
+                <div class="schedule-card">
+                    <div class="schedule-card-header">
+                        <h3 style="color:var(--lab-color);">2. Lab Sessions (Attend 1 / Week)</h3>
+                        <button type="button" class="btn btn-lab" id="addLabSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('labs')">+ Add Lab</button>
+                    </div>
+                    <div class="slot-label-row">
+                        <span>Day</span><span>Start Time</span><span>End Time</span><span>Place (Room #)</span><span></span>
+                    </div>
+                    <div id="labsSlotList"></div>
+                </div>
+
+                <!-- 3. Tutorials Schedule Box -->
+                <div class="schedule-card">
+                    <div class="schedule-card-header">
+                        <h3 style="color:var(--tut-color);">3. Tutorial Sessions (Attend 1 / Week)</h3>
+                        <button type="button" class="btn btn-tut" id="addTutSlotBtn" style="padding:5px 10px; font-size:11px;" onclick="addScheduleSlot('tutorials')">+ Add Tutorial</button>
+                    </div>
+                    <div class="slot-label-row">
+                        <span>Day</span><span>Start Time</span><span>End Time</span><span>Place (Room #)</span><span></span>
+                    </div>
+                    <div id="tutorialsSlotList"></div>
+                </div>
+            </div>
+
             <!-- CLICK / DRAG-AND-DROP CLASSLIST BOX (PRESS ENTER TO AUTOFILL & SAVE) -->
             <div class="dropbox-container">
                 <div class="file-dropzone" id="classlistDropzone" tabindex="0" onclick="triggerFileSelect()">
@@ -396,68 +568,144 @@
                         <strong>Click or Drag & Drop Course Classlist File Here (.csv, .xls, .xlsx)</strong>
                     </div>
                     <div id="dropzoneSubText" style="font-size:12px; margin-top:4px;">
-                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode into the interactive table and  Sheets.
+                        Once dropped or selected, press <strong>ENTER</strong> to autofill ID, Last Name, First Name, Course & Mode across all 3 Attendance Tables (Lecture, Lab & Tutorial) and Google Sheets.
                     </div>
                     <input type="file" id="classlistFileInput" accept=".csv,.xls,.xlsx" style="display:none" onchange="handleClasslistFileSelect(event)">
                 </div>
             </div>
 
             <div id="externalSheetLinkBox" style="margin-top:12px; font-size:13px; display:none;">
-                Dedicated Course Attendance Spreadsheet:
+                Dedicated Course Attendance Spreadsheet (with Lecture, Lab & Tutorial Tabs):
                 <a id="externalSheetLink" href="#" target="_blank" style="color:var(--primary); font-weight:bold;">Open Course Attendance Sheet ↗</a>
             </div>
         </div>
 
-        <!-- Interactive Spreadsheet Table -->
-        <div class="sheet-wrapper">
+        <!-- Toolbar to Manage Roster & Jump Between the 3 Tables -->
+        <div class="tables-nav">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <strong>Jump to Table:</strong>
+                <button class="btn btn-lec" onclick="document.getElementById('lectureSection').scrollIntoView({behavior:'smooth'})">1. Lecture Attendance Table</button>
+                <button class="btn btn-lab" onclick="document.getElementById('labSection').scrollIntoView({behavior:'smooth'})">2. Lab Attendance Table</button>
+                <button class="btn btn-tut" onclick="document.getElementById('tutorialSection').scrollIntoView({behavior:'smooth'})">3. Tutorial Attendance Table</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Manual Student Row</button>
+                <button class="btn btn-danger" id="clearRowsBtn" onclick="clearAllRows()">Clear Roster</button>
+            </div>
+        </div>
+
+        <!-- TABLE 1: LECTURE WEEK-WISE ATTENDANCE TABLE -->
+        <div class="sheet-wrapper lec-sheet" id="lectureSection">
             <div class="sheet-toolbar">
-                <div>
-                    <strong id="sheetHeading">Student Roster & Week-Wise Attendance</strong>
-                    <span style="font-size:12px; color:#666; margin-left:10px;">(Mode: F = Face-to-Face, O = Online | Attendance: P = Present, A = Absent, L = Late, E = Excused)</span>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn btn-dark" id="addRowBtn" onclick="addStudentRow()">+ Add Manual Student Row</button>
-                    <button class="btn btn-danger" id="clearRowsBtn" onclick="clearAllRows()">Clear Table</button>
+                <div class="sheet-title-badge" style="color:var(--lec-color);">
+                    <span>TABLE 1: LECTURE WEEK-WISE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>ALL scheduled lectures</strong> each week</span>
                 </div>
             </div>
-
-            <table class="spreadsheet" id="attendanceTable">
-                <thead id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
+            <div class="schedule-summary-bar" id="lectureScheduleSummary"></div>
+            <table class="spreadsheet">
+                <thead id="lectureTableHead"></thead>
+                <tbody id="lectureTableBody"></tbody>
             </table>
         </div>
+
+        <!-- TABLE 2: LAB WEEK-WISE ATTENDANCE TABLE -->
+        <div class="sheet-wrapper lab-sheet" id="labSection">
+            <div class="sheet-toolbar">
+                <div class="sheet-title-badge" style="color:var(--lab-color);">
+                    <span>TABLE 2: LAB WEEK-WISE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>1 Lab session</strong> each week</span>
+                </div>
+            </div>
+            <div class="schedule-summary-bar" id="labScheduleSummary"></div>
+            <table class="spreadsheet">
+                <thead id="labTableHead"></thead>
+                <tbody id="labTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- TABLE 3: TUTORIAL WEEK-WISE ATTENDANCE TABLE -->
+        <div class="sheet-wrapper tut-sheet" id="tutorialSection">
+            <div class="sheet-toolbar">
+                <div class="sheet-title-badge" style="color:var(--tut-color);">
+                    <span>TABLE 3: TUTORIAL WEEK-WISE ATTENDANCE</span>
+                    <span class="rule-pill">Requirement: Students must attend <strong>1 Tutorial session</strong> each week</span>
+                </div>
+            </div>
+            <div class="schedule-summary-bar" id="tutorialScheduleSummary"></div>
+            <table class="spreadsheet">
+                <thead id="tutorialTableHead"></thead>
+                <tbody id="tutorialTableBody"></tbody>
+            </table>
+        </div>
+
     </div>
 
     <script>
-        // REPLACE WITH YOUR DEPLOYED  APPS SCRIPT WEB APP URL
+        // REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZdAYGsLolINFwW_aBwsoP5vJuWyU-XT2xqkvisZrw6jTIWRVjza1kIbf4DadvuyFS/exec";
+
+        const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         let selectedUserType = "";
         let isLoginMode = false;
         let loggedInStaff = null;
-        let isEditMode = false; // Starts locked until Staff clicks "Enable Edit Mode"
+        let isEditMode = false;
         let autoSaveTimer = null;
 
-        // Holds parsed students from a dropped/selected CSV file waiting for Staff to press ENTER
         let stagedClasslist = null;
         let stagedFileName = "";
 
         let coursesStore = {};
-        let currentCourse = {
-            courseCode: "",
-            courseTitle: "",
-            semStart: "",
-            semEnd: "",
-            sheetUrl: "",
-            weeks: [],
-            students: []
-        };
+        let currentCourse = createDefaultCourseObject();
+
+        function createDefaultCourseObject() {
+            const today = new Date().toISOString().split('T')[0];
+            const future = new Date(Date.now() + 14 * 7 * 86400000).toISOString().split('T')[0];
+            return {
+                courseCode: "",
+                courseTitle: "",
+                semStart: today,
+                semEnd: future,
+                sheetUrl: "",
+                schedules: {
+                    lectures: [
+                        { day: "Mon", startTime: "09:00", endTime: "10:00", room: "" },
+                        { day: "Wed", startTime: "09:00", endTime: "10:00", room: "" }
+                    ],
+                    labs: [
+                        { day: "Tue", startTime: "14:00", endTime: "17:00", room: "" }
+                    ],
+                    tutorials: [
+                        { day: "Thu", startTime: "11:00", endTime: "12:00", room: "" }
+                    ]
+                },
+                weeks: generateWeeksList(today, future),
+                students: [
+                    createEmptyStudent("")
+                ]
+            };
+        }
+
+        function createEmptyStudent(courseCode) {
+            return {
+                studentId: "",
+                lastName: "",
+                firstName: "",
+                course: courseCode || "",
+                mode: "F",
+                assignedLabIdx: 0,
+                assignedTutIdx: 0,
+                lectureAttendance: {}, // e.g. { "W1_L1": "P", "W1_L2": "P" }
+                labAttendance: {},     // e.g. { "W1": "P" } (1 Lab per week)
+                tutorialAttendance: {} // e.g. { "W1": "P" } (1 Tutorial per week)
+            };
+        }
 
         /* ================= INITIALIZE DROPBOX & ENTER KEY LISTENER ================= */
         window.addEventListener('DOMContentLoaded', () => {
             setupFileDropzone();
 
-            // Listen for ENTER key when a classlist file is staged in the dropbox
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && stagedClasslist && stagedClasslist.length > 0 && isEditMode) {
                     e.preventDefault();
@@ -504,14 +752,10 @@
             if (!isEditMode) return;
             if (e.target.files && e.target.files[0]) {
                 stageClasslistFile(e.target.files[0]);
-                e.target.value = ""; // Reset input so same file can be re-selected if needed
+                e.target.value = "";
             }
         }
 
-        /**
-         * Reads the dropped/selected CSV (or XLS/XLSX) file, extracts ID, Last Name,
-         * First Name, Course, and Mode, and stages it so pressing ENTER autofills & saves.
-         */
         function stageClasslistFile(file) {
             stagedFileName = file.name;
             const ext = file.name.split('.').pop().toLowerCase();
@@ -519,13 +763,11 @@
             if (ext === 'csv') {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    const csvText = evt.target.result;
-                    const rows = parseCSVToRows(csvText);
+                    const rows = parseCSVToRows(evt.target.result);
                     extractStudentsFromRows(rows, file.name);
                 };
                 reader.readAsText(file);
             } else {
-                // Fallback for .xls / .xlsx files using SheetJS
                 const reader = new FileReader();
                 reader.onload = function(evt) {
                     try {
@@ -542,7 +784,6 @@
             }
         }
 
-        // RFC-4180 compliant CSV parser supporting commas inside quoted strings
         function parseCSVToRows(csvText) {
             const rows = [];
             let currentRow = [];
@@ -597,7 +838,6 @@
                 return;
             }
 
-            // Automatically find the header row containing "ID" and "Last Name" (or "Surname")
             let headerRowIdx = -1;
             for (let i = 0; i < Math.min(rows.length, 15); i++) {
                 const normalized = rows[i].map(c => String(c || "").trim().toLowerCase());
@@ -606,8 +846,6 @@
                     break;
                 }
             }
-
-            // If no explicit header row was found, assume Row 0
             if (headerRowIdx === -1) headerRowIdx = 0;
 
             const headers = rows[headerRowIdx].map(h => String(h || "").trim().toLowerCase());
@@ -628,7 +866,6 @@
                 const course = courseCol !== -1 && row[courseCol] !== undefined ? String(row[courseCol]).trim() : "";
                 const mode = modeCol !== -1 && row[modeCol] !== undefined ? String(row[modeCol]).trim().toUpperCase() : "F";
 
-                // Ignore blank lines or footer summary lines like "73 Rows"
                 if (!sid || !lname || sid.toLowerCase().includes("rows") || sid.toLowerCase() === "id") continue;
 
                 parsed.push({
@@ -647,7 +884,6 @@
 
             stagedClasslist = parsed;
 
-            // Highlight dropbox and focus it so pressing ENTER immediately triggers autofill + Google Sheet sync
             const dz = document.getElementById('classlistDropzone');
             dz.classList.add('staged');
             dz.focus();
@@ -656,10 +892,9 @@
             document.getElementById('dropzoneMainText').innerHTML =
                 `<strong>File Ready: ${escapeHtml(fileName)} (${parsed.length} Students Detected for ${escapeHtml(detectedCourse)})</strong>`;
             document.getElementById('dropzoneSubText').innerHTML =
-                `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill Spreadsheet & Save to Google Sheets ↵</span>`;
+                `<span class="enter-hint-badge" onclick="event.stopPropagation(); applyStagedClasslistAndSync();">PRESS ENTER (or Click Here) to Autofill All 3 Tables & Save to Google Sheets ↵</span>`;
         }
 
-        // Triggered when Staff presses ENTER after dropping/selecting the CSV file
         function applyStagedClasslistAndSync() {
             if (!stagedClasslist || stagedClasslist.length === 0) return;
 
@@ -669,22 +904,29 @@
                 document.getElementById('courseCode').value = detectedCourse;
             }
 
-            // Preserve any existing attendance marks if updating the same course
-            const existingAttMap = {};
+            // Preserve any existing attendance records by Student ID
+            const existingMap = {};
             currentCourse.students.forEach(st => {
                 if (st.studentId) {
-                    existingAttMap[st.studentId.toUpperCase()] = st.attendance || {};
+                    existingMap[st.studentId.toUpperCase()] = st;
                 }
             });
 
-            currentCourse.students = stagedClasslist.map(st => ({
-                studentId: st.studentId,
-                lastName: st.lastName,
-                firstName: st.firstName,
-                course: st.course || currentCourse.courseCode || "",
-                mode: st.mode || "F",
-                attendance: existingAttMap[st.studentId.toUpperCase()] || {}
-            }));
+            currentCourse.students = stagedClasslist.map(st => {
+                const prev = existingMap[st.studentId.toUpperCase()] || {};
+                return {
+                    studentId: st.studentId,
+                    lastName: st.lastName,
+                    firstName: st.firstName,
+                    course: st.course || currentCourse.courseCode || "",
+                    mode: st.mode || "F",
+                    assignedLabIdx: prev.assignedLabIdx || 0,
+                    assignedTutIdx: prev.assignedTutIdx || 0,
+                    lectureAttendance: prev.lectureAttendance || {},
+                    labAttendance: prev.labAttendance || {},
+                    tutorialAttendance: prev.tutorialAttendance || {}
+                };
+            });
 
             const importedCount = stagedClasslist.length;
             const fileName = stagedFileName;
@@ -693,12 +935,11 @@
             const dz = document.getElementById('classlistDropzone');
             dz.classList.remove('staged');
             document.getElementById('dropzoneMainText').innerHTML =
-                `<strong>Autofilled ${importedCount} Students from ${escapeHtml(fileName)}!</strong>`;
+                `<strong>Autofilled ${importedCount} Students from ${escapeHtml(fileName)} into Lecture, Lab & Tutorial Tables!</strong>`;
             document.getElementById('dropzoneSubText').innerHTML =
                 `Click or drag & drop another classlist file (.csv, .xls, .xlsx) and press <strong>ENTER</strong> to load another course.`;
 
-            renderSpreadsheetTable();
-            // Immediately save autofilled details to Google Spreadsheet
+            renderAllThreeTables();
             saveCourseAndAttendance(false);
         }
 
@@ -809,7 +1050,7 @@
             }
         }
 
-        /* ================= STAFF DASHBOARD & SPREADSHEET LOGIC ================= */
+        /* ================= STAFF DASHBOARD & SCHEDULE MANAGEMENT ================= */
 
         function openStaffDashboard() {
             document.getElementById('portalModal').style.display = 'none';
@@ -822,7 +1063,7 @@
             if (courseCodes.length > 0) {
                 document.getElementById('courseSelector').value = courseCodes[0];
                 loadSelectedCourse();
-                setEditMode(false); // Start in View mode; Staff clicks "Enable Edit Mode" to edit/upload
+                setEditMode(false);
             } else {
                 startNewCourse();
                 setEditMode(false);
@@ -850,22 +1091,46 @@
 
         function startNewCourse() {
             document.getElementById('courseSelector').value = "";
-            const today = new Date().toISOString().split('T')[0];
-            const future = new Date(Date.now() + 14 * 7 * 86400000).toISOString().split('T')[0];
-
-            currentCourse = {
-                courseCode: "",
-                courseTitle: "",
-                semStart: today,
-                semEnd: future,
-                sheetUrl: "",
-                weeks: generateWeeksList(today, future),
-                students: [
-                    { studentId: "", lastName: "", firstName: "", course: "", mode: "F", attendance: {} }
-                ]
-            };
-
+            currentCourse = createDefaultCourseObject();
             renderCourseToUI();
+        }
+
+        function normalizeCourseStructure(raw) {
+            const def = createDefaultCourseObject();
+            const c = Object.assign({}, def, raw);
+
+            if (!c.schedules) c.schedules = def.schedules;
+            if (!Array.isArray(c.schedules.lectures) || c.schedules.lectures.length === 0) {
+                c.schedules.lectures = def.schedules.lectures;
+            }
+            if (!Array.isArray(c.schedules.labs) || c.schedules.labs.length === 0) {
+                c.schedules.labs = def.schedules.labs;
+            }
+            if (!Array.isArray(c.schedules.tutorials) || c.schedules.tutorials.length === 0) {
+                c.schedules.tutorials = def.schedules.tutorials;
+            }
+
+            if (!c.weeks || c.weeks.length === 0) {
+                c.weeks = generateWeeksList(c.semStart, c.semEnd);
+            }
+
+            c.students = (c.students || []).map(st => ({
+                studentId: st.studentId || "",
+                lastName: st.lastName !== undefined ? st.lastName : (st.surname || ""),
+                firstName: st.firstName || "",
+                course: st.course !== undefined ? st.course : (st.idUnit || c.courseCode || ""),
+                mode: st.mode || "F",
+                assignedLabIdx: Number(st.assignedLabIdx || 0),
+                assignedTutIdx: Number(st.assignedTutIdx || 0),
+                lectureAttendance: st.lectureAttendance || st.attendance || {},
+                labAttendance: st.labAttendance || {},
+                tutorialAttendance: st.tutorialAttendance || {}
+            }));
+
+            if (c.students.length === 0) {
+                c.students = [createEmptyStudent(c.courseCode)];
+            }
+            return c;
         }
 
         function loadSelectedCourse() {
@@ -874,18 +1139,7 @@
                 startNewCourse();
                 return;
             }
-            currentCourse = JSON.parse(JSON.stringify(coursesStore[code]));
-            currentCourse.students = (currentCourse.students || []).map(st => ({
-                studentId: st.studentId || "",
-                lastName: st.lastName !== undefined ? st.lastName : (st.surname || ""),
-                firstName: st.firstName || "",
-                course: st.course !== undefined ? st.course : (st.idUnit || currentCourse.courseCode || ""),
-                mode: st.mode || "F",
-                attendance: st.attendance || {}
-            }));
-            if (!currentCourse.weeks || currentCourse.weeks.length === 0) {
-                currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
-            }
+            currentCourse = normalizeCourseStructure(JSON.parse(JSON.stringify(coursesStore[code])));
             renderCourseToUI();
         }
 
@@ -905,6 +1159,9 @@
             document.getElementById('semEnd').disabled = !isEditMode;
             document.getElementById('addRowBtn').disabled = !isEditMode;
             document.getElementById('clearRowsBtn').disabled = !isEditMode;
+            document.getElementById('addLecSlotBtn').disabled = !isEditMode;
+            document.getElementById('addLabSlotBtn').disabled = !isEditMode;
+            document.getElementById('addTutSlotBtn').disabled = !isEditMode;
 
             const dz = document.getElementById('classlistDropzone');
             if (isEditMode) {
@@ -915,8 +1172,101 @@
                 stagedClasslist = null;
             }
 
-            renderSpreadsheetTable();
+            renderScheduleCards();
+            renderAllThreeTables();
         }
+
+        /* ================= SCHEDULE SLOTS (LECTURE, LAB, TUTORIAL) ================= */
+
+        function renderScheduleCards() {
+            renderSlotGroup('lectures', 'lecturesSlotList', 'Lec');
+            renderSlotGroup('labs', 'labsSlotList', 'Lab');
+            renderSlotGroup('tutorials', 'tutorialsSlotList', 'Tut');
+            updateScheduleSummaryBars();
+        }
+
+        function renderSlotGroup(groupKey, containerId, prefix) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            const slots = currentCourse.schedules[groupKey] || [];
+            const disabledAttr = isEditMode ? "" : "disabled";
+
+            slots.forEach((slot, idx) => {
+                const row = document.createElement('div');
+                row.className = 'slot-row';
+
+                let dayOptions = DAYS_OF_WEEK.map(d =>
+                    `<option value="${d}" ${slot.day === d ? "selected" : ""}>${prefix} ${idx + 1} (${d})</option>`
+                ).join("");
+
+                row.innerHTML = `
+                    <select ${disabledAttr} onchange="updateScheduleSlot('${groupKey}', ${idx}, 'day', this.value)">
+                        ${dayOptions}
+                    </select>
+                    <input type="time" value="${escapeHtml(slot.startTime || '')}" ${disabledAttr}
+                        onchange="updateScheduleSlot('${groupKey}', ${idx}, 'startTime', this.value)" title="Start Time">
+                    <input type="time" value="${escapeHtml(slot.endTime || '')}" ${disabledAttr}
+                        onchange="updateScheduleSlot('${groupKey}', ${idx}, 'endTime', this.value)" title="End Time">
+                    <input type="text" value="${escapeHtml(slot.room || '')}" placeholder="Room # / Place" ${disabledAttr}
+                        oninput="updateScheduleSlot('${groupKey}', ${idx}, 'room', this.value)" title="Place (Room Number)">
+                    ${isEditMode && slots.length > 1
+                        ? `<button type="button" class="btn btn-danger" style="padding:4px 7px; font-size:11px;" onclick="removeScheduleSlot('${groupKey}', ${idx})">✕</button>`
+                        : `<span style="width:24px;"></span>`
+                    }
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addScheduleSlot(groupKey) {
+            if (!isEditMode) return;
+            currentCourse.schedules[groupKey].push({
+                day: "Mon",
+                startTime: "10:00",
+                endTime: "11:00",
+                room: ""
+            });
+            renderScheduleCards();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function removeScheduleSlot(groupKey, idx) {
+            if (!isEditMode) return;
+            if (currentCourse.schedules[groupKey].length <= 1) return;
+            currentCourse.schedules[groupKey].splice(idx, 1);
+            renderScheduleCards();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function updateScheduleSlot(groupKey, idx, field, val) {
+            currentCourse.schedules[groupKey][idx][field] = val;
+            updateScheduleSummaryBars();
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function formatSlotSummary(slot, labelPrefix, idx) {
+            const timeRange = (slot.startTime && slot.endTime) ? `${slot.startTime}–${slot.endTime}` : "Time TBA";
+            const roomStr = slot.room ? `Room: ${slot.room}` : "Room TBA";
+            return `${labelPrefix} ${idx + 1} (${slot.day || 'Day'} ${timeRange}, ${roomStr})`;
+        }
+
+        function updateScheduleSummaryBars() {
+            const lecs = currentCourse.schedules.lectures.map((s, i) => formatSlotSummary(s, 'Lec', i)).join("  |  ");
+            const labs = currentCourse.schedules.labs.map((s, i) => formatSlotSummary(s, 'Lab', i)).join("  |  ");
+            const tuts = currentCourse.schedules.tutorials.map((s, i) => formatSlotSummary(s, 'Tut', i)).join("  |  ");
+
+            document.getElementById('lectureScheduleSummary').innerHTML =
+                `<strong>Scheduled Weekly Lectures (${currentCourse.schedules.lectures.length} per week — Student must attend ALL):</strong> ${escapeHtml(lecs)}`;
+            document.getElementById('labScheduleSummary').innerHTML =
+                `<strong>Available Lab Streams (Student must attend 1 Lab per week):</strong> ${escapeHtml(labs)}`;
+            document.getElementById('tutorialScheduleSummary').innerHTML =
+                `<strong>Available Tutorial Streams (Student must attend 1 Tutorial per week):</strong> ${escapeHtml(tuts)}`;
+        }
+
+        /* ================= WEEKS & METADATA LOGIC ================= */
 
         function generateWeeksList(startStr, endStr) {
             if (!startStr || !endStr) return ["Week 1", "Week 2", "Week 3", "Week 4"];
@@ -950,7 +1300,7 @@
             currentCourse.semStart = document.getElementById('semStart').value;
             currentCourse.semEnd = document.getElementById('semEnd').value;
             currentCourse.weeks = generateWeeksList(currentCourse.semStart, currentCourse.semEnd);
-            renderSpreadsheetTable();
+            renderAllThreeTables();
             queueAutoSave();
         }
 
@@ -969,49 +1319,208 @@
                 linkBox.style.display = 'none';
             }
 
-            renderSpreadsheetTable();
+            renderScheduleCards();
+            renderAllThreeTables();
         }
 
-        function renderSpreadsheetTable() {
-            const thead = document.getElementById('tableHead');
-            const tbody = document.getElementById('tableBody');
+        /* ================= RENDER ALL 3 SEPARATE WEEK-WISE ATTENDANCE TABLES ================= */
+
+        function renderAllThreeTables() {
+            renderLectureTable();
+            renderLabTable();
+            renderTutorialTable();
+        }
+
+        function buildCommonStudentCells(st, idx, disabledAttr) {
+            const modeVal = st.mode || "F";
+            return `
+                <td class="row-num">${idx + 1}</td>
+                <td>
+                    <input class="cell-input" type="text" value="${escapeHtml(st.studentId)}"
+                        placeholder="Enter ID" ${disabledAttr}
+                        onchange="updateStudentField(${idx}, 'studentId', this.value)">
+                </td>
+                <td>
+                    <input class="cell-input" type="text" value="${escapeHtml(st.lastName)}"
+                        placeholder="Last Name" ${disabledAttr}
+                        onchange="updateStudentField(${idx}, 'lastName', this.value)">
+                </td>
+                <td>
+                    <input class="cell-input" type="text" value="${escapeHtml(st.firstName)}"
+                        placeholder="First Name" ${disabledAttr}
+                        onchange="updateStudentField(${idx}, 'firstName', this.value)">
+                </td>
+                <td>
+                    <input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}"
+                        placeholder="Course" ${disabledAttr}
+                        onchange="updateStudentField(${idx}, 'course', this.value)">
+                </td>
+                <td>
+                    <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'mode', this.value)">
+                        <option value="F" ${modeVal === "F" ? "selected" : ""}>F</option>
+                        <option value="O" ${modeVal === "O" ? "selected" : ""}>O</option>
+                    </select>
+                </td>
+            `;
+        }
+
+        // TABLE 1: LECTURE TABLE (Requires attending ALL lectures in a week)
+        function renderLectureTable() {
+            const thead = document.getElementById('lectureTableHead');
+            const tbody = document.getElementById('lectureTableBody');
             const weeks = currentCourse.weeks || [];
+            const lecSlots = currentCourse.schedules.lectures || [];
+            const numLecs = lecSlots.length;
 
             let headHTML = `<tr>
                 <th>#</th>
-                <th style="min-width:125px;">ID</th>
-                <th style="min-width:150px;">Last Name</th>
-                <th style="min-width:140px;">First Name</th>
-                <th style="min-width:95px;">Course</th>
-                <th style="min-width:85px;">Mode</th>`;
+                <th style="min-width:115px;">ID</th>
+                <th style="min-width:135px;">Last Name</th>
+                <th style="min-width:125px;">First Name</th>
+                <th style="min-width:80px;">Course</th>
+                <th style="min-width:70px;">Mode</th>`;
 
             weeks.forEach(w => {
-                headHTML += `<th style="min-width:95px;">${w}</th>`;
+                const subLabels = lecSlots.map((s, lIdx) => `L${lIdx + 1}${s.room ? '(' + s.room + ')' : ''}`).join(' / ');
+                headHTML += `<th style="min-width:${Math.max(105, numLecs * 48)}px;">
+                    <div>${w}</div>
+                    <div style="font-size:10px; font-weight:normal; color:#475569;">${escapeHtml(subLabels)}</div>
+                </th>`;
             });
 
-            headHTML += `<th style="min-width:90px;">Attendance %</th>`;
-            if (isEditMode) headHTML += `<th style="width:55px;">Del</th>`;
-            headHTML += `</tr>`;
+            headHTML += `
+                <th style="min-width:95px;">Sessions Attended</th>
+                <th style="min-width:105px;">Full Weeks (All ${numLecs} Lec)</th>
+                <th style="min-width:90px;">Lecture %</th>
+                ${isEditMode ? `<th style="width:50px;">Del</th>` : ""}
+            </tr>`;
             thead.innerHTML = headHTML;
 
             tbody.innerHTML = "";
+            const disabledAttr = isEditMode ? "" : "disabled";
+
             currentCourse.students.forEach((st, idx) => {
                 const tr = document.createElement('tr');
-                const disabledAttr = isEditMode ? "" : "disabled";
+                let totalLecAttended = 0;
+                let totalLecMarked = 0;
+                let fullWeeksAttended = 0;
+                let weeksMarkedCount = 0;
 
-                let presentCount = 0;
-                let markedCount = 0;
+                let weekCellsHTML = "";
+                weeks.forEach((w, wIdx) => {
+                    let attendedThisWeek = 0;
+                    let markedThisWeek = 0;
+
+                    let selectsHTML = "";
+                    for (let lIdx = 0; lIdx < numLecs; lIdx++) {
+                        const key = `W${wIdx + 1}_L${lIdx + 1}`;
+                        // Backward compatibility if W1 was stored directly
+                        const fallbackVal = lIdx === 0 ? (st.lectureAttendance[`W${wIdx + 1}`] || "") : "";
+                        const val = st.lectureAttendance[key] !== undefined ? st.lectureAttendance[key] : fallbackVal;
+
+                        if (val === "P" || val === "L" || val === "E") {
+                            attendedThisWeek++;
+                            markedThisWeek++;
+                            totalLecAttended++;
+                            totalLecMarked++;
+                        } else if (val === "A") {
+                            markedThisWeek++;
+                            totalLecMarked++;
+                        }
+
+                        const slotInfo = formatSlotSummary(lecSlots[lIdx], 'Lecture', lIdx);
+                        const colorClass = val ? `att-${val}` : "";
+
+                        selectsHTML += `
+                            <select class="lec-sub-select ${colorClass}" title="${escapeHtml(slotInfo)}" ${disabledAttr}
+                                onchange="updateLectureCell(${idx}, '${key}', this.value)">
+                                <option value="" ${val === "" ? "selected" : ""}>L${lIdx + 1}:-</option>
+                                <option value="P" ${val === "P" ? "selected" : ""}>L${lIdx + 1}:P</option>
+                                <option value="A" ${val === "A" ? "selected" : ""}>L${lIdx + 1}:A</option>
+                                <option value="L" ${val === "L" ? "selected" : ""}>L${lIdx + 1}:L</option>
+                                <option value="E" ${val === "E" ? "selected" : ""}>L${lIdx + 1}:E</option>
+                            </select>
+                        `;
+                    }
+
+                    let chipHTML = "";
+                    if (markedThisWeek > 0) {
+                        weeksMarkedCount++;
+                        if (attendedThisWeek === numLecs) {
+                            fullWeeksAttended++;
+                            chipHTML = `<span class="wk-status-chip chip-full" title="Attended ALL lectures this week">${attendedThisWeek}/${numLecs}✓</span>`;
+                        } else if (attendedThisWeek > 0) {
+                            chipHTML = `<span class="wk-status-chip chip-partial" title="Missed ${numLecs - attendedThisWeek} lecture(s) this week">${attendedThisWeek}/${numLecs}</span>`;
+                        } else {
+                            chipHTML = `<span class="wk-status-chip chip-none">0/${numLecs}</span>`;
+                        }
+                    }
+
+                    weekCellsHTML += `<td><div class="lec-week-box">${selectsHTML}${chipHTML}</div></td>`;
+                });
+
+                const lecPct = totalLecMarked > 0 ? Math.round((totalLecAttended / totalLecMarked) * 100) + "%" : "0%";
+
+                tr.innerHTML = `
+                    ${buildCommonStudentCells(st, idx, disabledAttr)}
+                    ${weekCellsHTML}
+                    <td class="summary-cell">${totalLecAttended} / ${totalLecMarked || (weeks.length * numLecs)}</td>
+                    <td class="summary-cell">${fullWeeksAttended} / ${weeksMarkedCount || weeks.length} Wks</td>
+                    <td class="summary-cell">${lecPct}</td>
+                    ${isEditMode ? `<td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // TABLE 2: LAB TABLE (Requires attending 1 Lab per week)
+        function renderLabTable() {
+            const thead = document.getElementById('labTableHead');
+            const tbody = document.getElementById('labTableBody');
+            const weeks = currentCourse.weeks || [];
+            const labSlots = currentCourse.schedules.labs || [];
+
+            let headHTML = `<tr>
+                <th>#</th>
+                <th style="min-width:115px;">ID</th>
+                <th style="min-width:135px;">Last Name</th>
+                <th style="min-width:125px;">First Name</th>
+                <th style="min-width:80px;">Course</th>
+                <th style="min-width:70px;">Mode</th>
+                <th style="min-width:185px;">Assigned Lab (Time & Room)</th>`;
+
+            weeks.forEach(w => {
+                headHTML += `<th style="min-width:90px;">${w}<div style="font-size:10px; font-weight:normal; color:#047857;">(1 Lab Req.)</div></th>`;
+            });
+
+            headHTML += `
+                <th style="min-width:95px;">Labs Attended</th>
+                <th style="min-width:90px;">Lab %</th>
+            </tr>`;
+            thead.innerHTML = headHTML;
+
+            tbody.innerHTML = "";
+            const disabledAttr = isEditMode ? "" : "disabled";
+
+            currentCourse.students.forEach((st, idx) => {
+                const tr = document.createElement('tr');
+                let labsAttended = 0;
+                let labsMarked = 0;
+
+                let labOptions = labSlots.map((s, sIdx) =>
+                    `<option value="${sIdx}" ${Number(st.assignedLabIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Lab', sIdx))}</option>`
+                ).join("");
 
                 let weekCellsHTML = "";
                 weeks.forEach((w, wIdx) => {
                     const key = `W${wIdx + 1}`;
-                    const val = (st.attendance && st.attendance[key]) ? st.attendance[key] : "";
-                    if (val === "P" || val === "L") { presentCount++; markedCount++; }
-                    else if (val === "A" || val === "E") { markedCount++; }
+                    const val = (st.labAttendance && st.labAttendance[key]) ? st.labAttendance[key] : "";
+                    if (val === "P" || val === "L" || val === "E") { labsAttended++; labsMarked++; }
+                    else if (val === "A") { labsMarked++; }
 
                     const colorClass = val ? `att-${val}` : "";
                     weekCellsHTML += `<td class="${colorClass}">
-                        <select class="att-select" ${disabledAttr} onchange="updateAttendanceCell(${idx}, '${key}', this.value)">
+                        <select class="att-select" ${disabledAttr} onchange="updateSingleSessionCell(${idx}, 'labAttendance', '${key}', this.value)">
                             <option value="" ${val === "" ? "selected" : ""}>-</option>
                             <option value="P" ${val === "P" ? "selected" : ""}>P</option>
                             <option value="A" ${val === "A" ? "selected" : ""}>A</option>
@@ -1021,85 +1530,163 @@
                     </td>`;
                 });
 
-                const pct = markedCount > 0 ? Math.round((presentCount / markedCount) * 100) + "%" : "0%";
-                const modeVal = st.mode || "F";
+                const labPct = labsMarked > 0 ? Math.round((labsAttended / labsMarked) * 100) + "%" : "0%";
 
                 tr.innerHTML = `
-                    <td class="row-num">${idx + 1}</td>
+                    ${buildCommonStudentCells(st, idx, disabledAttr)}
                     <td>
-                        <input class="cell-input" type="text" value="${escapeHtml(st.studentId)}"
-                            placeholder="Enter ID" ${disabledAttr}
-                            oninput="updateStudentField(${idx}, 'studentId', this.value)">
-                    </td>
-                    <td>
-                        <input class="cell-input" type="text" value="${escapeHtml(st.lastName)}"
-                            placeholder="Last Name" ${disabledAttr}
-                            oninput="updateStudentField(${idx}, 'lastName', this.value)">
-                    </td>
-                    <td>
-                        <input class="cell-input" type="text" value="${escapeHtml(st.firstName)}"
-                            placeholder="First Name" ${disabledAttr}
-                            oninput="updateStudentField(${idx}, 'firstName', this.value)">
-                    </td>
-                    <td>
-                        <input class="cell-input" type="text" value="${escapeHtml(st.course || currentCourse.courseCode)}"
-                            placeholder="Course" ${disabledAttr}
-                            oninput="updateStudentField(${idx}, 'course', this.value)">
-                    </td>
-                    <td>
-                        <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'mode', this.value)">
-                            <option value="F" ${modeVal === "F" ? "selected" : ""}>F</option>
-                            <option value="O" ${modeVal === "O" ? "selected" : ""}>O</option>
+                        <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'assignedLabIdx', Number(this.value))">
+                            ${labOptions}
                         </select>
                     </td>
                     ${weekCellsHTML}
-                    <td class="summary-cell" id="pct-${idx}">${pct}</td>
-                    ${isEditMode ? `<td style="text-align:center;"><button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteStudentRow(${idx})">✕</button></td>` : ""}
+                    <td class="summary-cell">${labsAttended} / ${labsMarked || weeks.length}</td>
+                    <td class="summary-cell">${labPct}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
+        // TABLE 3: TUTORIAL TABLE (Requires attending 1 Tutorial per week)
+        function renderTutorialTable() {
+            const thead = document.getElementById('tutorialTableHead');
+            const tbody = document.getElementById('tutorialTableBody');
+            const weeks = currentCourse.weeks || [];
+            const tutSlots = currentCourse.schedules.tutorials || [];
+            const numLecs = (currentCourse.schedules.lectures || []).length;
+
+            let headHTML = `<tr>
+                <th>#</th>
+                <th style="min-width:115px;">ID</th>
+                <th style="min-width:135px;">Last Name</th>
+                <th style="min-width:125px;">First Name</th>
+                <th style="min-width:80px;">Course</th>
+                <th style="min-width:70px;">Mode</th>
+                <th style="min-width:185px;">Assigned Tutorial (Time & Room)</th>`;
+
+            weeks.forEach(w => {
+                headHTML += `<th style="min-width:90px;">${w}<div style="font-size:10px; font-weight:normal; color:#6d28d9;">(1 Tut Req.)</div></th>`;
+            });
+
+            headHTML += `
+                <th style="min-width:95px;">Tuts Attended</th>
+                <th style="min-width:90px;">Tutorial %</th>
+                <th style="min-width:115px;" title="Combined Attendance across All Lectures + 1 Lab + 1 Tutorial per week">Overall Course %</th>
+            </tr>`;
+            thead.innerHTML = headHTML;
+
+            tbody.innerHTML = "";
+            const disabledAttr = isEditMode ? "" : "disabled";
+
+            currentCourse.students.forEach((st, idx) => {
+                const tr = document.createElement('tr');
+                let tutsAttended = 0;
+                let tutsMarked = 0;
+
+                let tutOptions = tutSlots.map((s, sIdx) =>
+                    `<option value="${sIdx}" ${Number(st.assignedTutIdx || 0) === sIdx ? "selected" : ""}>${escapeHtml(formatSlotSummary(s, 'Tut', sIdx))}</option>`
+                ).join("");
+
+                let weekCellsHTML = "";
+                weeks.forEach((w, wIdx) => {
+                    const key = `W${wIdx + 1}`;
+                    const val = (st.tutorialAttendance && st.tutorialAttendance[key]) ? st.tutorialAttendance[key] : "";
+                    if (val === "P" || val === "L" || val === "E") { tutsAttended++; tutsMarked++; }
+                    else if (val === "A") { tutsMarked++; }
+
+                    const colorClass = val ? `att-${val}` : "";
+                    weekCellsHTML += `<td class="${colorClass}">
+                        <select class="att-select" ${disabledAttr} onchange="updateSingleSessionCell(${idx}, 'tutorialAttendance', '${key}', this.value)">
+                            <option value="" ${val === "" ? "selected" : ""}>-</option>
+                            <option value="P" ${val === "P" ? "selected" : ""}>P</option>
+                            <option value="A" ${val === "A" ? "selected" : ""}>A</option>
+                            <option value="L" ${val === "L" ? "selected" : ""}>L</option>
+                            <option value="E" ${val === "E" ? "selected" : ""}>E</option>
+                        </select>
+                    </td>`;
+                });
+
+                const tutPct = tutsMarked > 0 ? Math.round((tutsAttended / tutsMarked) * 100) + "%" : "0%";
+                const overallPct = computeOverallStudentPercentage(st, weeks.length, numLecs);
+
+                tr.innerHTML = `
+                    ${buildCommonStudentCells(st, idx, disabledAttr)}
+                    <td>
+                        <select class="cell-select" ${disabledAttr} onchange="updateStudentField(${idx}, 'assignedTutIdx', Number(this.value))">
+                            ${tutOptions}
+                        </select>
+                    </td>
+                    ${weekCellsHTML}
+                    <td class="summary-cell">${tutsAttended} / ${tutsMarked || weeks.length}</td>
+                    <td class="summary-cell">${tutPct}</td>
+                    <td class="summary-cell" style="background:#eef2ff; color:#1e3a8a;">${overallPct}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Calculates combined percentage based on: All Lectures + 1 Lab + 1 Tutorial each week
+        function computeOverallStudentPercentage(st, numWeeks, numLecs) {
+            let attended = 0;
+            let marked = 0;
+            for (let w = 1; w <= numWeeks; w++) {
+                // All Lectures in week w
+                for (let l = 1; l <= numLecs; l++) {
+                    const v = st.lectureAttendance ? st.lectureAttendance[`W${w}_L${l}`] : "";
+                    if (v === "P" || v === "L" || v === "E") { attended++; marked++; }
+                    else if (v === "A") { marked++; }
+                }
+                // 1 Lab in week w
+                const labV = st.labAttendance ? st.labAttendance[`W${w}`] : "";
+                if (labV === "P" || labV === "L" || labV === "E") { attended++; marked++; }
+                else if (labV === "A") { marked++; }
+
+                // 1 Tutorial in week w
+                const tutV = st.tutorialAttendance ? st.tutorialAttendance[`W${w}`] : "";
+                if (tutV === "P" || tutV === "L" || tutV === "E") { attended++; marked++; }
+                else if (tutV === "A") { marked++; }
+            }
+            return marked > 0 ? Math.round((attended / marked) * 100) + "%" : "0%";
+        }
+
+        /* ================= CELL & ROSTER HANDLERS ================= */
+
         function updateStudentField(rowIndex, field, value) {
             currentCourse.students[rowIndex][field] = value;
+            renderAllThreeTables(); // Keep all 3 tables in sync
             queueAutoSave();
         }
 
-        function updateAttendanceCell(rowIndex, weekKey, value) {
-            if (!currentCourse.students[rowIndex].attendance) {
-                currentCourse.students[rowIndex].attendance = {};
+        function updateLectureCell(rowIndex, key, value) {
+            if (!currentCourse.students[rowIndex].lectureAttendance) {
+                currentCourse.students[rowIndex].lectureAttendance = {};
             }
-            currentCourse.students[rowIndex].attendance[weekKey] = value;
-            renderSpreadsheetTable();
+            currentCourse.students[rowIndex].lectureAttendance[key] = value;
+            renderAllThreeTables();
+            queueAutoSave();
+        }
+
+        function updateSingleSessionCell(rowIndex, mapName, weekKey, value) {
+            if (!currentCourse.students[rowIndex][mapName]) {
+                currentCourse.students[rowIndex][mapName] = {};
+            }
+            currentCourse.students[rowIndex][mapName][weekKey] = value;
+            renderAllThreeTables();
             queueAutoSave();
         }
 
         function addStudentRow() {
             if (!isEditMode) return;
-            currentCourse.students.push({
-                studentId: "",
-                lastName: "",
-                firstName: "",
-                course: currentCourse.courseCode || "",
-                mode: "F",
-                attendance: {}
-            });
-            renderSpreadsheetTable();
+            currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
+            renderAllThreeTables();
             queueAutoSave();
         }
 
         function clearAllRows() {
             if (!isEditMode) return;
-            if (!confirm("Clear all student rows from the current table?")) return;
-            currentCourse.students = [{
-                studentId: "",
-                lastName: "",
-                firstName: "",
-                course: currentCourse.courseCode || "",
-                mode: "F",
-                attendance: {}
-            }];
-            renderSpreadsheetTable();
+            if (!confirm("Clear all student rows from all 3 attendance tables?")) return;
+            currentCourse.students = [createEmptyStudent(currentCourse.courseCode)];
+            renderAllThreeTables();
             queueAutoSave();
         }
 
@@ -1107,11 +1694,10 @@
             if (!isEditMode) return;
             currentCourse.students.splice(rowIndex, 1);
             if (currentCourse.students.length === 0) {
-                addStudentRow();
-            } else {
-                renderSpreadsheetTable();
-                queueAutoSave();
+                currentCourse.students.push(createEmptyStudent(currentCourse.courseCode));
             }
+            renderAllThreeTables();
+            queueAutoSave();
         }
 
         function queueAutoSave() {
@@ -1132,7 +1718,7 @@
             currentCourse.semEnd = document.getElementById('semEnd').value;
 
             if (!currentCourse.courseCode) {
-                if (manualClick) alert("Please enter a Course Unit Code (or drop a classlist CSV with a Course column) before saving.");
+                if (manualClick) alert("Please enter a Course Unit Code (or drop a classlist CSV) before saving.");
                 return;
             }
 
